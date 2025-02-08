@@ -101,67 +101,52 @@ const createRoom = async (roomData) => {
     });                             
     console.log(newRoom);
 
-    try {
-        const room = await newRoom.save();
-        return room;
-    } catch (error) {
-        throw new ApiError(error.message || 'Can not create room', 500);
-    }
-
+    const room = await newRoom.save();
+    return room;
 };
 
 const getAllRooms = async (filter, page, pageSize) => {
-    try {
-        const skip = (page - 1) * pageSize;
-        const rooms = await Room.find({ ...filter, active: true })
-            .skip(skip)
-            .limit(pageSize)
-            .populate({
-                path: 'amenities',
-                select: 'name',
-            });
-
-        // Check if amenity exists
-        rooms.forEach(room => {
-            if (room.amenities) {
-                room.amenities = room.amenities.map(amenity => amenity || null)
-            }
+    const skip = (page - 1) * pageSize;
+    const rooms = await Room.find({ ...filter, active: true })
+        .skip(skip)
+        .limit(pageSize)
+        .populate({
+            path: 'amenities',
+            select: 'name',
         });
-
-        const totalRooms = await Room.countDocuments({ ...filter, active: true });
-        return {
-            rooms: rooms,
-            total: totalRooms,
-            currentPage: page,
-            pageSize: pageSize
-        };
-    } catch (error) {
-        throw new ApiError(error.message || 'Can not get room list', 500);
+    if (!rooms) {
+        throw new ApiError('Failed to get rooms', 500);
     }
 
+    const totalRooms = await Room.countDocuments({ ...filter, active: true });
+    if (!totalRooms) {
+        throw new ApiError('Failed to get total rooms', 500);
+    }
+
+    return {
+        rooms: rooms,
+        total: totalRooms,
+        currentPage: page,
+        pageSize: pageSize
+    };
 };
 
 const getRoomById = async (id) => {
     if (!id) {
         throw new ApiError("Invalid room id.", 400);
     }
-    try {
-        const room = await Room.findOne({ _id: id, active: true })
-            .populate({
-                path: 'amenities',
-                select: 'name description',
-            });// find room with existing amenity
-            
-        if (!room) {
-            throw new ApiError("Room not found.", 404);
-        }
-        if (room.amenities) {
-            room.amenities = room.amenities.map(amenity => amenity || null)
-        }
-        return room;
-    } catch (error) {
-        throw new ApiError(error.message || 'Can not get room by id', 500);
+
+    const room = await Room.findOne({ _id: id, active: true })
+        .populate({
+            path: 'amenities',
+            select: 'name description',
+        });// find room with existing amenity
+        
+    if (!room) {
+        throw new ApiError("Room not found.", 404);
     }
+    
+    return room;
 };
 
 
@@ -172,68 +157,61 @@ const updateRoom = async (roomData) => {
 
     validateRoomData(roomData);
 
-    try {
-        const room = await Room.findById(roomData.id);
-        if (!room) {
-            throw new ApiError('Room not found to update.', 404);
-        }
-
-        let images = room.images || [];
-
-        if (roomData.images && roomData.images.length > 0) {
-            if (roomData.images.length + room.images.length > 5) {
-                throw new ApiError('Over 5 images allowed', 400);
-            } else {
-                for (let i = 0; i < roomData.images.length; i++) {
-                    images.push(roomData.images[i]);
-                }
-            }
-        } 
-
-        const updatedRoom = await Room.findOneAndUpdate(
-            { _id: roomData.id, active: true },
-            {
-                name: roomData.name,
-                room_type: roomData.room_type,
-                description: roomData.description,
-                amenities: roomData.amenities.map(id => new mongoose.Types.ObjectId(id)),
-                price: roomData.price,
-                images: images,
-                max_guests: roomData.max_guests,
-                quantity: roomData.quantity
-                // availability: {
-                //     start_date: new Date(roomData.availability.start_date),
-                //     end_date: new Date(roomData.availability.end_date),
-                // },
-            },
-            { new: true }
-        );
-
-        return updatedRoom;
-    } catch (error) {
-        throw new ApiError(error.message || 'Can not update room', 500);
+    const room = await Room.findById(roomData.id);
+    if (!room) {
+        throw new ApiError('Room not found to update.', 404);
     }
+
+    let images = room.images || [];
+
+    if (roomData.images && roomData.images.length > 0) {
+        if (roomData.images.length + room.images.length > 5) {
+            throw new ApiError('Over 5 images allowed', 400);
+        } else {
+            for (let i = 0; i < roomData.images.length; i++) {
+                images.push(roomData.images[i]);
+            }
+        }
+    } 
+
+    const updatedRoom = await Room.findOneAndUpdate(
+        { _id: roomData.id, active: true },
+        {
+            name: roomData.name,
+            room_type: roomData.room_type,
+            description: roomData.description,
+            amenities: roomData.amenities.map(id => new mongoose.Types.ObjectId(id)),
+            price: roomData.price,
+            images: images,
+            max_guests: roomData.max_guests,
+            quantity: roomData.quantity
+            // availability: {
+            //     start_date: new Date(roomData.availability.start_date),
+            //     end_date: new Date(roomData.availability.end_date),
+            // },
+        },
+        { new: true }
+    );
+
+    return updatedRoom;
 };
 
 const deleteRoom = async (id) => {
     if (!id) {
         throw new ApiError("Invalid room id.", 400);
     }
-    try {
-        const room = await Room.findOneAndUpdate(
-            { _id: id, active: true },
-            { active: false }, // Change active to false
-            { new: true }
-        );
-        if (!room) {
-            throw new ApiError('Room not found to delete.', 404);
-        }
-        return {
-            message: 'Deteled room successfully'
-        };
-    } catch (error) {
-        throw new ApiError(error.message || 'Can not delete room', 500);
+
+    const room = await Room.findOneAndUpdate(
+        { _id: id, active: true },
+        { active: false }, // Change active to false
+        { new: true }
+    );
+    if (!room) {
+        throw new ApiError('Room not found to delete.', 404);
     }
+    return {
+        message: 'Deteled room successfully'
+    };
 };
 
 // const updateRoomAvailability = async () => {

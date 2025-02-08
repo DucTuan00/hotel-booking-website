@@ -53,6 +53,16 @@ const cancelBooking = async (req, res, next) => {
     } catch (error) {
         next(new ApiError(error.message, error.statusCode || 500));
     }
+};
+
+const getAllBookings = async (req, res, next) => {
+    try {
+        const { page = 1, pageSize = 10, ...filter } = req.query;
+        const bookings = await bookingService.getAllBookings(filter, parseInt(page), parseInt(pageSize));
+        res.json(bookings);
+    } catch (error) {
+        next(new ApiError(error.message, error.statusCode || 500));
+    }
 }
 
 export default {
@@ -60,4 +70,5 @@ export default {
     getBookingById,
     getBookingsByUserId,
     cancelBooking,
+    getAllBookings,
 };

@@ -152,9 +152,32 @@ const cancelBooking = async (booking_id) => {
     return cancelBooking;
 };
 
+const getAllBookings = async (filter, page, pageSize) => {
+    const skip = (page - 1) * pageSize;
+    const bookings = await Booking.find({ ...filter })
+        .skip(skip)
+        .limit(pageSize);
+
+    if (!bookings) {
+        throw new ApiError('Failed to get bookings', 500);
+    }
+
+    const totalBookings = await Booking.countDocuments({ ...filter });
+    if (!totalBookings) {
+        throw new ApiError('Failed to get total bookings', 500);
+    }
+    return {
+        bookings: bookings,
+        total: totalBookings,
+        currentPage: page,
+        pageSize: pageSize
+    };
+}
+
 export default {
     createBooking,
     getBookingById,
     getBookingsByUserId,
     cancelBooking,
+    getAllBookings,
 };
