@@ -18,7 +18,19 @@ const login = async (req, res, next) => {
     try {
         const { email, password } = req.body;
         const result = await authService.login(email, password);
-        res.json(result);
+        // Save accessToken to HTTP-Only Cookie
+        res.cookie('accessToken', result.accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'Strict',
+            maxAge: 15 * 60 * 1000, // 15 minutes
+        });
+
+        res.json({
+            message: result.message,
+            _id: result._id,
+            refreshToken: result.refreshToken
+        });
     } catch (error) {
         next(new ApiError(error.message, 401));
     }
@@ -26,15 +38,34 @@ const login = async (req, res, next) => {
 
 const refreshToken = async (req, res, next) => {
     try {
-        const authHeader = req.headers['authorization'];
-        const refreshToken = authHeader && authHeader.split(' ')[1];
-        if (!refreshToken) {
-            return next(new ApiError('Unauthorized - Refresh token missing', 401));
-        }
-        const result = await authService.refreshAccessToken(refreshToken);
-        res.json(result);
+        const userId = req.user.id;
+        const result = await authService.refreshAccessToken(userId);
+
+        // Update accessToken in HTTP-Only Cookie
+        res.cookie('accessToken', result.accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'Strict',
+            maxAge: 15 * 60 * 1000, // 15 minutes
+        });
+
+        // Return new refreshToken
+        res.json({ refreshToken: result.refreshToken });
     } catch (error) {
         next(new ApiError(error.message, 403));
+    }
+};
+
+const logout = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const result = await authService.logout(userId);
+
+        // Delete accessToken in cookie when logout
+        res.clearCookie('accessToken');
+        res.json(result);
+    } catch (error) {
+        next(new ApiError(error.message, 400));
     }
 };
 
@@ -42,4 +73,5 @@ export default {
     register,
     login,
     refreshToken,
+    logout,
 }

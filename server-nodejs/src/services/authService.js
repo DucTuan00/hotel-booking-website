@@ -35,6 +35,10 @@ const login = async (email, password) => {
 
     const { accessToken, refreshToken } = generateToken(user);
 
+    // Save refresh token in database
+    user.refreshToken = refreshToken;
+    await user.save();
+
     return {
         message: 'Login successfully',
         _id: user._id,
@@ -43,20 +47,43 @@ const login = async (email, password) => {
     };
 };
 
-const refreshAccessToken = async (refreshToken) => {
-    const user = jwt.verify(refreshToken, jwtConfig.secret);
-    const foundUser = await User.findById(user.id);
+const refreshAccessToken = async (userId) => {
+    const user = await User.findById(userId);
 
-    if (!foundUser) {
+    if (!user) {
         throw new Error('User not found');
     }
 
-    const { accessToken, refreshToken: newRefreshToken } = generateToken(foundUser);
+    // Get refreshToken from database
+    const storedRefreshToken = user.refreshToken;
+
+    if (!storedRefreshToken) {
+        throw new Error('No refresh token found');
+    }
+
+    jwt.verify(storedRefreshToken, jwtConfig.secret);
+
+    const { accessToken, refreshToken: newRefreshToken } = generateToken(user);
+
+    user.refreshToken = newRefreshToken;
+    await user.save();
+
     return { accessToken, refreshToken: newRefreshToken };
+};
+
+const logout = async (userId) => {
+    const user = await User.findById(userId);
+    if (!user) {
+        throw new Error('User not found');
+    }
+    user.refreshToken = null;
+    await user.save();
+    return { message: 'Logged out successfully' };
 };
 
 export default {
     register,
     login,
     refreshAccessToken,
+    logout,
 }

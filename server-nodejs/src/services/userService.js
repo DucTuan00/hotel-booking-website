@@ -1,5 +1,6 @@
 import User from '../models/userModel.js';
 import bcrypt from 'bcryptjs';
+import ApiError from '../utils/apiError.js';
 
 const getUserById = async (_id) => {
     if (!_id) {
@@ -12,13 +13,26 @@ const getUserById = async (_id) => {
     return user;
 };
 
-const getAllUsers = async () => {
-    const users = await User.find({ active: true }, { password: 0 });
+const getAllUsers = async (filter, page, pageSize) => {
+    const skip = (page - 1) * pageSize;
+    const users = await User.find({ ...filter, active: true }, { password: 0 })
+        .skip(skip)
+        .limit(pageSize);
     
     if (!users) {
         throw new Error('Failed finding all users');
     }
-    return users;
+
+    const totalUsers = await User.countDocuments({ ...filter, active: true});
+    if (!totalUsers) {
+        throw new ApiError('Failed to get total users', 500);
+    }
+    return {
+        users: users,
+        total: totalUsers,
+        currentPage: page,
+        pageSize: pageSize
+    };
 };
 
 const updateUser = async (_id, email, name, phone) => {

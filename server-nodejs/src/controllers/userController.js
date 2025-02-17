@@ -13,7 +13,8 @@ const getUserById = async (req, res, next) => {
 
 const getAllUsers = async (req, res, next) => {
     try {
-        const users = await userService.getAllUsers();
+        const { page = 1, pageSize = 10, ...filter} = req.query;
+        const users = await userService.getAllUsers(filter, parseInt(page), parseInt(pageSize));
         res.json(users);
     } catch (error) {
         next(new ApiError(error.message, 400));
