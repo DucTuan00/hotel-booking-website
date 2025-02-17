@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import connectDB from './config/database.js';
 import errorHandler from './middlewares/errorHandler.js';
 import authRoute from './routes/authRoute.js';
@@ -15,7 +16,11 @@ const PORT = process.env.PORT || 3000;
 connectDB();
 
 //Middleware
-app.use(cors());
+app.use(cookieParser());
+app.use(cors({
+    //origin: 'http://localhost:3000', // Address ReactJS
+    credentials: true,
+}));
 app.use(express.json());
 
 app.use('/api/auth', authRoute);
