@@ -28,8 +28,7 @@ const login = async (req, res, next) => {
 
         res.json({
             message: result.message,
-            _id: result._id,
-            refreshToken: result.refreshToken
+            role: result.role,
         });
     } catch (error) {
         next(new ApiError(error.message, 401));
@@ -50,7 +49,7 @@ const refreshToken = async (req, res, next) => {
         });
 
         // Return new refreshToken
-        res.json({ refreshToken: result.refreshToken });
+        res.json({ message: "Token refreshed" });
     } catch (error) {
         next(new ApiError(error.message, 403));
     }

@@ -15,8 +15,7 @@ const register = async (email, password, name, phone, role) => {
     });
     const user = await newUser.save();
     return {
-        message: 'User register successfully',
-        user
+        message: 'User register successfully'
     };
 };
 
@@ -42,6 +41,7 @@ const login = async (email, password) => {
     return {
         message: 'Login successfully',
         _id: user._id,
+        role: user.role,
         accessToken,
         refreshToken,
     };
