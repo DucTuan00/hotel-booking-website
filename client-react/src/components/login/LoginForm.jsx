@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styles from './LoginForm.module.css';
 
-const LoginForm = ({ onSubmit, onChange, formData, isRegister, toggleAuthMode }) => {
+const LoginForm = ({ onSubmit, onChange, formData, isRegister, toggleAuthMode, error }) => {
     return (
         <div className={styles['login-page']}>
             <div className={`${styles.container} ${isRegister ? styles.active : ''}`}>
@@ -19,6 +19,7 @@ const LoginForm = ({ onSubmit, onChange, formData, isRegister, toggleAuthMode })
                         <input type="phone" placeholder="Phone" name="phone" onChange={onChange} />
                         <input type="email" placeholder="Email" name="email" onChange={onChange} />
                         <input type="password" placeholder="Password" name="password" onChange={onChange} />
+                        { isRegister && error && <p className={styles.error}>{error}</p> }
                         <button type="submit">Sign Up</button>
                     </form>
                 </div>
@@ -35,6 +36,7 @@ const LoginForm = ({ onSubmit, onChange, formData, isRegister, toggleAuthMode })
                         <span>or use your email password</span>
                         <input type="email" placeholder="Email" name="email" onChange={onChange} />
                         <input type="password" placeholder="Password" name="password" onChange={onChange} />
+                        { !isRegister && error && <p className={styles.error}>{error}</p> }
                         <a href="#">Forget Your Password?</a>
                         <button type="submit">Sign In</button>
                     </form>

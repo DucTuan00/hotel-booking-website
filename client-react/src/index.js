@@ -2,7 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import 'bootstrap/dist/css/bootstrap.min.css'; // add bootstrap
 import '@fortawesome/fontawesome-free/css/all.min.css'; // Import Font Awesome CSS
 //import 'antd/dist/reset.css'; // add antd reset css
 import './index.css';

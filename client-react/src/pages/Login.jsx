@@ -20,6 +20,7 @@ const Login = () => {
 
     const toggleAuthMode = () => {
         setIsRegister(prevState => !prevState);
+        setError('');
     };
 
     const handleChange = (e) => {
@@ -51,16 +52,14 @@ const Login = () => {
     };
 
     return (
-        <div>
-            {error && <div style={{ color: 'red' }}>{error}</div>}
-            <LoginForm
-                onSubmit={handleSubmit}
-                onChange={handleChange}
-                formData={formData}
-                isRegister={isRegister}
-                toggleAuthMode={toggleAuthMode}
-            />
-        </div>
+        <LoginForm
+            onSubmit={handleSubmit}
+            onChange={handleChange}
+            formData={formData}
+            isRegister={isRegister}
+            toggleAuthMode={toggleAuthMode}
+            error={error}
+        />
     );
 };
 

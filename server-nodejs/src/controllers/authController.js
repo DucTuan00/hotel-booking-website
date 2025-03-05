@@ -68,9 +68,37 @@ const logout = async (req, res, next) => {
     }
 };
 
+const verifyToken = async (req, res, next) => {
+    try {
+        const accessToken = req.cookies.accessToken; //get token from cookie
+
+        if (!accessToken) {
+            return next(new ApiError('Access token not found in headers', 401));
+        }
+
+        const userData = await authService.verifyAccessToken(accessToken);
+
+        res.json({
+            message: 'Access token verified successfully',
+            userId: userData.userId,
+            role: userData.role,
+        });
+
+    } catch (error) {
+        if (error.message === 'Access token expired') {
+            return next(new ApiError('Access token expired', 401)); 
+        } else if (error.message.startsWith('Invalid access token')) {
+            return next(new ApiError(error.message, 401)); 
+        } else {
+            next(new ApiError(error.message, 500));
+        }
+    }
+};
+
 export default {
     register,
     login,
     refreshToken,
     logout,
+    verifyToken,
 }

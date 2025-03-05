@@ -2,7 +2,6 @@ import React from 'react';
 import { Layout } from 'antd';
 import Sidebar from './Sidebar';
 import Header from './Header';
-//import './AdminLayout.css'; // CSS tùy chỉnh nếu cần
 
 const { Content } = Layout;
 

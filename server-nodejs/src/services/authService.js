@@ -81,9 +81,25 @@ const logout = async (userId) => {
     return { message: 'Logged out successfully' };
 };
 
+const verifyAccessToken = async (accessToken) => {
+    const decoded = jwt.verify(accessToken, jwtConfig.secret);
+    const userId = decoded.id;
+    const user = await User.findById(userId);
+
+    if (!user) {
+        throw new Error('Invalid access token - User not found');
+    }
+
+    return {
+        userId: user._id,
+        role: user.role,
+    };
+};
+
 export default {
     register,
     login,
     refreshAccessToken,
     logout,
+    verifyAccessToken,
 }

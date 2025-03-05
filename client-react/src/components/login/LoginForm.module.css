@@ -222,3 +222,9 @@ body {
 .container.active .toggle-right {
     transform: translateX(200%);
 }
+
+.error {
+    color: red;
+    text-align: left;
+    margin: 5px 0 0 0 !important;
+}
