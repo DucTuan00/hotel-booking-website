@@ -1,7 +1,10 @@
 import React from 'react';
-import AdminLayout from '../../components/admin/Layout/AdminLayout';
-import { Card, Row, Col, Statistic } from 'antd';
-import { UserOutlined, HomeOutlined, CalendarOutlined, DollarCircleOutlined } from '@ant-design/icons';
+import {
+  UserIcon,
+  HomeIcon,
+  CalendarIcon,
+  CurrencyDollarIcon,
+} from '@heroicons/react/24/outline';
 
 const DashboardPage = () => {
   // Dữ liệu thống kê mẫu (thay bằng API call sau)
@@ -10,57 +13,63 @@ const DashboardPage = () => {
   const totalBookings = 320;
   const expectedRevenue = 55000;
 
-  return (
-    <AdminLayout>
-      <h2>Dashboard</h2>
+  const stats = [
+    {
+      title: 'Tổng số Users',
+      value: totalUsers,
+      icon: UserIcon,
+    },
+    {
+      title: 'Tổng số Rooms',
+      value: totalRooms,
+      icon: HomeIcon,
+    },
+    {
+      title: 'Tổng số Bookings',
+      value: totalBookings,
+      icon: CalendarIcon,
+    },
+    {
+      title: 'Doanh thu dự kiến',
+      value: expectedRevenue,
+      icon: CurrencyDollarIcon,
+      suffix: '$',
+    },
+  ];
 
-      <Row gutter={16}>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="Tổng số Users"
-              value={totalUsers}
-              prefix={<UserOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="Tổng số Rooms"
-              value={totalRooms}
-              prefix={<HomeOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="Tổng số Bookings"
-              value={totalBookings}
-              prefix={<CalendarOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="Doanh thu dự kiến"
-              value={expectedRevenue}
-              prefix={<DollarCircleOutlined />}
-              suffix="$"
-            />
-          </Card>
-        </Col>
-      </Row>
+  return (
+    <div>
+      <h2 className="text-2xl font-semibold mb-4">Dashboard</h2>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map((stat, index) => (
+          <div key={index} className="bg-white shadow overflow-hidden rounded-md">
+            <div className="p-5">
+              <div className="flex items-center">
+                <div className="w-0 flex-1">
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    {stat.title}
+                  </dt>
+                  <dd className="mt-1 text-3xl font-semibold text-gray-900">
+                    {stat.value} {stat.suffix}
+                  </dd>
+                </div>
+                <div className="ml-5 flex-shrink-0">
+                  <stat.icon className="h-6 w-6 text-gray-400" aria-hidden="true" />
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
 
       {/* Thêm các biểu đồ, danh sách bookings mới nhất, ... ở đây */}
-      <div style={{ marginTop: 24 }}>
-        <h3>Bookings gần đây</h3>
+      <div className="mt-6">
+        <h3 className="text-lg font-medium text-gray-900">Bookings gần đây</h3>
         {/* Hiển thị danh sách bookings gần đây ở đây (sử dụng Table hoặc List của Ant Design) */}
-        <p>Sẽ được thêm vào sau...</p>
+        <p className="text-gray-500">Sẽ được thêm vào sau...</p>
       </div>
-    </AdminLayout>
+    </div>
   );
 };
 

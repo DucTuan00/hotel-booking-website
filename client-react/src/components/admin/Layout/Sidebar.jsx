@@ -1,43 +1,80 @@
-import React from 'react';
-import { Layout, Menu } from 'antd';
+import React, { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-  UserOutlined,
-  HomeOutlined,
-  CalendarOutlined,
-  TagsOutlined,
-  DashboardOutlined,
-} from '@ant-design/icons';
-import { Link, useLocation } from 'react-router-dom'; // Giả sử dùng React Router
-
-const { Sider } = Layout;
+  HomeIcon,
+  UsersIcon,
+  CalendarIcon,
+  TagIcon,
+  ChartBarIcon,
+  PowerIcon,
+} from '@heroicons/react/24/outline';
+import authService from '../../../services/authService';
+import { ClipLoader } from "react-spinners"; // Import ClipLoader
 
 const Sidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false); // Loading state
+
+  const menuItems = [
+    { name: 'Dashboard', href: '/dashboard', icon: ChartBarIcon },
+    { name: 'Users', href: '/dashboard/users', icon: UsersIcon },
+    { name: 'Rooms', href: '/dashboard/rooms', icon: HomeIcon },
+    { name: 'Bookings', href: '/dashboard/bookings', icon: CalendarIcon },
+    { name: 'Amenities', href: '/dashboard/amenities', icon: TagIcon },
+  ];
+
+  const handleLogout = async () => {
+    setIsLoading(true); // Start loading
+    try {
+      await authService.logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Lỗi khi logout:', error);
+    } finally {
+      setIsLoading(false); // Stop loading
+    }
+  };
 
   return (
-    <Sider width={200} className="site-layout-background">
-      <Menu
-        mode="inline"
-        defaultSelectedKeys={[location.pathname]} // Chọn menu item dựa trên path hiện tại
-        style={{ height: '100%', borderRight: 0 }}
-      >
-        <Menu.Item key="/dashboard" icon={<DashboardOutlined />}>
-          <Link to="/dashboard">Dashboard</Link>
-        </Menu.Item>
-        <Menu.Item key="/dashboard/users" icon={<UserOutlined />}>
-          <Link to="/dashboard/users">Users</Link>
-        </Menu.Item>
-        <Menu.Item key="/dashboard/rooms" icon={<HomeOutlined />}>
-          <Link to="/dashboard/rooms">Rooms</Link>
-        </Menu.Item>
-        <Menu.Item key="/dashboard/bookings" icon={<CalendarOutlined />}>
-          <Link to="/dashboard/bookings">Bookings</Link>
-        </Menu.Item>
-        <Menu.Item key="/dashboard/amenities" icon={<TagsOutlined />}>
-          <Link to="/dashboard/amenities">Amenities</Link>
-        </Menu.Item>
-      </Menu>
-    </Sider>
+    <div className="bg-gray-800 text-white w-64 flex-shrink-0 flex flex-col h-screen">
+      <div className="h-16 flex items-center justify-center">
+        <span className="text-lg font-semibold">Admin Panel</span>
+      </div>
+      <div className="px-3 flex-grow">
+        <nav className="space-y-1">
+          {menuItems.map((item) => (
+            <Link
+              key={item.name}
+              to={item.href}
+              className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md ${location.pathname === item.href
+                ? 'bg-gray-900 text-white'
+                : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                }`}
+            >
+              <item.icon className="h-6 w-6 mr-2" aria-hidden="true" />
+              {item.name}
+            </Link>
+          ))}
+        </nav>
+      </div>
+      <div className="px-3 py-2 border-t border-gray-700">
+        <button
+          onClick={handleLogout}
+          className="group flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-700 hover:text-white w-full justify-start"
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <ClipLoader color="#fff" size={20} /> // Display loader
+          ) : (
+            <>
+              <PowerIcon className="h-6 w-6 mr-2" aria-hidden="true" />
+              Đăng xuất
+            </>
+          )}
+        </button>
+      </div>
+    </div>
   );
 };
 

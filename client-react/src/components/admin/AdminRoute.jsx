@@ -13,7 +13,7 @@ const AdminRoute = () => {
 
         const verifyToken = async () => {
             try {
-                const response = await api.get('/auth/verify-token', {
+                const response = await api.post('/auth/verify-token', {
                     withCredentials: true, // Send cookie HttpOnly
                 });
 
@@ -23,7 +23,7 @@ const AdminRoute = () => {
                     navigate('/'); 
                 }
             } catch (error) {
-                console.error("Lỗi xác thực token:", error);
+                console.error('Lỗi xác thực token:', error.response ? error.response.data : error.message);
                 Cookies.remove('accessToken'); 
                 navigate('/login'); 
             } finally {
@@ -46,7 +46,7 @@ const AdminRoute = () => {
     }
 
     if (!isAdmin) {
-        return null; 
+        return <div>Bạn không có quyền truy cập trang này.</div>; 
     }
 
     return <Outlet />;

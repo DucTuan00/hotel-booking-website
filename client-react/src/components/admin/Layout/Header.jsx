@@ -1,16 +1,13 @@
 import React from 'react';
-import { Layout } from 'antd';
-
-const { Header: AntHeader } = Layout;
 
 const Header = () => {
-    return (
-        <AntHeader className="site-layout-background" style={{ padding: 0 }}>
-            <h2 style={{ paddingLeft: '24px', margin: '10px', color: '#fff', backgroundColor: '#001529' }}>
-                Admin Dashboard
-            </h2>
-        </AntHeader>
-    );
+  return (
+    <header className="bg-indigo-700 text-white shadow">
+      <div className="max-w-7xl py-6 px-4 sm:px-6 lg:px-8">
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+      </div>
+    </header>
+  );
 };
 
 export default Header;

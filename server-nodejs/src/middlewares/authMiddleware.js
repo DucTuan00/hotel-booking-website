@@ -3,8 +3,7 @@ import jwtConfig from '../config/jwt.js';
 
 const authMiddleware = (roles = []) => {
     return (req, res, next) => {
-        const authHeader = req.headers['authorization'];
-        const token = authHeader && authHeader.split(' ')[1];
+        const token = req.cookies.accessToken;
 
         if (!token) {
             return res.status(401).json({ message: 'Unauthorized - Token missing' });

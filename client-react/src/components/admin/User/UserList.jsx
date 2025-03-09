@@ -1,62 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Space, Modal, message, Popconfirm } from 'antd';
-import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import UserForm from './UserForm'; // Import form component
-import DeleteConfirm from '../Common/DeleteConfirm'; // Import component xác nhận xóa
+import { PencilIcon, TrashIcon, PlusIcon } from '@heroicons/react/24/outline';
+import UserForm from './UserForm';
+import DeleteConfirm from '../Common/DeleteConfirm'; // Giữ lại vì có thể tái sử dụng
 
 const UserList = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(false);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
-    const [deleteUserId, setDeleteUserId] = useState(null); // ID user cần xóa
-    const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false); // Modal xác nhận xóa
+    const [deleteUserId, setDeleteUserId] = useState(null);
+    const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+    const [message, setMessage] = useState(null);
 
     // Dữ liệu mẫu (thay bằng API call sau)
     const dummyUsers = [
         { id: 1, name: 'John Doe', email: 'john.doe@example.com', role: 'Admin' },
         { id: 2, name: 'Jane Smith', email: 'jane.smith@example.com', role: 'Editor' },
-        // ... more dummy users
     ];
 
     useEffect(() => {
-        // Gọi API để lấy danh sách users (thay dummyUsers)
         setLoading(true);
-        setTimeout(() => { // Mô phỏng API call
+        setTimeout(() => {
             setUsers(dummyUsers);
             setLoading(false);
         }, 500);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
-    const columns = [
-        { title: 'ID', dataIndex: 'id', key: 'id' },
-        { title: 'Name', dataIndex: 'name', key: 'name' },
-        { title: 'Email', dataIndex: 'email', key: 'email' },
-        { title: 'Role', dataIndex: 'role', key: 'role' },
-        {
-            title: 'Actions',
-            key: 'actions',
-            render: (text, record) => (
-                <Space size="middle">
-                    <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} size="small">Edit</Button>
-                    <Popconfirm
-                        title="Bạn chắc chắn muốn xóa user này?"
-                        onConfirm={() => handleDeleteConfirm(record.id)}
-                        onCancel={handleDeleteCancel}
-                        okText="Có"
-                        cancelText="Không"
-                    >
-                        <Button danger icon={<DeleteOutlined />} size="small">Delete</Button>
-                    </Popconfirm>
-                </Space>
-            ),
-        },
-    ];
 
     const showModal = () => {
         setIsModalVisible(true);
-        setEditingUser(null); // Reset editing user khi mở modal thêm mới
+        setEditingUser(null);
     };
 
     const handleEdit = (user) => {
@@ -68,20 +40,19 @@ const UserList = () => {
         setIsModalVisible(false);
     };
 
-    const handleFormSubmit = (values) => {
-        // Xử lý submit form (gọi API create/update)
+    const handleFormSubmit = async (values) => {
         setLoading(true);
         setTimeout(() => {
             if (editingUser) {
-                // Logic update user (gọi API PUT/PATCH)
-                const updatedUsers = users.map(user => user.id === editingUser.id ? { ...editingUser, ...values } : user); // Ví dụ update local state
+                const updatedUsers = users.map((user) =>
+                    user.id === editingUser.id ? { ...editingUser, ...values } : user
+                );
                 setUsers(updatedUsers);
-                message.success('User updated successfully!');
+                setMessage({ type: 'success', text: 'User updated successfully!' }); // Thay message.success
             } else {
-                // Logic create user (gọi API POST)
-                const newUser = { id: users.length + 1, ...values }; // Ví dụ tạo ID mới
+                const newUser = { id: users.length + 1, ...values };
                 setUsers([...users, newUser]);
-                message.success('User created successfully!');
+                setMessage({ type: 'success', text: 'User created successfully!' }); // Thay message.success
             }
             setIsModalVisible(false);
             setLoading(false);
@@ -90,54 +61,115 @@ const UserList = () => {
 
     const handleDeleteConfirm = (userId) => {
         setDeleteUserId(userId);
-        setIsDeleteModalVisible(true); // Hiển thị modal xác nhận xóa
+        setIsDeleteModalVisible(true);
     };
 
     const handleDeleteCancel = () => {
         setIsDeleteModalVisible(false);
     };
 
-    const confirmDeleteUser = () => {
+    const confirmDeleteUser = async () => {
         setLoading(true);
         setTimeout(() => {
-            // Gọi API delete user dựa trên deleteUserId
-            const updatedUsers = users.filter(user => user.id !== deleteUserId); // Ví dụ xóa local state
+            const updatedUsers = users.filter((user) => user.id !== deleteUserId);
             setUsers(updatedUsers);
-            message.success('User deleted successfully!');
+            setMessage({ type: 'success', text: 'User deleted successfully!' }); // Thay message.success
             setIsDeleteModalVisible(false);
             setLoading(false);
         }, 500);
     };
 
-
     return (
-        <div>
-            <div style={{ marginBottom: 16, textAlign: 'right' }}>
-                <Button type="primary" icon={<PlusOutlined />} onClick={showModal}>
-                    Add New User
-                </Button>
-            </div>
-            <Table columns={columns} dataSource={users} loading={loading} rowKey="id" />
+        <div className="container mx-auto p-4">
+            {message && (
+                <div
+                    className={`mb-4 py-2 px-4 rounded ${message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                        }`}
+                >
+                    {message.text}
+                </div>
+            )}
 
-            <Modal
-                title={editingUser ? "Edit User" : "Add New User"}
+            <div className="flex justify-end mb-4">
+                <button
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                    type="button"
+                    onClick={showModal}
+                >
+                    <div className="flex items-center">
+                        <PlusIcon className="h-5 w-5 mr-2" />
+                        Thêm người dùng
+                    </div>
+                </button>
+            </div>
+
+            <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+                <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                ID
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Name
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Email
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Role
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {users.map((user) => (
+                            <tr key={user.id}>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.id}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.name}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.role}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <button
+                                        onClick={() => handleEdit(user)}
+                                        className="text-indigo-600 hover:text-indigo-900 mr-2"
+                                    >
+                                        <div className="flex items-center">
+                                            <PencilIcon className="h-5 w-5 mr-1" />
+                                            Edit
+                                        </div>
+                                    </button>
+                                    <button
+                                        onClick={() => handleDeleteConfirm(user.id)}
+                                        className="text-red-600 hover:text-red-900"
+                                    >
+                                        <div className="flex items-center">
+                                            <TrashIcon className="h-5 w-5 mr-1" />
+                                            Delete
+                                        </div>
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
+            <UserForm
                 visible={isModalVisible}
                 onCancel={handleCancel}
-                footer={null} // Tự tùy chỉnh footer trong form
-            >
-                <UserForm
-                    onCancel={handleCancel}
-                    onSubmit={handleFormSubmit}
-                    initialValues={editingUser} // Truyền initialValues nếu là edit
-                    loading={loading}
-                />
-            </Modal>
+                onSubmit={handleFormSubmit}
+                initialValues={editingUser}
+                loading={loading}
+            />
 
             <DeleteConfirm
                 visible={isDeleteModalVisible}
                 onConfirm={confirmDeleteUser}
                 onCancel={handleDeleteCancel}
-                itemName="user" // Tên item để hiển thị trong modal
+                itemName="user"
                 loading={loading}
             />
         </div>

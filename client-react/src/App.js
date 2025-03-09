@@ -21,13 +21,14 @@ function App() {
         {/* <Route path="/room/:id" element={<RoomDetail />} /> */}
 
         {/* Protected by AdminRoute */}
-        <Route path="/dashboard" element={<AdminRoute />}>
-          <Route element={<AdminLayout />}>
-            <Route index element={<DashboardPage />} />
-            <Route path="users" element={<UsersPage />} />
-            <Route path="rooms" element={<RoomsPage />} />
-            <Route path="bookings" element={<BookingsPage />} />
-            <Route path="amenities" element={<AmenitiesPage />} />
+        <Route element={<AdminRoute />}>
+          {/* Đặt AdminLayout bên ngoài và áp dụng cho từng route con */}
+          <Route path="/dashboard">
+            <Route index element={<AdminLayout><DashboardPage /></AdminLayout>} />
+            <Route path="users" element={<AdminLayout><UsersPage /></AdminLayout>} />
+            <Route path="rooms" element={<AdminLayout><RoomsPage /></AdminLayout>} />
+            <Route path="bookings" element={<AdminLayout><BookingsPage /></AdminLayout>} />
+            <Route path="amenities" element={<AdminLayout><AmenitiesPage /></AdminLayout>} />
           </Route>
         </Route>
       </Routes>

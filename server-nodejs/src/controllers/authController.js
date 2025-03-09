@@ -23,7 +23,7 @@ const login = async (req, res, next) => {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'Strict',
-            maxAge: 15 * 60 * 1000, // 15 minutes
+            maxAge: 24 * 60 * 60 * 1000, // 24 hours
         });
 
         res.json({
@@ -45,7 +45,7 @@ const refreshToken = async (req, res, next) => {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'Strict',
-            maxAge: 15 * 60 * 1000, // 15 minutes
+            maxAge: 24 * 60 * 60 * 1000, // 24 hours
         });
 
         // Return new refreshToken
