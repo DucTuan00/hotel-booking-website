@@ -1,17 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Outlet } from 'react-router-dom';
-import Cookies from 'js-cookie';
 import api from '../../api';
-import { ClipLoader } from "react-spinners";
+import { ClipLoader } from 'react-spinners';
 
 const AdminRoute = () => {
     const navigate = useNavigate();
-    const [isLoading, setIsLoading] = useState(true);
-    const [isAdmin, setIsAdmin] = useState(false);
+
+    const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+    const [isLoading, setIsLoading] = useState(!isAuthenticated);
+    const [isAdmin, setIsAdmin] = useState(isAuthenticated);
 
     useEffect(() => {
 
         const verifyToken = async () => {
+            
+            if (isAuthenticated) {
+                return;
+            }
+
             try {
                 const response = await api.post('/auth/verify-token', {
                     withCredentials: true, // Send cookie HttpOnly
@@ -19,12 +25,12 @@ const AdminRoute = () => {
 
                 if (response.data.role === 'admin') {
                     setIsAdmin(true);
+                    localStorage.setItem('isAuthenticated', true);
                 } else {
                     navigate('/'); 
                 }
             } catch (error) {
                 console.error('Lỗi xác thực token:', error.response ? error.response.data : error.message);
-                Cookies.remove('accessToken'); 
                 navigate('/login'); 
             } finally {
                 setIsLoading(false);

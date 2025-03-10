@@ -9,30 +9,31 @@ import {
   PowerIcon,
 } from '@heroicons/react/24/outline';
 import authService from '../../../services/authService';
-import { ClipLoader } from "react-spinners"; // Import ClipLoader
+import { ClipLoader } from "react-spinners";
 
 const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false); // Loading state
+  const [isLoading, setIsLoading] = useState(false);
 
   const menuItems = [
     { name: 'Dashboard', href: '/dashboard', icon: ChartBarIcon },
-    { name: 'Users', href: '/dashboard/users', icon: UsersIcon },
-    { name: 'Rooms', href: '/dashboard/rooms', icon: HomeIcon },
-    { name: 'Bookings', href: '/dashboard/bookings', icon: CalendarIcon },
-    { name: 'Amenities', href: '/dashboard/amenities', icon: TagIcon },
+    { name: 'Người dùng', href: '/dashboard/users', icon: UsersIcon },
+    { name: 'Phòng', href: '/dashboard/rooms', icon: HomeIcon },
+    { name: 'Đơn đặt phòng', href: '/dashboard/bookings', icon: CalendarIcon },
+    { name: 'Tiện nghi', href: '/dashboard/amenities', icon: TagIcon },
   ];
 
   const handleLogout = async () => {
-    setIsLoading(true); // Start loading
+    setIsLoading(true);
     try {
       await authService.logout();
+      localStorage.removeItem('isAuthenticated');
       navigate('/login');
     } catch (error) {
       console.error('Lỗi khi logout:', error);
     } finally {
-      setIsLoading(false); // Stop loading
+      setIsLoading(false);
     }
   };
 

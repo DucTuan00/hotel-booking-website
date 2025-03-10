@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { PencilIcon, TrashIcon, PlusIcon } from '@heroicons/react/24/outline';
 import UserForm from './UserForm';
-import DeleteConfirm from '../Common/DeleteConfirm'; // Giữ lại vì có thể tái sử dụng
+import DeleteConfirm from '../Common/DeleteConfirm';
+import userService from '../../../services/userService';
+import { ClipLoader } from 'react-spinners';
 
 const UserList = () => {
     const [users, setUsers] = useState([]);
@@ -11,20 +13,30 @@ const UserList = () => {
     const [deleteUserId, setDeleteUserId] = useState(null);
     const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
     const [message, setMessage] = useState(null);
-
-    // Dữ liệu mẫu (thay bằng API call sau)
-    const dummyUsers = [
-        { id: 1, name: 'John Doe', email: 'john.doe@example.com', role: 'Admin' },
-        { id: 2, name: 'Jane Smith', email: 'jane.smith@example.com', role: 'Editor' },
-    ];
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(2);
+    const [totalUsers, setTotalUsers] = useState(0);
 
     useEffect(() => {
+        fetchUsers();
+    }, [currentPage, pageSize]); 
+
+    const fetchUsers = async () => {
         setLoading(true);
-        setTimeout(() => {
-            setUsers(dummyUsers);
+        try {
+            const data = await userService.getAllUsers({ page: currentPage, pageSize: pageSize });
+            setUsers(data.users);
+            setTotalUsers(data.total);
+            setPageSize(data.pageSize);
+        } catch (error) {
+            console.error("Lỗi khi fetch users:", error);
+            setMessage({ type: 'error', text: 'Failed to load users.' });
+            setUsers([]);
+            setTotalUsers(0);
+        } finally {
             setLoading(false);
-        }, 500);
-    }, []);
+        }
+    };
 
     const showModal = () => {
         setIsModalVisible(true);
@@ -42,21 +54,22 @@ const UserList = () => {
 
     const handleFormSubmit = async (values) => {
         setLoading(true);
-        setTimeout(() => {
+        try {
             if (editingUser) {
-                const updatedUsers = users.map((user) =>
-                    user.id === editingUser.id ? { ...editingUser, ...values } : user
-                );
-                setUsers(updatedUsers);
-                setMessage({ type: 'success', text: 'User updated successfully!' }); // Thay message.success
+                await userService.updateUser(editingUser._id, values);
+                setMessage({ type: 'success', text: 'User updated successfully!' });
             } else {
-                const newUser = { id: users.length + 1, ...values };
-                setUsers([...users, newUser]);
-                setMessage({ type: 'success', text: 'User created successfully!' }); // Thay message.success
+                await userService.createUser(values);
+                setMessage({ type: 'success', text: 'User created successfully!' });
             }
+            fetchUsers(); 
             setIsModalVisible(false);
+        } catch (error) {
+            console.error("Lỗi submit form:", error);
+            setMessage({ type: 'error', text: editingUser ? 'Failed to update user.' : 'Failed to create user.' });
+        } finally {
             setLoading(false);
-        }, 500);
+        }
     };
 
     const handleDeleteConfirm = (userId) => {
@@ -70,14 +83,41 @@ const UserList = () => {
 
     const confirmDeleteUser = async () => {
         setLoading(true);
-        setTimeout(() => {
-            const updatedUsers = users.filter((user) => user.id !== deleteUserId);
-            setUsers(updatedUsers);
-            setMessage({ type: 'success', text: 'User deleted successfully!' }); // Thay message.success
+        try {
+            await userService.deleteUser(deleteUserId); 
+            setMessage({ type: 'success', text: 'User deleted successfully!' });
+            fetchUsers();
             setIsDeleteModalVisible(false);
+        } catch (error) {
+            console.error("Lỗi delete user:", error);
+            setMessage({ type: 'error', text: 'Failed to delete user.' });
+        } finally {
             setLoading(false);
-        }, 500);
+        }
     };
+
+    const handlePreviousPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1);
+        }
+    };
+
+    const handleNextPage = () => {
+        if (currentPage < Math.ceil(totalUsers / pageSize)) {
+            setCurrentPage(currentPage + 1);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
+                <ClipLoader color="#3498db" size={50} />
+                <p className="mt-4 text-gray-600 text-lg font-semibold">
+                    Đang tải dữ liệu...
+                </p>
+            </div>
+        );
+    }
 
     return (
         <div className="container mx-auto p-4">
@@ -104,32 +144,36 @@ const UserList = () => {
             </div>
 
             <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-                <table className="min-w-full divide-y divide-gray-200">
+                <table className="min-w-full divide-y divide-gray-200 table-fixed w-full">
                     <thead className="bg-gray-50">
                         <tr>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[15%]">
                                 ID
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Name
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[20%]">
+                                Tên người dùng
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[20%]">
                                 Email
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Role
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[20%]">
+                                Số điện thoại
                             </th>
-                            <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Actions
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[7%]">
+                                Vai trò
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-[10%]">
+                                Hành động
                             </th>
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                         {users.map((user) => (
                             <tr key={user.id}>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.id}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user._id}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.name}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.phone}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.role}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <button
@@ -138,16 +182,16 @@ const UserList = () => {
                                     >
                                         <div className="flex items-center">
                                             <PencilIcon className="h-5 w-5 mr-1" />
-                                            Edit
+                                            Sửa
                                         </div>
                                     </button>
                                     <button
-                                        onClick={() => handleDeleteConfirm(user.id)}
+                                        onClick={() => handleDeleteConfirm(user._id)}
                                         className="text-red-600 hover:text-red-900"
                                     >
                                         <div className="flex items-center">
                                             <TrashIcon className="h-5 w-5 mr-1" />
-                                            Delete
+                                            Xóa
                                         </div>
                                     </button>
                                 </td>
@@ -155,6 +199,25 @@ const UserList = () => {
                         ))}
                     </tbody>
                 </table>
+            </div>
+
+            {/* Pagination UI */}
+            <div className="flex justify-center mt-4">
+                <button
+                    onClick={handlePreviousPage}
+                    disabled={currentPage <= 1}
+                    className="px-4 py-2 mx-2 bg-gray-200 hover:bg-gray-300 rounded disabled:opacity-50"
+                >
+                    Trang trước
+                </button>
+                <span className="m-2">{currentPage} / {Math.ceil(totalUsers / pageSize)}</span>
+                <button
+                    onClick={handleNextPage}
+                    disabled={currentPage >= Math.ceil(totalUsers / pageSize)}
+                    className="px-4 py-2 mx-2 bg-gray-200 hover:bg-gray-300 rounded disabled:opacity-50"
+                >
+                    Trang sau
+                </button>
             </div>
 
             <UserForm

@@ -35,6 +35,21 @@ const getAllUsers = async (filter, page, pageSize) => {
     };
 };
 
+const createUser = async (email, password, name, phone, role) => {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({
+        email,
+        password: hashedPassword,
+        name,
+        phone,
+        role
+    });
+    const user = await newUser.save();
+    return {
+        message: 'User register successfully'
+    };
+};
+
 const updateUser = async (_id, email, name, phone) => {
     if (!_id) {
         throw new Error('Do not have _id');
@@ -43,6 +58,26 @@ const updateUser = async (_id, email, name, phone) => {
         name,
         phone,
         email,
+    }, {
+        new: true,
+        runValidators: true
+    })
+    .select('-password'); // Remove password to response
+    if (!updatedUser) {
+        throw new Error('Failed finding user to update with _id: ' + _id);
+    }
+    return updatedUser;
+};
+
+const updateUserById = async (_id, email, name, phone, role) => {
+    if (!_id) {
+        throw new Error('Do not have _id');
+    }
+    const updatedUser = await User.findByIdAndUpdate(_id, {
+        name,
+        phone,
+        email,
+        role,
     }, {
         new: true,
         runValidators: true
@@ -98,4 +133,6 @@ export default {
     updateUser,
     updatePassword,
     deleteUser,
+    createUser,
+    updateUserById,
 };

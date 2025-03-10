@@ -1,29 +1,40 @@
 import React, { useState, useEffect } from 'react';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
 const UserForm = ({ visible, onCancel, onSubmit, initialValues, loading }) => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
-    const [role, setRole] = useState('User'); // Giá trị mặc định
+    const [phone, setPhone] = useState('');
+    const [role, setRole] = useState('User');
+    const [password, setPassword] = useState('');
+    const [passwordVisible, setPasswordVisible] = useState(false);
 
     useEffect(() => {
         if (initialValues) {
             setName(initialValues.name || '');
             setEmail(initialValues.email || '');
-            setRole(initialValues.role || 'User');
+            setPhone(initialValues.phone || '');
+            setRole(initialValues.role || 'user');
         } else {
             setName('');
             setEmail('');
-            setRole('User');
+            setPhone('');
+            setRole('user');
+            setPassword(''); 
         }
     }, [initialValues]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onSubmit({ name, email, role });
+        const userData = { email, name, phone, role };
+        if (!initialValues) { 
+            userData.password = password;
+        }
+        onSubmit(userData);
     };
 
     if (!visible) {
-        return null; // Không render nếu modal không visible
+        return null;
     }
 
     return (
@@ -39,12 +50,12 @@ const UserForm = ({ visible, onCancel, onSubmit, initialValues, loading }) => {
                     <form onSubmit={handleSubmit}>
                         <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                             <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">
-                                {initialValues ? 'Edit User' : 'Add New User'}
+                                {initialValues ? 'Sửa người dùng' : 'Thêm mới người dùng'}
                             </h3>
                             <div className="mt-2">
                                 <div className="mb-4">
                                     <label htmlFor="name" className="block text-gray-700 text-sm font-bold mb-2">
-                                        Name:
+                                        Tên người dùng:
                                     </label>
                                     <input
                                         type="text"
@@ -71,8 +82,50 @@ const UserForm = ({ visible, onCancel, onSubmit, initialValues, loading }) => {
                                 </div>
 
                                 <div className="mb-4">
+                                    <label htmlFor="phone" className="block text-gray-700 text-sm font-bold mb-2">
+                                        Số điện thoại:
+                                    </label>
+                                    <input
+                                        type="phone"
+                                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                        id="phone"
+                                        value={phone}
+                                        onChange={(e) => setPhone(e.target.value)}
+                                        required
+                                    />
+                                </div>
+
+                                {!initialValues && ( 
+                                    <div className="mb-4 relative">
+                                        <label htmlFor="password" className="block text-gray-700 text-sm font-bold mb-2">
+                                            Mật khẩu:
+                                        </label>
+                                        <input
+                                            type={passwordVisible ? 'text' : 'password'}
+                                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                            id="password"
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            required
+                                        />
+                                        <button
+                                            type="button"
+                                            className="absolute inset-y-0 right-0 pt-7 pr-3 flex items-center text-sm leading-5"
+                                            onClick={() => setPasswordVisible(!passwordVisible)}
+                                        >
+                                            {passwordVisible ? (
+                                                <EyeSlashIcon className="w-5 h-5 text-gray-500" /> 
+                                            ) : (
+                                                <EyeIcon className="w-5 h-5 text-gray-500" />
+                                            )}
+                                        </button>
+                                    </div>
+                                )}
+
+
+                                <div className="mb-4">
                                     <label htmlFor="role" className="block text-gray-700 text-sm font-bold mb-2">
-                                        Role:
+                                        Vai trò:
                                     </label>
                                     <select
                                         id="role"
@@ -80,9 +133,8 @@ const UserForm = ({ visible, onCancel, onSubmit, initialValues, loading }) => {
                                         value={role}
                                         onChange={(e) => setRole(e.target.value)}
                                     >
-                                        <option value="Admin">Admin</option>
-                                        <option value="Editor">Editor</option>
-                                        <option value="User">User</option>
+                                        <option value="admin">Admin</option>
+                                        <option value="user">User</option>
                                     </select>
                                 </div>
                             </div>
@@ -93,7 +145,7 @@ const UserForm = ({ visible, onCancel, onSubmit, initialValues, loading }) => {
                                 className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
                                 disabled={loading}
                             >
-                                {loading ? 'Saving...' : initialValues ? 'Save' : 'Add'}
+                                {loading ? 'Saving...' : initialValues ? 'Lưu' : 'Thêm'}
                             </button>
                             <button
                                 type="button"
@@ -101,7 +153,7 @@ const UserForm = ({ visible, onCancel, onSubmit, initialValues, loading }) => {
                                 onClick={onCancel}
                                 disabled={loading}
                             >
-                                Cancel
+                                Hủy
                             </button>
                         </div>
                     </form>
