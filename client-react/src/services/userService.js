@@ -5,7 +5,7 @@ const getAllUsers = async (params) => {
         const response = await api.get('/user', { params });
         return response.data;
     } catch (error) {
-        console.error('Lỗi khi lấy danh sách users:', error);
+        console.error('Error getting user lists:', error);
         throw error;
     }
 };
@@ -15,7 +15,7 @@ const getUserById = async (userId) => {
         const response = await api.get(`/user/${userId}`);
         return response.data;
     } catch (error) {
-        console.error('Lỗi khi lấy user theo ID:', error);
+        console.error('Error getting user with ID:', error);
         throw error;
     }
 };
@@ -25,7 +25,7 @@ const createUser = async (userData) => {
         const response = await api.post('/user', userData);
         return response.data;
     } catch (error) {
-        console.error('Lỗi khi tạo user:', error);
+        console.error('Error creating user:', error);
         throw error;
     }
 };
@@ -35,7 +35,7 @@ const updateUser = async (userId, userData) => {
         const response = await api.put(`/user/${userId}`, userData); 
         return response.data;
     } catch (error) {
-        console.error('Lỗi khi sửa user:', error);
+        console.error('Error updating user:', error);
         throw error;
     }
 };
@@ -45,7 +45,7 @@ const deleteUser = async (userId) => {
         const response = await api.delete(`/user/${userId}`); 
         return response.data;
     } catch (error) {
-        console.error('Lỗi khi xóa user:', error);
+        console.error('Error deleting user:', error);
         throw error;
     }
 };

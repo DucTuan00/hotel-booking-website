@@ -1,5 +1,4 @@
 import api from '../api';
-import Cookies from 'js-cookie';
 
 const register = async (name, phone, email, password) => {
     try {

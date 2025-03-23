@@ -3,7 +3,7 @@ import jwtConfig from '../config/jwt.js';
 
 const authMiddleware = (roles = []) => {
     return (req, res, next) => {
-        const token = req.cookies.accessToken;
+        let token = req.cookies.accessToken || req.headers.authorization?.split(' ')[1];
 
         if (!token) {
             return res.status(401).json({ message: 'Unauthorized - Token missing' });
@@ -14,7 +14,7 @@ const authMiddleware = (roles = []) => {
                 return res.status(403).json({ message: 'Forbidden - Invalid token' });
             }
 
-            // Kiểm tra quyền nếu cần
+            // Check role
             if (roles.length > 0 && !roles.includes(user.role)) {
                 return res.status(403).json({ message: 'Forbidden - Insufficient role' });
             }

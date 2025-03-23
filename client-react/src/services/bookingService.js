@@ -5,7 +5,7 @@ const getAllBookings = async (params) => {
         const response = await api.get('/booking', { params });
         return response.data;
     } catch (error) {
-        console.error('Lỗi khi lấy danh sách bookings:', error);
+        console.error('Error getting all bookings:', error);
         throw error;
     }
 };

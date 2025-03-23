@@ -14,7 +14,7 @@ const UserList = () => {
     const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
     const [message, setMessage] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(2);
+    const [pageSize, setPageSize] = useState(10);
     const [totalUsers, setTotalUsers] = useState(0);
 
     useEffect(() => {
@@ -29,7 +29,7 @@ const UserList = () => {
             setTotalUsers(data.total);
             setPageSize(data.pageSize);
         } catch (error) {
-            console.error("Lỗi khi fetch users:", error);
+            console.error("Error when fetch users:", error);
             setMessage({ type: 'error', text: 'Failed to load users.' });
             setUsers([]);
             setTotalUsers(0);
@@ -57,16 +57,16 @@ const UserList = () => {
         try {
             if (editingUser) {
                 await userService.updateUser(editingUser._id, values);
-                setMessage({ type: 'success', text: 'User updated successfully!' });
+                setMessage({ type: 'success', text: 'Cập nhật người dùng thành công!' });
             } else {
                 await userService.createUser(values);
-                setMessage({ type: 'success', text: 'User created successfully!' });
+                setMessage({ type: 'success', text: 'Tạo người dùng thành công!' });
             }
             fetchUsers(); 
             setIsModalVisible(false);
         } catch (error) {
-            console.error("Lỗi submit form:", error);
-            setMessage({ type: 'error', text: editingUser ? 'Failed to update user.' : 'Failed to create user.' });
+            console.error("Error submit form:", error);
+            setMessage({ type: 'error', text: editingUser ? 'Cập nhật người dùng thất bại.' : 'Tạo người dùng thất bại.' });
         } finally {
             setLoading(false);
         }
@@ -85,12 +85,12 @@ const UserList = () => {
         setLoading(true);
         try {
             await userService.deleteUser(deleteUserId); 
-            setMessage({ type: 'success', text: 'User deleted successfully!' });
+            setMessage({ type: 'success', text: 'Xóa người dùng thành công!' });
             fetchUsers();
             setIsDeleteModalVisible(false);
         } catch (error) {
-            console.error("Lỗi delete user:", error);
-            setMessage({ type: 'error', text: 'Failed to delete user.' });
+            console.error("Error delete user:", error);
+            setMessage({ type: 'error', text: 'Xóa người dùng thất bại.' });
         } finally {
             setLoading(false);
         }

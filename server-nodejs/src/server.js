@@ -8,9 +8,16 @@ import userRoute from './routes/userRoute.js';
 import roomRoute from './routes/roomRoute.js';
 import amenityRoute from './routes/amenityRoute.js';
 import bookingRoute from './routes/bookingRoute.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+//Config to get current folder in ES module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 //Connect MongoDB database
 connectDB();
@@ -28,6 +35,7 @@ app.use('/api/user', userRoute);
 app.use('/api/room', roomRoute);
 app.use('/api/amenity', amenityRoute);
 app.use('/api/booking', bookingRoute);
+app.use('/public/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 app.use(errorHandler);
 

@@ -5,7 +5,7 @@ const UserForm = ({ visible, onCancel, onSubmit, initialValues, loading }) => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
-    const [role, setRole] = useState('User');
+    const [role, setRole] = useState('user');
     const [password, setPassword] = useState('');
     const [passwordVisible, setPasswordVisible] = useState(false);
 
