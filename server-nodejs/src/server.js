@@ -35,7 +35,7 @@ app.use('/api/user', userRoute);
 app.use('/api/room', roomRoute);
 app.use('/api/amenity', amenityRoute);
 app.use('/api/booking', bookingRoute);
-app.use('/public/uploads', express.static(path.join(__dirname, 'public/uploads')));
+app.use('/public/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
 app.use(errorHandler);
 

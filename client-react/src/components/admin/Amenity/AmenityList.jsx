@@ -91,7 +91,7 @@ const AmenityList = () => {
 
             <div className="flex justify-end mb-4">
                 <button
-                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                    className="bg-red-900 hover:bg-red-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                     type="button"
                     onClick={showModal}
                 >
@@ -102,30 +102,30 @@ const AmenityList = () => {
                 </button>
             </div>
 
-            <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+            <div className="shadow-md overflow-hidden border border-gray-300 sm:rounded-lg">
+                <table className="min-w-full divide-y divide-gray-300">
+                    <thead className="bg-red-800">
                         <tr>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                                 ID
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                                 Tên tiện nghi
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                                 Mô tả
                             </th>
-                            <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-white uppercase tracking-wider">
                                 Actions
                             </th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white divide-y divide-gray-300">
                         {amenities.map(amenity => (
                             <tr key={amenity.id}>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{amenity.id}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{amenity.name}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{amenity.description}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{amenity.id}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{amenity.name}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{amenity.description}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <button
                                         onClick={() => handleEdit(amenity)}

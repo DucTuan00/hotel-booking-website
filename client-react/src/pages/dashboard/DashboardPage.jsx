@@ -138,17 +138,17 @@ const DashboardPage = () => {
       {/* Main stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, index) => (
-          <div key={index} className="bg-white shadow overflow-hidden rounded-md">
+          <div key={index} className="bg-white border border-gray-300 shadow-md overflow-hidden rounded-md">
             <div className="p-5">
               <div className="flex items-center">
                 <div className="w-0 flex-1">
-                  <dt className="text-sm font-medium text-gray-500 truncate">{stat.title}</dt>
-                  <dd className="mt-1 text-3xl font-semibold text-gray-900">
+                  <dt className="text-md font-medium text-black-900 truncate">{stat.title}</dt>
+                  <dd className="mt-1 text-3xl font-semibold text-black">
                     {stat.value} {stat.suffix}
                   </dd>
                 </div>
                 <div className="ml-5 flex-shrink-0">
-                  <stat.icon className="h-6 w-6 text-gray-400" aria-hidden="true" />
+                  <stat.icon className="h-6 w-6 text-black-400" aria-hidden="true" />
                 </div>
               </div>
             </div>
@@ -159,7 +159,7 @@ const DashboardPage = () => {
       {/* Chart and Recent Bookings */}
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Revenue Chart */}
-        <div className="bg-white p-4 shadow rounded-md">
+        <div className="bg-white p-4 border border-gray-300 shadow-md rounded-md">
           <h3 className="text-lg font-medium text-gray-900">Doanh thu theo tháng</h3>
           <LineChart width={500} height={300} data={revenueData}>
             <XAxis dataKey="name" />
@@ -170,7 +170,7 @@ const DashboardPage = () => {
         </div>
 
         {/* Status bookings chart */}
-        <div className="bg-white p-4 shadow rounded-md">
+        <div className="bg-white p-4 border border-gray-300 shadow-md rounded-md">
           <h3 className="text-lg font-medium text-gray-900">Trạng thái đặt phòng</h3>
           <PieChart width={400} height={300}>
             <Pie
@@ -192,30 +192,28 @@ const DashboardPage = () => {
       </div>
 
       {/* Recent bookings list */}
-      <div className="mt-6 bg-white p-4 shadow rounded-md">
-        <h3 className="text-lg font-medium text-gray-900">Bookings gần đây</h3>
-        <table className="min-w-full divide-y divide-gray-200 mt-4">
+      <div className="mt-6 bg-white p-4 border border-gray-300 shadow-md rounded-md">
+        <h3 className="text-lg font-medium text-gray-900">Đơn đặt phòng gần đây</h3>
+        <table className="min-w-full divide-y divide-gray-300 mt-4">
           <thead>
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Khách hàng</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phòng</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ngày đặt</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trạng thái</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tổng giá</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">Khách hàng</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">Phòng</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">Ngày đặt</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">Trạng thái</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">Tổng giá</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="divide-y divide-gray-300">
             {recentBookings.map((booking) => (
               <tr key={booking._id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{booking._id}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{booking.customerName}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{booking.roomName}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{booking.customerName}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{booking.roomName}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
                   {new Date(booking.check_in).toLocaleDateString()}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{booking.status}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${booking.total_price}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{booking.status}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">${booking.total_price}</td>
               </tr>
             ))}
           </tbody>

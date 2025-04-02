@@ -38,9 +38,9 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="bg-gray-800 text-white w-64 flex-shrink-0 flex flex-col h-screen">
+    <div className="bg-white-800 text-black w-64 flex-shrink-0 flex flex-col h-screen border-r-2 border-gray-300">
       <div className="h-16 flex items-center justify-center">
-        <span className="text-lg font-semibold">Admin Panel</span>
+        <span className="text-lg font-semibold">Danh mục</span>
       </div>
       <div className="px-3 flex-grow">
         <nav className="space-y-1">
@@ -48,9 +48,9 @@ const Sidebar = () => {
             <Link
               key={item.name}
               to={item.href}
-              className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md ${location.pathname === item.href
-                ? 'bg-gray-900 text-white'
-                : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+              className={`group flex items-center px-10 py-3 text-sm font-medium rounded-md ${location.pathname === item.href
+                ? 'bg-red-900 text-white'
+                : 'text-black hover:bg-red-800 hover:text-white'
                 }`}
             >
               <item.icon className="h-6 w-6 mr-2" aria-hidden="true" />
@@ -59,10 +59,10 @@ const Sidebar = () => {
           ))}
         </nav>
       </div>
-      <div className="px-3 py-2 border-t border-gray-700">
+      <div className="px-3 py-2 border-t-2 border-gray-300">
         <button
           onClick={handleLogout}
-          className="group flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-700 hover:text-white w-full justify-start"
+          className="group flex items-center px-3 py-2 text-sm font-medium rounded-md text-black hover:bg-red-800 hover:text-white w-full justify-start"
           disabled={isLoading}
         >
           {isLoading ? (

@@ -124,7 +124,7 @@ const BookingList = () => {
 
             <div className="flex justify-end mb-4">
                 <button
-                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                    className="bg-red-900 hover:bg-red-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                     type="button"
                     onClick={showModal}
                 >
@@ -135,32 +135,32 @@ const BookingList = () => {
                 </button>
             </div>
 
-            <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+            <div className="shadow-md overflow-hidden border border-gray-300 sm:rounded-lg">
+                <table className="min-w-full divide-y divide-gray-300">
+                    <thead className="bg-red-800">
                         <tr>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                                 ID
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                                 User ID
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                                 Room ID
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                                 Ngày Check-in
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                                 Ngày Check-out
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                                 Số khách
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                                 Trạng thái
                             </th>
-                            <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-white uppercase tracking-wider">
                                 Actions
                             </th>
                         </tr>
@@ -168,12 +168,12 @@ const BookingList = () => {
                     <tbody className="bg-white divide-y divide-gray-200">
                         {bookings.map(booking => (
                             <tr key={booking.id}>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{booking.id}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{booking.userId}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{booking.roomId}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{moment(booking.checkInDate).format('DD/MM/YYYY')}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{moment(booking.checkOutDate).format('DD/MM/YYYY')}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{booking.numberOfGuests}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{booking.id}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{booking.userId}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{booking.roomId}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{moment(booking.checkInDate).format('DD/MM/YYYY')}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{moment(booking.checkOutDate).format('DD/MM/YYYY')}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{booking.numberOfGuests}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(booking.bookingStatus)}`}>
                                         {booking.bookingStatus === 'Confirmed' ? 'Đã xác nhận' :

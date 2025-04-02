@@ -132,7 +132,7 @@ const RoomList = () => {
 
             <div className="flex justify-end mb-4">
                 <button
-                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                    className="bg-red-900 hover:bg-red-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                     type="button"
                     onClick={showModal}
                 >
@@ -143,60 +143,56 @@ const RoomList = () => {
                 </button>
             </div>
 
-            <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-                <table className="min-w-full divide-y divide-gray-200 table-fixed w-full">
-                    <thead className="bg-gray-50">
+            <div className="shadow-md overflow-hidden border border-gray-300 sm:rounded-lg">
+                <table className="min-w-full divide-y divide-gray-300 table-fixed w-full">
+                    <thead className="bg-red-800">
                         <tr>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[5%]">
-                                ID
-                            </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[15%]">
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider w-[15%]">
                                 Ảnh
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[15%]">
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider w-[15%]">
                                 Tên phòng
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[10%]">
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider w-[10%]">
                                 Loại phòng
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[15%]">
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider w-[15%]">
                                 Mô tả
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[15%]">
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider w-[15%]">
                                 Tiện nghi
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[10%]">
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider w-[10%]">
                                 Giá (VND)
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[5%]">
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider w-[5%]">
                                 Khách tối đa
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[5%]">
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider w-[5%]">
                                 Số lượng
                             </th>
-                            <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-[10%]">
+                            <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-white uppercase tracking-wider w-[10%]">
                                 Actions
                             </th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white divide-y divide-gray-300">
                         {rooms.map(room => (
                             <tr key={room.id}>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{room._id}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><img src={`http://localhost:3000/${room.images}`} alt={`Ảnh phòng ${room.name}`} /></td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{room.name}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{room.room_type}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{room.description}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-black"><img src={`http://localhost:3000/${room.images[0]}`} alt={`Ảnh phòng ${room.name}`} /></td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{room.name}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{room.room_type}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{room.description}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
                                     <ul>
                                         {room.amenities.map((amenity) => (
                                             <li>{amenity.name}</li>
                                         ))}
                                     </ul>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{room.price}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{room.max_guests}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{room.quantity}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{room.price}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{room.max_guests}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{room.quantity}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <button
                                         onClick={() => handleEdit(room)}
@@ -228,7 +224,7 @@ const RoomList = () => {
                 <button
                     onClick={handlePreviousPage}
                     disabled={currentPage <= 1}
-                    className="px-4 py-2 mx-2 bg-gray-200 hover:bg-gray-300 rounded disabled:opacity-50"
+                    className="px-4 py-2 mx-2 bg-gray-300 hover:bg-gray-400 rounded disabled:opacity-50"
                 >
                     Trang trước
                 </button>
@@ -236,7 +232,7 @@ const RoomList = () => {
                 <button
                     onClick={handleNextPage}
                     disabled={currentPage >= Math.ceil(totalRooms / pageSize)}
-                    className="px-4 py-2 mx-2 bg-gray-200 hover:bg-gray-300 rounded disabled:opacity-50"
+                    className="px-4 py-2 mx-2 bg-gray-300 hover:bg-gray-400 rounded disabled:opacity-50"
                 >
                     Trang sau
                 </button>
