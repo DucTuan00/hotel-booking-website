@@ -147,53 +147,53 @@ const RoomList = () => {
                 <table className="min-w-full divide-y divide-gray-300 table-fixed w-full">
                     <thead className="bg-red-800">
                         <tr>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider w-[15%]">
-                                Ảnh
+                            <th scope="col" className="px-4 py-3 text-left text-sm font-medium text-white uppercase tracking-wider w-[20%]">
+                                Hình ảnh
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider w-[15%]">
+                            <th scope="col" className="px-4 py-3 text-left text-sm font-medium text-white uppercase tracking-wider w-[15%]">
                                 Tên phòng
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider w-[10%]">
+                            <th scope="col" className="px-4 py-3 text-left text-sm font-medium text-white uppercase tracking-wider w-[10%]">
                                 Loại phòng
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider w-[15%]">
-                                Mô tả
-                            </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider w-[15%]">
+                            <th scope="col" className="px-4 py-3 text-left text-sm font-medium text-white uppercase tracking-wider w-[20%]">
                                 Tiện nghi
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider w-[10%]">
+                            <th scope="col" className="px-4 py-3 text-left text-sm font-medium text-white uppercase tracking-wider w-[10%]">
                                 Giá (VND)
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider w-[5%]">
-                                Khách tối đa
+                            <th scope="col" className="px-4 py-3 text-center text-sm font-medium text-white uppercase tracking-wider w-[10%]">
+                                Tối đa
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider w-[5%]">
+                            <th scope="col" className="px-4 py-3 text-center text-sm font-medium text-white uppercase tracking-wider w-[10%]">
                                 Số lượng
                             </th>
-                            <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-white uppercase tracking-wider w-[10%]">
-                                Actions
+                            <th scope="col" className="px-4 py-3 text-right text-sm font-medium text-white uppercase tracking-wider w-[10%]">
+                                Hành động
                             </th>
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-300">
                         {rooms.map(room => (
-                            <tr key={room.id}>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-black"><img src={`http://localhost:3000/${room.images[0]}`} alt={`Ảnh phòng ${room.name}`} /></td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{room.name}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{room.room_type}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{room.description}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
-                                    <ul>
-                                        {room.amenities.map((amenity) => (
-                                            <li>{amenity.name}</li>
-                                        ))}
-                                    </ul>
+                            <tr key={room.id} className="hover:bg-gray-50">
+                                <td className="px-4 py-3 align-middle">
+                                    <img 
+                                        src={room.images && room.images.length > 0 ? `http://localhost:3000/${room.images[0]}` : '/placeholder-image.jpg'}
+                                        alt={`Ảnh phòng ${room.name}`}
+                                        className="h-50 w-50 object-cover rounded" 
+                                    />
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{room.price}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{room.max_guests}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{room.quantity}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <td className="px-4 py-2 text-base text-black font-medium align-middle whitespace-normal break-words">{room.name}</td>
+                                <td className="px-4 py-2 text-base text-black font-medium align-middle whitespace-nowrap">{room.room_type}</td>
+                                <td className="px-4 py-2 text-base text-black font-medium align-middle whitespace-normal break-words">
+                                    {room.amenities.map(amenity => amenity.name).join(', ')}
+                                </td>
+                                <td className="px-4 py-2 text-base text-black font-medium align-middle whitespace-nowrap text-left">
+                                    {room.price.toLocaleString('vi-VN')}đ
+                                </td>
+                                <td className="px-4 py-2 text-base text-black font-medium align-middle whitespace-nowrap text-center">{room.max_guests}</td>
+                                <td className="px-4 py-2 text-base text-black font-medium align-middle whitespace-nowrap text-center">{room.quantity}</td>
+                                <td className="px-4 py-2 text-right text-base font-medium align-middle whitespace-nowrap">
                                     <button
                                         onClick={() => handleEdit(room)}
                                         className="text-indigo-600 hover:text-indigo-900 mr-2"
