@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import amenityService from '../../../services/amenityService';
+import roomService from '../../../services/roomService';
 
 const RoomForm = ({ visible, onCancel, onSubmit, initialValues, loading }) => {
     const [name, setName] = useState('');
@@ -10,21 +11,24 @@ const RoomForm = ({ visible, onCancel, onSubmit, initialValues, loading }) => {
     const [quantity, setQuantity] = useState('');
     const [selectedAmenities, setSelectedAmenities] = useState([]);
     const [availableAmenities, setAvailableAmenities] = useState([]);
-    const [uploadingImage, setUploadingImage] = useState(false);
-    const [images, setImages] = useState([]);
-    const [newImages, setNewImages] = useState([]);
+    const [images, setImages] = useState([]); 
+    const [newImages, setNewImages] = useState([]); 
+    const [imagePreviews, setImagePreviews] = useState([]);
+
+    const fileInputRef = useRef(null);
     
-    const roomTypeOptions = ['Single', 'Double', 'Triple', 'Suite', 'Deluxe', 'Family', 'VIP'];
+    const roomTypeOptions = ['Single', 'Double', 'Suite'];
+
+    const isUpdate = !!initialValues?._id; // Trick to convert value to boolean
 
     useEffect(() => {
         const fetchAmenities = async () => {
             try {
                 const data = await amenityService.getAllAmenities();
-                console.log(data);
                 setAvailableAmenities(data);
-
             } catch (error) {
                 console.error("Could not fetch amenities:", error);
+                setAvailableAmenities([]);
             }
         };
 
@@ -32,30 +36,53 @@ const RoomForm = ({ visible, onCancel, onSubmit, initialValues, loading }) => {
     }, []);
 
     useEffect(() => {
-        if (initialValues) {
+        // Clear previous previews when initialValues change
+        imagePreviews.forEach(url => URL.revokeObjectURL(url));
+        setImagePreviews([]);
+        setNewImages([]); // Clear newly selected files
+
+        if (initialValues?._id) { // Check specifically for _id for update mode
             setName(initialValues.name || '');
             setRoomType(initialValues.room_type || 'Double');
             setDescription(initialValues.description || '');
             setPrice(initialValues.price || '');
             setMaxGuests(initialValues.max_guests || '');
             setQuantity(initialValues.quantity || '');
-            setImages(initialValues.images || []);
+            setImages(initialValues.images || []); // Existing image paths
 
-            // Pre-select amenities based on initialValues
-            const initialAmenityIds = initialValues.amenities.map(amenity => amenity._id);
+            const initialAmenityIds = initialValues.amenities?.map(amenity => amenity._id) || [];
             setSelectedAmenities(initialAmenityIds);
-
         } else {
+            // Reset form for create mode
             setName('');
             setRoomType('Double');
             setDescription('');
             setPrice('');
             setMaxGuests('');
             setQuantity('');
-            setImages([]);
+            setImages([]); // No existing images
             setSelectedAmenities([]);
+            // setNewImages([]); // Already cleared above
         }
+        // Reset file input visually
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
+
     }, [initialValues]);
+
+    // Generate previews when newImages changes
+    useEffect(() => {
+        if (newImages.length === 0) {
+            setImagePreviews([]);
+            return;
+        }
+        const objectUrls = newImages.map(file => URL.createObjectURL(file));
+        setImagePreviews(objectUrls);
+
+        // Cleanup function to revoke URLs when component unmounts or newImages change again
+        return () => objectUrls.forEach(url => URL.revokeObjectURL(url));
+    }, [newImages]);
 
     const handleAmenityChange = (amenityId) => {
         setSelectedAmenities(prevAmenities => {
@@ -67,78 +94,93 @@ const RoomForm = ({ visible, onCancel, onSubmit, initialValues, loading }) => {
         });
     };
 
-    const handleImageUpload = async (e) => {
+    const handleImageSelection = (e) => {
         const files = Array.from(e.target.files);
         if (!files || files.length === 0) return;
 
-        setUploadingImage(true);
-        const formData = new FormData();
-        files.forEach(file => formData.append('images', file)); // Use 'images' to match backend expectation
+        // You might want to limit the number of new files based on existing ones
+        const maxNewFiles = 5 - images.length;
+        if (files.length > maxNewFiles) { 
+            alert(`Chọn tối đa ${maxNewFiles} hình ảnh mới.`);
+            return;
+        }
 
-        try {
-            const response = await fetch('/api/upload-images', { // Replace with your actual image upload API endpoint
-                method: 'POST',
-                body: formData,
-            });
+        setNewImages(files); // Store the File objects
+    };
 
-            if (!response.ok) {
-                throw new Error(`Image upload failed, status: ${response.status}`);
-            }
+    // Function to remove an existing image (for update form)
+    const handleRemoveExistingImage = (indexToRemove) => {
+        setImages(prevImages => prevImages.filter((_, index) => index !== indexToRemove));
+        // NOTE: You'll need corresponding backend logic to handle image removal during update
+    };
 
-            const data = await response.json();
-            setImages(prevImages => [...prevImages, ...data.imagePaths]); // Assuming backend returns file paths
-            setNewImages(files); // Store files for form submission
-            setUploadingImage(false);
-
-        } catch (error) {
-            console.error("Image upload error:", error);
-            setUploadingImage(false);
-            // Optionally display an error message to the user
+    // Function to remove a newly selected image before upload
+    const handleRemoveNewImage = (indexToRemove) => {
+        setNewImages(prevNewImages => prevNewImages.filter((_, index) => index !== indexToRemove));
+         // Reset file input visually if all new images are removed
+         if (newImages.length - 1 === 0 && fileInputRef.current) {
+            fileInputRef.current.value = "";
         }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const roomData = {
-            name,
-            room_type: roomType,
-            description,
-            price: parseInt(price, 10), 
-            max_guests: parseInt(maxGuests, 10), 
-            quantity: parseInt(quantity, 10), 
-            amenities: selectedAmenities, // Send selected amenity IDs
-            images: images, // Send uploaded image paths, assuming backend expects paths
-            newImages: newImages // Send file object for new image to backend
-        };
+        // Set loading state via prop passed from parent
+        onSubmit(true, null, null); // Pass loading=true, data=null, error=null
 
-        const isUpdate = !!initialValues;
-        const method = isUpdate ? 'PUT' : 'POST'; // Or PATCH depending on your API
-        const url = isUpdate ? `/api/rooms/${initialValues._id}` : '/api/rooms'; // Replace with your actual API endpoint
+        // Use FormData for multipart request
+        const formData = new FormData();
+
+        formData.append('name', name);
+        formData.append('room_type', roomType);
+        formData.append('description', description);
+        formData.append('price', price);
+        formData.append('max_guests', maxGuests);
+        formData.append('quantity', quantity);
+
+        // Append each ID individually
+        selectedAmenities.forEach(id => formData.append('amenities', id));
 
         try {
-            onSubmit(true); // Set loading state in parent component
-            const response = await fetch(url, {
-                method: method,
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(roomData),
-            });
+            let responseData;
+            if (isUpdate) {
+                // UPDATE LOGIC
+                // Append *new* files for upload
+                newImages.forEach(file => formData.append('images', file, file.name));
+                // Send existing image paths (backend needs to handle this)
+                // Option A: Send all current paths
+                formData.append('existingImages', JSON.stringify(images));
+                // Option B: Only send paths if backend expects specific handling
+                // images.forEach(imgPath => formData.append('existingImagePaths', imgPath));
 
-            if (!response.ok) {
-                const errorData = await response.json(); // Try to get error details from server
-                throw new Error(`Form submission failed, status: ${response.status}, details: ${JSON.stringify(errorData)}`);
+                console.log("Updating room with ID:", initialValues._id);
+                responseData = await roomService.updateRoom(initialValues._id, formData);
+
+            } else {
+                // CREATE LOGIC
+                // Append the actual File objects for upload
+                if (newImages.length === 0) {
+                    // Handle case where no images are selected for creation if needed
+                    alert("Vui lòng chọn ít nhất một hình ảnh.");
+                    onSubmit(false, null); // Stop loading
+                    return;
+                }
+                newImages.forEach(file => formData.append('images', file, file.name)); // 'images' must match backend field
+
+                console.log("Creating new room...");
+                // createRoom service should handle FormData
+                responseData = await roomService.createRoom(formData);
             }
-
-            const responseData = await response.json();
-            onSubmit(false, responseData.room || responseData); 
-            onCancel(); 
-
+            onSubmit(false, responseData, null); // Pass loading=false, data=responseData, error=null
+            //onCancel();
         } catch (error) {
-            console.error("Form submission error:", error);
-            onSubmit(false, null, error); 
+            console.error(`Error ${isUpdate ? 'updating' : 'creating'} room:`, error);
+            const errorMsg = error.response?.data?.message || error.message || "Lỗi không xác định";
+            alert(`Lỗi ${isUpdate ? 'cập nhật' : 'tạo'} phòng: ${errorMsg}`);
+            onSubmit(false, null, error); // Pass loading=false, data=null, error=error object
         }
+        
     };
 
     if (!visible) {
@@ -157,11 +199,12 @@ const RoomForm = ({ visible, onCancel, onSubmit, initialValues, loading }) => {
                 <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">​</span>
 
                 {/* Modal Panel */}
-                <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full"> {/* Increased max-width sm:max-w-4xl */}
+                <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all 
+                sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
                     <form onSubmit={handleSubmit}>
                         <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                             <h3 className="text-xl leading-6 font-medium text-gray-900 mb-4" id="modal-title"> {/* Increased font size and margin */}
-                                {initialValues ? 'Sửa thông tin phòng' : 'Thêm phòng mới'}
+                                {initialValues?._id ? 'Sửa thông tin phòng' : 'Thêm phòng mới'}
                             </h3>
 
                             {/* Main form grid - 2 cols on medium, 4 cols on large */}
@@ -288,34 +331,66 @@ const RoomForm = ({ visible, onCancel, onSubmit, initialValues, loading }) => {
                                 {/* Images - full width */}
                                 <div className="md:col-span-4">
                                     <label htmlFor="images" className="block text-sm font-medium text-gray-700 mb-1">
-                                        Hình ảnh phòng
+                                        {isUpdate ? 'Thêm/Thay đổi hình ảnh' : 'Hình ảnh phòng'}
                                     </label>
                                     <input
+                                        ref={fileInputRef}
                                         type="file"
                                         id="images"
                                         multiple
-                                        accept="image/png, image/jpeg, image/jpg, image/webp" // Be specific
+                                        accept="image/png, image/jpeg, image/jpg, image/webp" 
                                         className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 
                                         file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 
                                         hover:file:bg-red-100" // Styled file input
-                                        onChange={handleImageUpload}
-                                        disabled={uploadingImage} // Disable while uploading
+                                        onChange={handleImageSelection}
                                     />
-                                    {uploadingImage && <p className="mt-1 text-sm text-gray-500">Đang tải ảnh lên...</p>}
-                                    {/* Image Previews */}
-                                    <div className="mt-2 flex flex-wrap gap-2"> {/* Use flex-wrap */}
-                                        {images.map((imagePath, index) => (
-                                            <div key={`${imagePath}-${index}`} className="relative">
-                                                 <img
-                                                    src={`http://localhost:3000/${imagePath.replace(/\\/g, '/')}`} // Ensure forward slashes
-                                                    alt={`Preview ${index + 1}`}
-                                                    className="h-20 w-20 object-cover rounded border border-gray-200"
-                                                    onError={(e) => { e.target.style.display = 'none'; /* Hide broken img */ }}
-                                                 />
-                                                {/* Optional: Add a remove button per image */}
-                                                {/* <button type="button" onClick={() => handleRemoveImage(index)} className="absolute top-0 right-0 bg-red-500 text-white rounded-full h-4 w-4 flex items-center justify-center text-xs">×</button> */}
+                                    {/* --- Preview Area --- */}
+                                    <div className="mt-3 text-sm text-gray-600">Xem trước:</div>
+                                    <div className="mt-2 flex flex-wrap gap-2 border border-gray-200 p-2 rounded min-h-[6rem]">
+                                        {/* Existing Images (only show in update mode) */}
+                                        {isUpdate && images.map((imagePath, index) => (
+                                            <div key={`existing-${index}`} className="relative">
+                                                <img
+                                                    src={`http://localhost:3000/${imagePath.replace(/\\/g, '/')}`}
+                                                    alt={`Existing ${index + 1}`}
+                                                    className="h-20 w-20 object-cover rounded border border-gray-300"
+                                                    onError={(e) => { e.target.style.display = 'none'; }}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleRemoveExistingImage(index)}
+                                                    className="absolute -top-1 -right-1 bg-red-600 text-white rounded-full h-5 w-5 flex items-center justify-center text-xs font-bold leading-none hover:bg-red-700 focus:outline-none"
+                                                    aria-label="Remove existing image"
+                                                >
+                                                    ×
+                                                </button>
                                             </div>
                                         ))}
+                                        {/* New Image Previews */}
+                                        {imagePreviews.map((previewUrl, index) => (
+                                            <div key={`new-${index}`} className="relative">
+                                                <img
+                                                    src={previewUrl}
+                                                    alt={`New preview ${index + 1}`}
+                                                    className="h-20 w-20 object-cover rounded border border-green-400" // Green border for new
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleRemoveNewImage(index)}
+                                                    className="absolute -top-1 -right-1 bg-red-600 text-white rounded-full h-5 w-5 flex items-center justify-center text-xs font-bold leading-none hover:bg-red-700 focus:outline-none"
+                                                    aria-label="Remove new image"
+                                                >
+                                                    ×
+                                                </button>
+                                            </div>
+                                        ))}
+                                        {/* Placeholder if no images */}
+                                        {!isUpdate && imagePreviews.length === 0 && images.length === 0 && (
+                                            <p className="text-sm text-gray-400 italic self-center">Chưa có ảnh nào được chọn.</p>
+                                        )}
+                                        {isUpdate && imagePreviews.length === 0 && images.length === 0 && (
+                                            <p className="text-sm text-gray-400 italic self-center">Không có ảnh nào.</p>
+                                        )}
                                     </div>
                                 </div>
 
@@ -329,9 +404,9 @@ const RoomForm = ({ visible, onCancel, onSubmit, initialValues, loading }) => {
                                 className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm 
                                 px-4 py-2 bg-red-800 text-base font-medium text-white hover:bg-red-900 focus:outline-none 
                                 focus:ring-2 focus:ring-offset-2 focus:ring-red-700 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50" // Adjusted colors and added disabled style
-                                disabled={loading || uploadingImage}
+                                disabled={loading}
                             >
-                                {(loading || uploadingImage) ? 'Đang xử lý...' : initialValues ? 'Lưu thay đổi' : 'Thêm phòng'}
+                                {loading ? 'Đang xử lý...' : initialValues?._id ? 'Lưu thay đổi' : 'Thêm phòng'}
                             </button>
                             <button
                                 type="button"
@@ -340,7 +415,7 @@ const RoomForm = ({ visible, onCancel, onSubmit, initialValues, loading }) => {
                                 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto 
                                 sm:text-sm disabled:opacity-50" // Added disabled style
                                 onClick={onCancel}
-                                disabled={loading || uploadingImage}
+                                disabled={loading}
                             >
                                 Hủy
                             </button>

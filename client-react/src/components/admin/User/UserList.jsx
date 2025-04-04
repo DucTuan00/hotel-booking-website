@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PencilIcon, TrashIcon, PlusIcon } from '@heroicons/react/24/outline';
 import UserForm from './UserForm';
 import DeleteConfirm from '../Common/DeleteConfirm';
+import Notification from '../Common/Notification';
 import userService from '../../../services/userService';
 import { ClipLoader } from 'react-spinners';
 
@@ -121,14 +122,11 @@ const UserList = () => {
 
     return (
         <div className="container mx-auto p-4">
-            {message && (
-                <div
-                    className={`mb-4 py-2 px-4 rounded ${message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                        }`}
-                >
-                    {message.text}
-                </div>
-            )}
+            {/* Notification message */}
+            <Notification
+                message={message}
+                onClose={() => setMessage(null)} // Function to clear the message state
+            />
 
             <div className="flex justify-end mb-4">
                 <button

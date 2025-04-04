@@ -24,7 +24,16 @@ const createRoom = async (req, res, next) => {
                 return next(new ApiError(err.message || 'Unknown error during image upload', 500));
             } 
             
-            const { name, room_type, description, amenities, price, max_guests, quantity } = req.body;
+            const { name, room_type, description, price, max_guests, quantity } = req.body;
+            let amenities = req.body.amenities;
+            
+            if (amenities && typeof amenities === 'string') {
+                // If only one amenity was sent, it might be parsed as a string
+                amenities = [amenities];
+            } else if (!amenities) {
+                // If no amenities were sent, ensure it's an empty array
+                amenities = [];
+            }
             const images = req.files ? req.files.map(file => file.path) : [];
 
             console.log('Request Body:', req.body);

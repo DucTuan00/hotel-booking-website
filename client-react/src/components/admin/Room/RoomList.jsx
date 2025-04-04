@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { PencilIcon, TrashIcon, PlusIcon } from '@heroicons/react/24/outline';
 import RoomForm from './RoomForm';
 import DeleteConfirm from '../Common/DeleteConfirm';
+import Notification from '../Common/Notification';
 import roomService from '../../../services/roomService';
 import { ClipLoader } from 'react-spinners';
 
@@ -14,15 +15,12 @@ const RoomList = () => {
     const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
     const [message, setMessage] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const [pageSize, setPageSize] = useState(3);
     const [totalRooms, setTotalRooms] = useState(0);
 
-    useEffect(() => {
-        fetchRooms();
-    }, [currentPage, pageSize]);
-
-    const fetchRooms = async () => {
-        setLoading(true);
+    const fetchRooms = useCallback(async () => {
+        //setLoading(true);
+        console.log(`Fetching rooms page: ${currentPage}, size: ${pageSize}`);
         try {
             const data = await roomService.getAllRooms({ page: currentPage, pageSize: pageSize });
             setRooms(data.rooms);
@@ -34,43 +32,53 @@ const RoomList = () => {
             setRooms([]);
             setTotalRooms(0);
         } finally {
-            setLoading(false);
+            //setLoading(false);
         }
-    };
+    }, [currentPage, pageSize]); // Dependencies for fetching
+
+    useEffect(() => {
+        fetchRooms();
+    }, [currentPage, pageSize]);
 
     const showModal = () => {
-        setIsModalVisible(true);
         setEditingRoom(null);
+        setMessage(null); // Clear message
+        setIsModalVisible(true);
     };
 
     const handleEdit = (room) => {
-        setIsModalVisible(true);
         setEditingRoom(room);
+        setMessage(null); // Clear message
+        setIsModalVisible(true);
     };
 
     const handleCancel = () => {
         setIsModalVisible(false);
+        setEditingRoom(null);
+        setMessage(null); // Clear message
     };
 
-    const handleFormSubmit = async (values) => {
-        setLoading(true);
-        try {
-            if (editingRoom) {
-                await roomService.updateRoom(editingRoom.id, values);
-                setMessage({ type: 'success', text: 'Phòng đã được cập nhật thành công!' });
-            } else {
-                await roomService.createRoom(values);
-                setMessage({ type: 'success', text: 'Phòng đã được thêm thành công!' });
-            }
-            fetchRooms();
-            setIsModalVisible(false);
-        } catch (error) {
-            console.error("Error when submit form:", error);
+    const handleFormSubmit = useCallback((isLoadingFromChild, data, error) => {
+        console.log("handleFormSubmit called - loading:", isLoadingFromChild, "data:", !!data, "error:", !!error); // Log parameters
+        setLoading(isLoadingFromChild); // Update parent loading state based on child
+
+        if (error) {
+            // Error occurred during API call inside RoomForm
             setMessage({ type: 'error', text: editingRoom ? 'Cập nhật phòng thất bại.' : 'Thêm phòng thất bại.' });
-        } finally {
-            setLoading(false);
+            return;
         }
-    };
+
+        if (!isLoadingFromChild && data) {
+            const successMessage = editingRoom ? 'Phòng đã được cập nhật thành công!' : 'Phòng đã được thêm thành công!';
+            console.log("Setting success message:", successMessage); // Add log
+
+            setMessage({ type: 'success', text: successMessage });
+            setEditingRoom(null);
+            setIsModalVisible(false);
+            fetchRooms(); 
+        }
+
+    }, [editingRoom, fetchRooms]);
 
     const handleDeleteConfirm = (roomId) => {
         setDeleteRoomId(roomId);
@@ -79,15 +87,23 @@ const RoomList = () => {
 
     const handleDeleteCancel = () => {
         setIsDeleteModalVisible(false);
+        setDeleteRoomId(null);
     };
 
     const confirmDeleteRoom = async () => {
+        if (!deleteRoomId) return;
         setLoading(true);
         try {
             await roomService.deleteRoom(deleteRoomId);
             setMessage({ type: 'success', text: 'Phòng đã được xóa thành công!' });
-            fetchRooms();
+            setDeleteRoomId(null); // Clear ID
             setIsDeleteModalVisible(false);
+
+            if (rooms.length === 1 && currentPage > 1) {
+                setCurrentPage(currentPage - 1); // Go back if last item on page deleted
+            } else {
+                fetchRooms(); // Otherwise, just refetch current page
+            }
         } catch (error) {
             console.error("Error delete room: ", error);
             setMessage({ type: 'error', text: 'Xóa phòng thất bại.' });
@@ -121,20 +137,18 @@ const RoomList = () => {
 
     return (
         <div className="container mx-auto p-4">
-            {message && (
-                <div
-                    className={`mb-4 py-2 px-4 rounded ${message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                        }`}
-                >
-                    {message.text}
-                </div>
-            )}
+            {/* Notification message */}
+            <Notification
+                message={message}
+                onClose={() => setMessage(null)} // Function to clear the message state
+            />
 
             <div className="flex justify-end mb-4">
                 <button
                     className="bg-red-900 hover:bg-red-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                     type="button"
                     onClick={showModal}
+                    disabled={loading} // Disable button if loading
                 >
                     <div className="flex items-center">
                         <PlusIcon className="h-5 w-5 mr-2" />
@@ -143,8 +157,8 @@ const RoomList = () => {
                 </button>
             </div>
 
-            <div className="shadow-md overflow-hidden border border-gray-300 sm:rounded-lg">
-                <table className="min-w-full divide-y divide-gray-300 table-fixed w-full">
+            <div className="shadow-md overflow-x-auto border border-gray-300 sm:rounded-lg">
+                <table className="min-w-full divide-y divide-gray-300 table-auto w-full">
                     <thead className="bg-red-800">
                         <tr>
                             <th scope="col" className="px-4 py-3 text-left text-sm font-medium text-white uppercase tracking-wider w-[20%]">
@@ -174,8 +188,15 @@ const RoomList = () => {
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-300">
+                        {rooms.length === 0 && !loading && ( // Display only if not loading and rooms is empty
+                            <tr>
+                                <td colSpan="8" className="text-center py-10 text-gray-500">
+                                    Không tìm thấy phòng nào.
+                                </td>
+                            </tr>
+                        )}
                         {rooms.map(room => (
-                            <tr key={room.id} className="hover:bg-gray-50">
+                            <tr key={room._id} className="hover:bg-gray-50">
                                 <td className="px-4 py-3 align-middle">
                                     <img 
                                         src={room.images && room.images.length > 0 ? `http://localhost:3000/${room.images[0]}` : '/placeholder-image.jpg'}
@@ -204,7 +225,7 @@ const RoomList = () => {
                                         </div>
                                     </button>
                                     <button
-                                        onClick={() => handleDeleteConfirm(room.id)}
+                                        onClick={() => handleDeleteConfirm(room._id)}
                                         className="text-red-600 hover:text-red-900"
                                     >
                                         <div className="flex items-center">
