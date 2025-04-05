@@ -25,7 +25,7 @@ const RoomForm = ({ visible, onCancel, onSubmit, initialValues, loading }) => {
         const fetchAmenities = async () => {
             try {
                 const data = await amenityService.getAllAmenities();
-                setAvailableAmenities(data);
+                setAvailableAmenities(data.amenities);
             } catch (error) {
                 console.error("Could not fetch amenities:", error);
                 setAvailableAmenities([]);

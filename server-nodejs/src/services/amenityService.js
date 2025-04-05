@@ -1,4 +1,5 @@
 import Amenity from '../models/amenityModel.js';
+import Room from '../models/roomModel.js';
 import ApiError from '../utils/apiError.js';
 
 const createAmenity = async (name) => {
@@ -10,12 +11,25 @@ const createAmenity = async (name) => {
     return amenity;
 };
 
-const getAllAmenities = async () => {
-    const amenities = await Amenity.find();
+const getAllAmenities = async (filter, page, pageSize) => {
+    const skip = (page - 1) * pageSize;
+    const amenities = await Amenity.find({ ...filter })
+        .skip(skip)
+        .limit(pageSize);
     if (!amenities) {
         throw new ApiError('Amenities not found', 404);
     }
-    return amenities;
+
+    const totalAmenities = await Amenity.countDocuments({ ...filter });
+    if (!totalAmenities) {
+        throw new ApiError('Failed to get total amenities', 500);
+    }
+    return {
+        amenities: amenities,
+        total: totalAmenities,
+        currentPage: page,
+        pageSize: pageSize
+    };
 };
 
 const getAmenityById = async (id) => {
@@ -42,6 +56,10 @@ const updateAmenity = async (id, name) => {
 };
 
 const deleteAmenity = async (id) => {
+    await Room.updateMany(
+        { amenities: id }, // Find all rooms contains this amenity id
+        { $pull: { amenities: id } } // Remove the amenity id
+      );
     const amenity = await Amenity.findByIdAndDelete(id);
     if (!amenity) {
         throw new ApiError("Amenity not found to delete.", 404);

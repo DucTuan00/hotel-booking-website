@@ -20,7 +20,40 @@ const getAmenityById = async (amenityId) => {
     }
 };
 
+const createAmenity = async (amenityData) => {
+    try {
+        const response = await api.post('/amenity', amenityData);
+        return response.data;
+    } catch (error) {
+        console.error('Error creating amenity:', error);
+        throw error;
+    }
+};
+
+const updateAmenity = async (amenityId, amenityData) => {
+    try {
+        const response = await api.put(`/amenity/${amenityId}`, amenityData);
+        return response.data;
+    } catch (error) {
+        console.error('Error updating amenity:', error);
+        throw error;
+    }
+};
+
+const deleteAmenity = async (amenityId) => {
+    try {
+        const response = await api.delete(`/amenity/${amenityId}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error deleting amenity:', error);
+        throw error;
+    }
+};
+
 export default {
     getAllAmenities,
     getAmenityById,
+    createAmenity,
+    updateAmenity,
+    deleteAmenity,
 };

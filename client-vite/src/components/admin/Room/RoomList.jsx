@@ -170,14 +170,11 @@ const RoomList = () => {
                             <th scope="col" className="px-4 py-3 text-left text-sm font-medium text-white uppercase tracking-wider w-[10%]">
                                 Loại phòng
                             </th>
-                            <th scope="col" className="px-4 py-3 text-left text-sm font-medium text-white uppercase tracking-wider w-[20%]">
-                                Tiện nghi
-                            </th>
                             <th scope="col" className="px-4 py-3 text-left text-sm font-medium text-white uppercase tracking-wider w-[10%]">
-                                Giá (VND)
+                                Giá
                             </th>
                             <th scope="col" className="px-4 py-3 text-center text-sm font-medium text-white uppercase tracking-wider w-[10%]">
-                                Tối đa
+                                Số người
                             </th>
                             <th scope="col" className="px-4 py-3 text-center text-sm font-medium text-white uppercase tracking-wider w-[10%]">
                                 Số lượng
@@ -206,11 +203,8 @@ const RoomList = () => {
                                 </td>
                                 <td className="px-4 py-2 text-base text-black font-medium align-middle whitespace-normal break-words">{room.name}</td>
                                 <td className="px-4 py-2 text-base text-black font-medium align-middle whitespace-nowrap">{room.room_type}</td>
-                                <td className="px-4 py-2 text-base text-black font-medium align-middle whitespace-normal break-words">
-                                    {room.amenities.map(amenity => amenity.name).join(', ')}
-                                </td>
                                 <td className="px-4 py-2 text-base text-black font-medium align-middle whitespace-nowrap text-left">
-                                    {room.price.toLocaleString('vi-VN')}đ
+                                    {room.price.toLocaleString('vi-VN')}đ/đêm
                                 </td>
                                 <td className="px-4 py-2 text-base text-black font-medium align-middle whitespace-nowrap text-center">{room.max_guests}</td>
                                 <td className="px-4 py-2 text-base text-black font-medium align-middle whitespace-nowrap text-center">{room.quantity}</td>

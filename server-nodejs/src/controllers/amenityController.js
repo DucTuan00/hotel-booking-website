@@ -13,7 +13,8 @@ const createAmenity = async (req, res, next) => {
 
 const getAllAmenities = async (req, res, next) => {
     try {
-        const amenities = await amenityService.getAllAmenities();
+        const { page = 1, pageSize = 10, ...filter } = req.query;
+        const amenities = await amenityService.getAllAmenities(filter, parseInt(page), parseInt(pageSize));
         res.json(amenities);
     } catch (error) {
         next(new ApiError(error.message, error.statusCode || 500));
