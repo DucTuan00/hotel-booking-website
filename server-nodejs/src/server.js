@@ -25,7 +25,7 @@ connectDB();
 //Middleware
 app.use(cookieParser());
 app.use(cors({
-    origin: 'http://localhost:3001', // Address ReactJS
+    origin: 'http://localhost:5173', // Address ReactJS - Vite
     credentials: true,
 }));
 app.use(express.json());
