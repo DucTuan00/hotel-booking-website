@@ -23,95 +23,65 @@ const DashboardPage = () => {
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
-  const fetchAllBookings = async () => {
-    let allBookings = [];
-    let currentPage = 1;
-    const pageSize = 100;
-    let totalBookings = 0;
-  
-    do {
-      const bookingsData = await bookingService.getAllBookings({}, currentPage, pageSize);
-      allBookings = allBookings.concat(bookingsData.bookings);
-      totalBookings = bookingsData.total;
-      currentPage++;
-    } while (allBookings.length < totalBookings);
-  
-    return {
-      bookings: allBookings,
-      total: totalBookings,
-    };
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      // Get total users
+      const users = await userService.getAllUsers({ pageSize: 0 });
+      setTotalUsers(users.total);
+
+      // Get total rooms
+      const rooms = await roomService.getAllRooms({ pageSize: 0 });
+      setTotalRooms(rooms.total);
+
+      // Get total bookings
+      const bookingsData = await bookingService.getAllBookings({ pageSize: 0 });
+      setTotalBookings(bookingsData.total);
+
+      // Get 5 first booking data
+      const recent = bookingsData.bookings.slice(0, 5);
+      setRecentBookings(recent);
+
+      // Caculate revenue from confirmed bookings
+      const confirmedBookings = bookingsData.bookings.filter(
+        (booking) => booking.status === 'Confirmed'
+      );
+      const totalRevenue = confirmedBookings.reduce(
+        (sum, booking) => sum + booking.total_price,
+        0
+      );
+      setActualRevenue(totalRevenue);
+
+      // Create data for revenue chart
+      const revenueByMonth = {};
+      confirmedBookings.forEach((booking) => {
+        const month = new Date(booking.check_in).toLocaleString('default', { month: 'short' });
+        revenueByMonth[month] = (revenueByMonth[month] || 0) + booking.total_price;
+      });
+      const revenueChartData = Object.entries(revenueByMonth).map(([name, revenue]) => ({
+        name,
+        revenue,
+      }));
+      setRevenueData(revenueChartData);
+
+      // Create data for status chart
+      const statusCount = bookingsData.bookings.reduce((acc, booking) => {
+        acc[booking.status] = (acc[booking.status] || 0) + 1;
+        return acc;
+      }, {});
+      const statusChartData = Object.entries(statusCount).map(([name, value]) => ({
+        name,
+        value,
+      }));
+      setStatusData(statusChartData);
+    } catch (error) {
+      console.error('Failed getting data:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        // Get total users
-        const users = await userService.getAllUsers({ pageSize: 0 });
-        setTotalUsers(users.total);
-
-        // Get total rooms
-        const rooms = await roomService.getAllRooms({ pageSize: 0 });
-        setTotalRooms(rooms.total);
-
-        // Get total bookings
-        const bookingsData = await fetchAllBookings();
-        setTotalBookings(bookingsData.total);
-        
-        // Get 5 first booking data
-        const recent = bookingsData.bookings.slice(0, 5);
-        const enrichedBookings = await Promise.all(
-          recent.map(async (booking) => {
-            const user = await userService.getUserById(booking.user_id);
-            const room = await roomService.getRoomById(booking.room_id);
-            return {
-              ...booking,
-              customerName: user.name || 'Unknown', 
-              roomName: room.name || 'Unknown',
-            };
-          })
-        );
-        setRecentBookings(enrichedBookings);
-
-        // Caculate revenue from confirmed bookings
-        const confirmedBookings = bookingsData.bookings.filter(
-          (booking) => booking.status === 'Confirmed'
-        );
-        const totalRevenue = confirmedBookings.reduce(
-          (sum, booking) => sum + booking.total_price,
-          0
-        );
-        setActualRevenue(totalRevenue);
-
-        // Create data for revenue chart
-        const revenueByMonth = {};
-        confirmedBookings.forEach((booking) => {
-          const month = new Date(booking.check_in).toLocaleString('default', { month: 'short' });
-          revenueByMonth[month] = (revenueByMonth[month] || 0) + booking.total_price;
-        });
-        const revenueChartData = Object.entries(revenueByMonth).map(([name, revenue]) => ({
-          name,
-          revenue,
-        }));
-        setRevenueData(revenueChartData);
-
-        // Create data for status chart
-        const statusCount = bookingsData.bookings.reduce((acc, booking) => {
-          acc[booking.status] = (acc[booking.status] || 0) + 1;
-          return acc;
-        }, {});
-        const statusChartData = Object.entries(statusCount).map(([name, value]) => ({
-          name,
-          value,
-        }));
-        setStatusData(statusChartData);
-      } catch (error) {
-        console.error('Failed getting data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
   }, []);
 
@@ -119,7 +89,7 @@ const DashboardPage = () => {
     { title: 'Tổng số Người dùng', value: totalUsers, icon: UserIcon },
     { title: 'Tổng số Phòng', value: totalRooms, icon: HomeIcon },
     { title: 'Tổng số Đơn đặt phòng', value: totalBookings, icon: CalendarIcon },
-    { title: 'Doanh thu thực tế', value: actualRevenue, icon: CurrencyDollarIcon, suffix: '$' },
+    { title: 'Doanh thu thực tế', value: actualRevenue.toLocaleString('vi-VN'), icon: CurrencyDollarIcon, suffix: 'đ' },
   ];
 
   if (loading) {
@@ -207,13 +177,13 @@ const DashboardPage = () => {
           <tbody className="divide-y divide-gray-300">
             {recentBookings.map((booking) => (
               <tr key={booking._id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{booking.customerName}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{booking.roomName}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{booking.user_id.name}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{booking.room_id.name}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
                   {new Date(booking.check_in).toLocaleDateString()}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{booking.status}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">${booking.total_price}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{booking.total_price.toLocaleString('vi-VN')} đ</td>
               </tr>
             ))}
           </tbody>

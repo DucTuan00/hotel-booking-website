@@ -155,6 +155,8 @@ const cancelBooking = async (booking_id) => {
 const getAllBookings = async (filter, page, pageSize) => {
     const skip = (page - 1) * pageSize;
     const bookings = await Booking.find({ ...filter })
+        .populate({ path: 'user_id', select: 'name' })
+        .populate({ path: 'room_id', select: 'name' })
         .skip(skip)
         .limit(pageSize);
 
@@ -172,7 +174,7 @@ const getAllBookings = async (filter, page, pageSize) => {
         currentPage: page,
         pageSize: pageSize
     };
-}
+};
 
 export default {
     createBooking,

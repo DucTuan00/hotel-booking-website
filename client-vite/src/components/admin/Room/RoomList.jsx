@@ -198,7 +198,7 @@ const RoomList = () => {
                                     <img 
                                         src={room.images && room.images.length > 0 ? `http://localhost:3000/${room.images[0]}` : '/placeholder-image.jpg'}
                                         alt={`Ảnh phòng ${room.name}`}
-                                        className="h-40 w-60 object-cover rounded" 
+                                        className="h-30 w-50 object-cover rounded" 
                                     />
                                 </td>
                                 <td className="px-4 py-2 text-base text-black font-medium align-middle whitespace-normal break-words">{room.name}</td>

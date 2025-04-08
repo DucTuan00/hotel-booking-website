@@ -63,7 +63,7 @@ const getAllBookings = async (req, res, next) => {
     } catch (error) {
         next(new ApiError(error.message, error.statusCode || 500));
     }
-}
+};
 
 export default {
     createBooking,
