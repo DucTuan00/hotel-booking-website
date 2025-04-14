@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { PencilIcon, TrashIcon, PlusIcon } from '@heroicons/react/24/outline';
 import BookingForm from './BookingForm';
-import DeleteConfirm from '../Common/DeleteConfirm';
 import Notification from '../Common/Notification';
 import bookingService from '../../../services/bookingService';
 import { ClipLoader } from 'react-spinners';
@@ -70,7 +69,7 @@ const BookingList = () => {
         }
 
         if (!isLoadingFromChild && data) {
-            const successMessage = editingBooking ? 'Đặt phòng đã được cập nhật thành công!' : 'Đặt phòng đã được thêm thành công!';
+            const successMessage = editingBooking ? 'Cập nhật đơn đặt phòng thành công!' : 'Đặt phòng đã được thêm thành công!';
             console.log("Setting success message:", successMessage); // Add log
 
             setMessage({ type: 'success', text: successMessage });
@@ -80,38 +79,6 @@ const BookingList = () => {
         }
 
     }, [editingBooking, fetchBookings]);
-
-    const handleDeleteConfirm = (bookingId) => {
-        setDeleteBookingId(bookingId);
-        setIsDeleteModalVisible(true);
-    };
-
-    const handleDeleteCancel = () => {
-        setIsDeleteModalVisible(false);
-        setDeleteBookingId(null);
-    };
-
-    const confirmDeleteBooking = async () => {
-        if (!deleteBookingId) return;
-        setLoading(true);
-        try {
-            await bookingService.deleteBooking(deleteBookingId);
-            setMessage({ type: 'success', text: 'Đặt phòng đã được xóa thành công!' });
-            setDeleteBookingId(null); // Clear ID
-            setIsDeleteModalVisible(false);
-
-            if (bookings.length === 1 && currentPage > 1) {
-                setCurrentPage(currentPage - 1); // Go back if last item on page deleted
-            } else {
-                fetchBookings(); // Otherwise, just refetch current page
-            }
-        } catch (error) {
-            console.error("Error delete booking: ", error);
-            setMessage({ type: 'error', text: 'Xóa đặt phòng thất bại.' });
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const handlePreviousPage = () => {
         if (currentPage > 1) {
@@ -130,11 +97,11 @@ const BookingList = () => {
             case 'Confirmed':
                 return 'bg-green-100 text-green-800';
             case 'Pending':
-                return 'bg-blue-100 text-blue-800';
+                return 'bg-yellow-100 text-yellow-800';
             case 'Cancelled':
                 return 'bg-red-100 text-red-800';
             case 'Completed':
-                return 'bg-gray-100 text-gray-800';
+                return 'bg-blue-100 text-blue-800';
             default:
                 return 'bg-gray-100 text-gray-800';
         }
@@ -187,6 +154,9 @@ const BookingList = () => {
                                 Tên phòng
                             </th>
                             <th scope="col" className="px-4 py-3 text-left text-sm font-medium text-white uppercase tracking-wider">
+                                Số lượng
+                            </th>
+                            <th scope="col" className="px-4 py-3 text-left text-sm font-medium text-white uppercase tracking-wider">
                                 Ngày Check-in
                             </th>
                             <th scope="col" className="px-4 py-3 text-left text-sm font-medium text-white uppercase tracking-wider">
@@ -197,6 +167,9 @@ const BookingList = () => {
                             </th>
                             <th scope="col" className="px-4 py-3 text-left text-sm font-medium text-white uppercase tracking-wider">
                                 Trẻ em
+                            </th>
+                            <th scope="col" className="px-4 py-3 text-left text-sm font-medium text-white uppercase tracking-wider">
+                                Tổng tiền
                             </th>
                             <th scope="col" className="px-4 py-3 text-left text-sm font-medium text-white uppercase tracking-wider">
                                 Trạng thái
@@ -219,10 +192,12 @@ const BookingList = () => {
                                 <td className="px-4 py-5 whitespace-nowrap text-sm font-medium text-black">{booking._id}</td>
                                 <td className="px-4 py-5 whitespace-nowrap text-sm font-medium text-black">{booking.user_id.name}</td>
                                 <td className="px-4 py-5 whitespace-nowrap text-sm font-medium text-black">{booking.room_id.name}</td>
+                                <td className="px-4 py-5 whitespace-nowrap text-sm text-center font-medium text-black">{booking.quantity}</td>
                                 <td className="px-4 py-5 whitespace-nowrap text-sm font-medium text-black">{moment(booking.check_in).format('DD/MM/YYYY')}</td>
                                 <td className="px-4 py-5 whitespace-nowrap text-sm font-medium text-black">{moment(booking.check_out).format('DD/MM/YYYY')}</td>
-                                <td className="px-4 py-5 whitespace-nowrap text-sm font-medium text-black">{booking.guests.adults}</td>
-                                <td className="px-4 py-5 whitespace-nowrap text-sm font-medium text-black">{booking.guests.children}</td>
+                                <td className="px-4 py-5 whitespace-nowrap text-sm text-center font-medium text-black">{booking.guests.adults}</td>
+                                <td className="px-4 py-5 whitespace-nowrap text-sm text-center font-medium text-black">{booking.guests.children}</td>
+                                <td className="px-4 py-5 whitespace-nowrap text-sm font-medium text-black">{booking.total_price.toLocaleString('vi-VN')}đ</td>
                                 <td className="px-4 py-5 whitespace-nowrap text-sm">
                                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(booking.status)}`}>
                                         {booking.status === 'Confirmed' ? 'Đã xác nhận' :
@@ -238,15 +213,6 @@ const BookingList = () => {
                                         <div className="flex items-center">
                                             <PencilIcon className="h-5 w-5 mr-1" />
                                             Sửa
-                                        </div>
-                                    </button>
-                                    <button
-                                        onClick={() => handleDeleteConfirm(booking._id)}
-                                        className="text-red-600 hover:text-red-900"
-                                    >
-                                        <div className="flex items-center">
-                                            <TrashIcon className="h-5 w-5 mr-1" />
-                                            Xóa
                                         </div>
                                     </button>
                                 </td>
@@ -280,14 +246,6 @@ const BookingList = () => {
                 onCancel={handleCancel}
                 onSubmit={handleFormSubmit}
                 initialValues={editingBooking}
-                loading={loading}
-            />
-
-            <DeleteConfirm
-                visible={isDeleteModalVisible}
-                onConfirm={confirmDeleteBooking}
-                onCancel={handleDeleteCancel}
-                itemName="booking"
                 loading={loading}
             />
         </div>

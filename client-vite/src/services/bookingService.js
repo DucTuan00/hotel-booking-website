@@ -10,6 +10,17 @@ const getAllBookings = async (params) => {
     }
 };
 
+const updateBooking = async (bookingId, bookingData) => {
+    try {
+        const response = await api.patch(`/booking/${bookingId}`, bookingData);
+        return response.data;
+    } catch (error) {
+        console.error(`Error updating booking status for ID ${bookingId}:`, error);
+        throw error;
+    }
+};
+
 export default {
     getAllBookings,
+    updateBooking,
 };

@@ -65,10 +65,23 @@ const getAllBookings = async (req, res, next) => {
     }
 };
 
+const updateBooking = async (req, res, next) => {
+    try {
+        const booking_id = req.params.id;
+        const { status } = req.body; 
+
+        const updatedBooking = await bookingService.updateBooking(booking_id, status);
+        res.json(updatedBooking);
+    } catch (error) {
+        next(new ApiError(error.message, error.statusCode || 500));
+    }
+};
+
 export default {
     createBooking,
     getBookingById,
     getBookingsByUserId,
     cancelBooking,
     getAllBookings,
+    updateBooking,
 };

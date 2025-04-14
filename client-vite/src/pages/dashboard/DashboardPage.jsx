@@ -44,7 +44,7 @@ const DashboardPage = () => {
 
       // Caculate revenue from confirmed bookings
       const confirmedBookings = bookingsData.bookings.filter(
-        (booking) => booking.status === 'Confirmed'
+        (booking) => booking.status === 'Completed'
       );
       const totalRevenue = confirmedBookings.reduce(
         (sum, booking) => sum + booking.total_price,

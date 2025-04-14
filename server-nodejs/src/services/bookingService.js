@@ -176,10 +176,29 @@ const getAllBookings = async (filter, page, pageSize) => {
     };
 };
 
+const updateBooking = async (booking_id, status) => {
+    if (!status || !['Pending', 'Confirmed', 'Cancelled', 'Completed'].includes(status)) {
+        throw new ApiError('Invalid booking status provided.', 400);
+    }
+
+    const updatedBooking = await Booking.findByIdAndUpdate(
+        booking_id,
+        { status: status },
+        { new: true, runValidators: true } // new:true to return updated doc, runValidators to validate status enum
+    );
+
+    if (!updatedBooking) {
+        throw new ApiError('Booking not found for update', 404);
+    }
+
+    return updatedBooking;
+};
+
 export default {
     createBooking,
     getBookingById,
     getBookingsByUserId,
     cancelBooking,
     getAllBookings,
+    updateBooking,
 };
