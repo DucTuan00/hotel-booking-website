@@ -1,0 +1,15 @@
+{
+  "name": "hotel-boutique-website",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently --names \"client,api\" \"npm run dev --prefix client-vite\" \"npm run dev --prefix server-nodejs\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
