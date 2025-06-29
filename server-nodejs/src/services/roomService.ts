@@ -1,19 +1,12 @@
 import Room from '@/models/Room';
 import ApiError from '@/utils/apiError';
 import cron from 'node-cron';
-import mongoose, { Types } from 'mongoose';
-
-interface RoomData {
-    id?: string;
-    name: string;
-    room_type: 'Single' | 'Double' | 'Suite';
-    description?: string;
-    amenities: Types.ObjectId[];
-    price: number;
-    images: string[];
-    max_guests: number;
-    quantity: number;
-}
+import mongoose from 'mongoose';
+import {
+    RoomData,
+    GetAllRoomsInput,
+    RoomIdInput
+} from '@/types/room';
 
 const validateRoomData = (data: RoomData) => {
     if (!data.name || typeof data.name !== 'string' || data.name.trim() === "") {
@@ -117,7 +110,9 @@ const createRoom = async (roomData: RoomData) => {
     return room;
 };
 
-const getAllRooms = async (filter: any, page: number, pageSize: number) => {
+const getAllRooms = async (args: GetAllRoomsInput) => {
+    const { filter = {}, page = 1, pageSize = 10 } = args;
+
     const skip = (page - 1) * pageSize;
     const rooms = await Room.find({ ...filter, active: true })
         .skip(skip)
@@ -143,7 +138,9 @@ const getAllRooms = async (filter: any, page: number, pageSize: number) => {
     };
 };
 
-const getRoomById = async (id: string) => {
+const getRoomById = async (arg: RoomIdInput) => {
+    const { id } = arg;
+
     if (!id) {
         throw new ApiError("Invalid room id.", 400);
     }
@@ -208,7 +205,9 @@ const updateRoom = async (roomData: RoomData) => {
     return updatedRoom;
 };
 
-const deleteRoom = async (id: string) => {
+const deleteRoom = async (arg: RoomIdInput) => {
+    const { id } = arg;
+
     if (!id) {
         throw new ApiError("Invalid room id.", 400);
     }

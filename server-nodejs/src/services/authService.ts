@@ -3,27 +3,12 @@ import User from '@/models/User';
 import generateToken from '@/utils/generateToken';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import jwtConfig from '@/config/jwt';
-
-interface RegisterInput {
-    email: string;
-    password: string;
-    name: string;
-    phone: string;
-    role: string;
-}
-
-interface LoginInput {
-    email: string;
-    password: string;
-}
-
-interface UserIdInput {
-    userId: string; 
-}
-
-interface AccessTokenInput {
-    accessToken: string;
-}
+import {
+    RegisterInput,
+    LoginInput,
+    UserIdInput,
+    AccessTokenInput
+} from '@/types/auth';
 
 const register = async (args: RegisterInput) => {
     const { email, password, name, phone, role } = args;

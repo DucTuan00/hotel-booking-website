@@ -1,25 +1,12 @@
 import Amenity from '@/models/Amenity';
 import Room from '@/models/Room';
 import ApiError from '@/utils/apiError';
-
-interface CreateAmenityInput {
-    name: string;
-}
-
-interface UpdateAmenityInput {
-    id: string;
-    name: string;
-}
-
-interface GetAllAmenitiesInput {
-    filter?: Record<string, any>;
-    page?: number;
-    pageSize?: number;
-}
-
-interface GetAmenityByIdInput {
-    id: string;
-}
+import {
+    CreateAmenityInput,
+    GetAllAmenitiesInput,
+    GetAmenityByIdInput,
+    UpdateAmenityInput
+} from '@/types/amenity';
 
 const createAmenity = async (arg: CreateAmenityInput) => {
     const { name } = arg;

@@ -1,38 +1,13 @@
 import User from '@/models/User';
 import bcrypt from 'bcryptjs';
 import ApiError from '@/utils/apiError';
-
-interface InputCreateUser {
-    email: string;
-    password: string;
-    name: string;
-    phone: string;
-    role: string;
-}
-
-interface InputUpdateUser {
-    _id: string;
-    email?: string;
-    name?: string;
-    phone?: string;
-    role?: string;
-}
-
-interface InputUpdatePassword {
-    _id: string;
-    oldPassword: string;
-    newPassword: string;
-}
-
-interface UserIdInput {
-    _id: string;
-}
-
-interface GetAllUsersInput {
-    filter?: Record<string, any>;
-    page?: number;
-    pageSize?: number;
-}
+import {
+    UserIdInput,
+    GetAllUsersInput,
+    InputCreateUser,
+    InputUpdateUser,
+    InputUpdatePassword
+} from '@/types/user';
 
 const getUserById = async (arg: UserIdInput) => {
     const { _id } = arg;

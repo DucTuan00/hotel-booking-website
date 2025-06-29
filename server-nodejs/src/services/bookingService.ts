@@ -2,37 +2,13 @@ import Booking from '@/models/Booking';
 import User from '@/models/User';
 import Room from '@/models/Room';
 import ApiError from '@/utils/apiError';
-
-interface CreateBookingInput {
-    user_id: string;
-    room_id: string;
-    check_in: string;
-    check_out: string;
-    guests: { 
-        adults: number; 
-        children?: number 
-    };
-    quantity: number;
-}
-
-interface BookingIdInput {
-    booking_id: string;
-}
-
-interface UserIdInput {
-    user_id: string;
-}
-
-interface UpdateBookingInput {
-    booking_id: string;
-    status: 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed';
-}
-
-interface GetAllBookingsInput {
-    filter?: Record<string, any>;
-    page?: number;
-    pageSize?: number;
-}
+import {
+    CreateBookingInput,
+    BookingIdInput,
+    UserIdInput,
+    GetAllBookingsInput,
+    UpdateBookingInput
+} from '@/types/booking';
 
 const createBooking = async (args: CreateBookingInput) => {
     const { user_id, room_id, check_in, check_out, guests, quantity } = args;
