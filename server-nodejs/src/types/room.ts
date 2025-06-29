@@ -3,12 +3,12 @@ import { Types } from 'mongoose';
 export interface RoomData {
     id?: string;
     name: string;
-    room_type: 'Single' | 'Double' | 'Suite';
+    roomType: 'Single' | 'Double' | 'Suite';
     description?: string;
     amenities: Types.ObjectId[];
     price: number;
     images: string[];
-    max_guests: number;
+    maxGuests: number;
     quantity: number;
 }
 

@@ -7,7 +7,7 @@ export interface InputCreateUser {
 }
 
 export interface InputUpdateUser {
-    _id: string;
+    id: string;
     email?: string;
     name?: string;
     phone?: string;
@@ -15,13 +15,13 @@ export interface InputUpdateUser {
 }
 
 export interface InputUpdatePassword {
-    _id: string;
+    id: string;
     oldPassword: string;
     newPassword: string;
 }
 
 export interface UserIdInput {
-    _id: string;
+    id: string;
 }
 
 export interface GetAllUsersInput {

@@ -1,8 +1,8 @@
 export interface CreateBookingInput {
-    user_id: string;
-    room_id: string;
-    check_in: string;
-    check_out: string;
+    userId: string;
+    roomId: string;
+    checkIn: string;
+    checkOut: string;
     guests: { 
         adults: number; 
         children?: number 
@@ -11,15 +11,15 @@ export interface CreateBookingInput {
 }
 
 export interface BookingIdInput {
-    booking_id: string;
+    bookingId: string;
 }
 
 export interface UserIdInput {
-    user_id: string;
+    userId: string;
 }
 
 export interface UpdateBookingInput {
-    booking_id: string;
+    bookingId: string;
     status: 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed';
 }
 

@@ -2,12 +2,12 @@ import mongoose, { Schema, Document, Types } from 'mongoose';
 
 interface RoomInterface extends Document {
     name: string;
-    room_type: 'Single' | 'Double' | 'Suite';
+    roomType: 'Single' | 'Double' | 'Suite';
     description?: string;
     amenities: Types.ObjectId[];
     price: number;
     images: string[];
-    max_guests: number;
+    maxGuests: number;
     quantity: number;
     active: boolean;
 }
@@ -17,7 +17,7 @@ const roomSchema: Schema = new mongoose.Schema({
         type: String, 
         required: true 
     }, 
-    room_type: {
+    roomType: {
         type: String,
         enum: ['Single', 'Double', 'Suite'],
         required: true
@@ -34,7 +34,7 @@ const roomSchema: Schema = new mongoose.Schema({
         required: true 
     }, 
     images: [String],
-    max_guests: { 
+    maxGuests: { 
         type: Number, 
         required: true 
     }, 

@@ -86,7 +86,7 @@ const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
 
         res.json({
             message: 'Access token verified successfully',
-            userId: userData.userId,
+            userId: userData.id,
             role: userData.role,
         });
 

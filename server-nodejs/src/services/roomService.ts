@@ -13,7 +13,7 @@ const validateRoomData = (data: RoomData) => {
         throw new ApiError("Invalid room name.", 400);
     }
 
-    if (!data.room_type || !['Single', 'Double', 'Suite'].includes(data.room_type)) {
+    if (!data.roomType || !['Single', 'Double', 'Suite'].includes(data.roomType)) {
         throw new ApiError("Invalid room type.", 400);
     }
 
@@ -30,12 +30,12 @@ const validateRoomData = (data: RoomData) => {
     }
 
     // Change max guests to number before validate
-    if (data.max_guests) {
-        const maxGuests = Number(data.max_guests);
+    if (data.maxGuests) {
+        const maxGuests = Number(data.maxGuests);
         if (isNaN(maxGuests) || maxGuests <= 0) {
             throw new ApiError("Invalid max guests.", 400);
         }
-        data.max_guests = maxGuests;
+        data.maxGuests = maxGuests;
     }
     else {
         throw new ApiError("Invalid max guests.", 400);
@@ -92,12 +92,12 @@ const createRoom = async (roomData: RoomData) => {
 
     const newRoom = new Room({
         name: roomData.name,
-        room_type: roomData.room_type,
+        roomType: roomData.roomType,
         description: roomData.description,
         amenities: roomData.amenities.map(id => new mongoose.Types.ObjectId(id)),
         price: roomData.price,
         images: roomData.images,
-        max_guests: roomData.max_guests,
+        maxGuests: roomData.maxGuests,
         quantity: roomData.quantity
         // availability: {
         //     start_date: new Date(roomData.availability.start_date),
@@ -187,12 +187,12 @@ const updateRoom = async (roomData: RoomData) => {
         { _id: roomData.id, active: true },
         {
             name: roomData.name,
-            room_type: roomData.room_type,
+            roomType: roomData.roomType,
             description: roomData.description,
             amenities: roomData.amenities.map(id => new mongoose.Types.ObjectId(id)),
             price: roomData.price,
             images: images,
-            max_guests: roomData.max_guests,
+            maxGuests: roomData.maxGuests,
             quantity: roomData.quantity
             // availability: {
             //     start_date: new Date(roomData.availability.start_date),

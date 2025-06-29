@@ -6,32 +6,32 @@ interface Guests {
 }
 
 interface BookingInterface extends Document {
-    user_id: Types.ObjectId;
-    room_id: Types.ObjectId;
-    check_in: Date;
-    check_out: Date;
+    userId: Types.ObjectId;
+    roomId: Types.ObjectId;
+    checkIn: Date;
+    checkOut: Date;
     guests: Guests;
     quantity: number;
-    total_price: number;
+    totalPrice: number;
     status: 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed';
 }
 
 const bookingSchema: Schema = new mongoose.Schema({
-    user_id: { 
+    userId: { 
         type: mongoose.Types.ObjectId, 
         ref: 'User', 
         required: true 
     },
-    room_id: { 
+    roomId: { 
         type: mongoose.Types.ObjectId, 
         ref: 'Room', 
         required: true 
     }, 
-    check_in: { 
+    checkIn: { 
         type: Date, 
         required: true 
     },
-    check_out: { 
+    checkOut: { 
         type: Date, 
         required: true 
     },
@@ -52,7 +52,7 @@ const bookingSchema: Schema = new mongoose.Schema({
         min: 1,
         default: 1
     }, 
-    total_price: { 
+    totalPrice: { 
         type: Number, 
         required: true 
     },

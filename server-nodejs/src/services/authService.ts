@@ -56,7 +56,7 @@ const login = async (args: LoginInput) => {
 
     return {
         message: 'Login successfully',
-        _id: user._id,
+        id: user._id,
         role: user.role,
         accessToken,
         refreshToken,
@@ -121,7 +121,7 @@ const verifyAccessToken = async (arg: AccessTokenInput) => {
     }
 
     return {
-        userId: user._id,
+        id: user._id,
         role: user.role,
     };
 };

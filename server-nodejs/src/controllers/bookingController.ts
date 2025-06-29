@@ -4,19 +4,19 @@ import { Request, Response, NextFunction } from 'express';
 
 const createBooking = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const user_id: string | undefined = req.user?.id;
-        const { room_id, check_in, check_out, guests, quantity } = req.body;
+        const userId = req.user?.id;
+        const { roomId, checkIn, checkOut, guests, quantity } = req.body;
 
-        if (!user_id) {
+        if (!userId) {
             throw new ApiError('Unauthorized: missing user ID', 401);
         }
 
         try {
             const booking = await bookingService.createBooking({
-                user_id, 
-                room_id, 
-                check_in, 
-                check_out, 
+                userId, 
+                roomId, 
+                checkIn, 
+                checkOut, 
                 guests,
                 quantity,
             });
@@ -32,8 +32,8 @@ const createBooking = async (req: Request, res: Response, next: NextFunction) =>
 
 const getBookingById = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const booking_id: string = req.params.id;
-        const booking = await bookingService.getBookingById({ booking_id });
+        const bookingId = req.params.id;
+        const booking = await bookingService.getBookingById({ bookingId });
         res.status(200).json(booking);
     } catch (error: any) {
         next(new ApiError(error.message, error.statusCode || 500));
@@ -42,11 +42,11 @@ const getBookingById = async (req: Request, res: Response, next: NextFunction) =
 
 const getBookingsByUserId = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const user_id: string | undefined = req.user?.id;
-        if (!user_id) {
+        const userId = req.user?.id;
+        if (!userId) {
             throw new ApiError('Unauthorized: missing user ID', 401);
         }
-        const bookings = await bookingService.getBookingsByUserId({ user_id });
+        const bookings = await bookingService.getBookingsByUserId({ userId });
         res.status(200).json(bookings);
     } catch (error: any) {
         next(new ApiError(error.message, error.statusCode || 500));
@@ -55,8 +55,8 @@ const getBookingsByUserId = async (req: Request, res: Response, next: NextFuncti
 
 const cancelBooking = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const booking_id: string = req.params.id;
-        const booking = await bookingService.cancelBooking({ booking_id });
+        const bookingId = req.params.id;
+        const booking = await bookingService.cancelBooking({ bookingId });
         res.status(200).json(booking);
     } catch (error: any) {
         next(new ApiError(error.message, error.statusCode || 500));
@@ -79,10 +79,10 @@ const getAllBookings = async (req: Request, res: Response, next: NextFunction) =
 
 const updateBooking = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const booking_id: string = req.params.id;
+        const bookingId = req.params.id;
         const { status } = req.body; 
 
-        const updatedBooking = await bookingService.updateBooking({ booking_id, status });
+        const updatedBooking = await bookingService.updateBooking({ bookingId, status });
         res.json(updatedBooking);
     } catch (error: any) {
         next(new ApiError(error.message, error.statusCode || 500));
