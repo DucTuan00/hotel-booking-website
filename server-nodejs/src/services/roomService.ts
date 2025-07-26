@@ -1,5 +1,6 @@
 import Room from '@/models/Room';
 import ApiError from '@/utils/apiError';
+import { mapId, mapIds } from '@/utils/mapId';
 import cron from 'node-cron';
 import mongoose from 'mongoose';
 import {
@@ -107,7 +108,7 @@ const createRoom = async (roomData: RoomData) => {
     console.log(newRoom);
 
     const room = await newRoom.save();
-    return room;
+    return mapId(room);
 };
 
 const getAllRooms = async (args: GetAllRoomsInput) => {
@@ -131,7 +132,7 @@ const getAllRooms = async (args: GetAllRoomsInput) => {
     }
 
     return {
-        rooms: rooms,
+        rooms: mapIds(rooms),
         total: totalRooms,
         currentPage: page,
         pageSize: pageSize
@@ -155,7 +156,7 @@ const getRoomById = async (arg: RoomIdInput) => {
         throw new ApiError("Room not found.", 404);
     }
     
-    return room;
+    return mapId(room);
 };
 
 
@@ -202,7 +203,11 @@ const updateRoom = async (roomData: RoomData) => {
         { new: true }
     );
 
-    return updatedRoom;
+    if (!updatedRoom) {
+        throw new ApiError('Room not found or failed to update.', 404);
+    }
+
+    return mapId(updatedRoom);
 };
 
 const deleteRoom = async (arg: RoomIdInput) => {

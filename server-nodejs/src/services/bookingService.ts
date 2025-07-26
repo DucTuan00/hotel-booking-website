@@ -2,6 +2,7 @@ import Booking from '@/models/Booking';
 import User from '@/models/User';
 import Room from '@/models/Room';
 import ApiError from '@/utils/apiError';
+import { mapId, mapIds } from '@/utils/mapId';
 import {
     CreateBookingInput,
     BookingIdInput,
@@ -103,7 +104,7 @@ const createBooking = async (args: CreateBookingInput) => {
         throw new ApiError('Failed to create booking', 500);
     }
 
-    return booking;
+    return mapId(booking);
 };
 
 const getBookingById = async (arg: BookingIdInput) => {
@@ -115,7 +116,7 @@ const getBookingById = async (arg: BookingIdInput) => {
         throw new ApiError('Booking not found', 404);
 
     }
-    return booking;
+    return mapId(booking);
 };
 
 const getBookingsByUserId = async (arg: UserIdInput) => {
@@ -127,7 +128,7 @@ const getBookingsByUserId = async (arg: UserIdInput) => {
         throw new ApiError('Booking not found', 404);
     }
 
-    return bookings;
+    return mapIds(bookings);
 };
 
 const cancelBooking = async (arg: BookingIdInput) => {
@@ -168,7 +169,11 @@ const cancelBooking = async (arg: BookingIdInput) => {
         { new: true, runValidators: true } // new:true to return updated doc, runValidators to validate status enum
     );
 
-    return cancelBooking;
+    if (!cancelBooking) {
+        throw new ApiError('Failed to cancel booking', 500);
+    }
+
+    return mapId(cancelBooking);
 };
 
 const getAllBookings = async (args: GetAllBookingsInput) => {
@@ -190,7 +195,7 @@ const getAllBookings = async (args: GetAllBookingsInput) => {
         throw new ApiError('Failed to get total bookings', 500);
     }
     return {
-        bookings: bookings,
+        bookings: mapIds(bookings),
         total: totalBookings,
         currentPage: page,
         pageSize: pageSize
@@ -214,7 +219,7 @@ const updateBooking = async (args: UpdateBookingInput) => {
         throw new ApiError('Booking not found for update', 404);
     }
 
-    return updatedBooking;
+    return mapId(updatedBooking);
 };
 
 export default {

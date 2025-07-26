@@ -1,6 +1,7 @@
 import Amenity from '@/models/Amenity';
 import Room from '@/models/Room';
 import ApiError from '@/utils/apiError';
+import { mapId, mapIds } from '@/utils/mapId';
 import {
     CreateAmenityInput,
     GetAllAmenitiesInput,
@@ -17,7 +18,7 @@ const createAmenity = async (arg: CreateAmenityInput) => {
 
     const newAmenity = new Amenity({ name });
     const amenity = await newAmenity.save();
-    return amenity;
+    return mapId(amenity);
 };
 
 const getAllAmenities = async (args: GetAllAmenitiesInput) => {
@@ -40,7 +41,7 @@ const getAllAmenities = async (args: GetAllAmenitiesInput) => {
     }
 
     return {
-        amenities: amenities,
+        amenities: mapIds(amenities),
         total: totalAmenities,
         currentPage: page,
         pageSize: pageSize
@@ -55,7 +56,7 @@ const getAmenityById = async (arg: GetAmenityByIdInput) => {
         throw new ApiError("Amenity not found.", 404);
     }
 
-    return amenity;
+    return mapId(amenity);
 };
 
 const updateAmenity = async (args: UpdateAmenityInput) => {
@@ -75,7 +76,7 @@ const updateAmenity = async (args: UpdateAmenityInput) => {
         throw new ApiError("Amenity not found to update.", 404);
     }
 
-    return amenity;
+    return mapId(amenity);
 };
 
 const deleteAmenity = async (arg: GetAmenityByIdInput) => {

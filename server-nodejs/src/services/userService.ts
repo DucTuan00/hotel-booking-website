@@ -1,6 +1,7 @@
 import User from '@/models/User';
 import bcrypt from 'bcryptjs';
 import ApiError from '@/utils/apiError';
+import { mapId, mapIds } from '@/utils/mapId';
 import {
     UserIdInput,
     GetAllUsersInput,
@@ -15,11 +16,11 @@ const getUserById = async (arg: UserIdInput) => {
     if (!id) {
         throw new Error('Do not have id');
     }
-    const user = await User.findOne({ _id: id, active: true }, { _id: 0, password: 0 });
+    const user = await User.findOne({ _id: id, active: true }, { password: 0 });
     if (!user) {
         throw new Error('Failed finding user with id: ' + id);
     }
-    return user;
+    return mapId(user);
 };
 
 const getAllUsers = async (args: GetAllUsersInput) => {
@@ -39,7 +40,7 @@ const getAllUsers = async (args: GetAllUsersInput) => {
         throw new ApiError('Failed to get total users', 500);
     }
     return {
-        users: users,
+        users: mapIds(users),
         total: totalUsers,
         currentPage: page,
         pageSize: pageSize
@@ -79,7 +80,7 @@ const updateUser = async (data: InputUpdateUser) => {
     if (!updatedUser) {
         throw new Error('Failed finding user to update with _id: ' + id);
     }
-    return updatedUser;
+    return mapId(updatedUser);
 };
 
 const updateUserById = async (data: InputUpdateUser) => {
@@ -100,7 +101,7 @@ const updateUserById = async (data: InputUpdateUser) => {
     if (!updatedUser) {
         throw new Error('Failed finding user to update with _id: ' + id);
     }
-    return updatedUser;
+    return mapId(updatedUser);
 };
 
 const updatePassword = async (data: InputUpdatePassword) => {
