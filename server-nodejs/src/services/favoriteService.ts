@@ -1,14 +1,9 @@
 import Favorite from '@/models/Favorite';
 import ApiError from '@/utils/apiError';
-
-interface FavoriteInput {
-    userId: string;
-    roomId: string;
-}
-
-interface GetFavoritesInput {
-    userId: string;
-}
+import {
+    FavoriteInput,
+    GetFavoritesInput
+} from '@/types/favorite';
 
 const addFavorite = async (args: FavoriteInput) => {
     const { userId, roomId } = args;

@@ -4,11 +4,11 @@ import { Request, Response, NextFunction } from 'express';
 
 const getUserInfo = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const _id = req.user?.id;
-        if (!_id) {
+        const id = req.user?.id;
+        if (!id) {
             throw new ApiError('User ID is required', 400);
         }
-        const user = await userService.getUserById({ _id });
+        const user = await userService.getUserById({ id });
         res.json(user);
     } catch (error: any) {
         next(new ApiError(error.message, 400));
@@ -17,8 +17,8 @@ const getUserInfo = async (req: Request, res: Response, next: NextFunction) => {
 
 const getUserById = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const _id = req.params.id;
-        const user = await userService.getUserById({ _id });
+        const id = req.params.id;
+        const user = await userService.getUserById({ id });
         res.json(user);
     } catch (error: any) {
         next(new ApiError(error.message, 400));
@@ -54,12 +54,12 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
 
 const updateUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const _id = req.user?.id;
-        if (!_id) {
+        const id = req.user?.id;
+        if (!id) {
             throw new ApiError('User ID is required', 400);
         }
         const { email, name, phone } = req.body;
-        const updatedUser = await userService.updateUser({ _id, email, name, phone });
+        const updatedUser = await userService.updateUser({ id, email, name, phone });
         res.json({ 
             message: 'User updated successfully', 
             user: updatedUser 
@@ -71,9 +71,9 @@ const updateUser = async (req: Request, res: Response, next: NextFunction) => {
 
 const updateUserById = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const _id = req.params.id;
+        const id = req.params.id;
         const { email, name, phone, role } = req.body;
-        const updatedUser = await userService.updateUserById({ _id, email, name, phone, role });
+        const updatedUser = await userService.updateUserById({ id, email, name, phone, role });
         res.json({ 
             message: 'User updated successfully', 
             user: updatedUser 
@@ -85,12 +85,12 @@ const updateUserById = async (req: Request, res: Response, next: NextFunction) =
 
 const updatePassword = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const _id = req.user?.id;
-        if (!_id) {
+        const id = req.user?.id;
+        if (!id) {
             throw new ApiError('User ID is required', 400);
         }
         const { oldPassword, newPassword } = req.body;
-        const result = await userService.updatePassword({ _id, oldPassword, newPassword });
+        const result = await userService.updatePassword({ id, oldPassword, newPassword });
         res.json(result);
     } catch (error: any) {
         next(new ApiError(error.message, 400));

@@ -1,50 +1,26 @@
 import User from '@/models/User';
 import bcrypt from 'bcryptjs';
 import ApiError from '@/utils/apiError';
-
-interface InputCreateUser {
-    email: string;
-    password: string;
-    name: string;
-    phone: string;
-    role: string;
-}
-
-interface InputUpdateUser {
-    _id: string;
-    email?: string;
-    name?: string;
-    phone?: string;
-    role?: string;
-}
-
-interface InputUpdatePassword {
-    _id: string;
-    oldPassword: string;
-    newPassword: string;
-}
-
-interface UserIdInput {
-    _id: string;
-}
-
-interface GetAllUsersInput {
-    filter?: Record<string, any>;
-    page?: number;
-    pageSize?: number;
-}
+import { mapId, mapIds } from '@/utils/mapId';
+import {
+    UserIdInput,
+    GetAllUsersInput,
+    InputCreateUser,
+    InputUpdateUser,
+    InputUpdatePassword
+} from '@/types/user';
 
 const getUserById = async (arg: UserIdInput) => {
-    const { _id } = arg;
+    const { id } = arg;
 
-    if (!_id) {
-        throw new Error('Do not have _id');
+    if (!id) {
+        throw new Error('Do not have id');
     }
-    const user = await User.findOne({ _id, active: true }, { _id: 0, password: 0 });
+    const user = await User.findOne({ _id: id, active: true }, { password: 0 });
     if (!user) {
-        throw new Error('Failed finding user with _id: ' + _id);
+        throw new Error('Failed finding user with id: ' + id);
     }
-    return user;
+    return mapId(user);
 };
 
 const getAllUsers = async (args: GetAllUsersInput) => {
@@ -64,7 +40,7 @@ const getAllUsers = async (args: GetAllUsersInput) => {
         throw new ApiError('Failed to get total users', 500);
     }
     return {
-        users: users,
+        users: mapIds(users),
         total: totalUsers,
         currentPage: page,
         pageSize: pageSize
@@ -88,11 +64,11 @@ const createUser = async (data: InputCreateUser) => {
 };
 
 const updateUser = async (data: InputUpdateUser) => {
-    const { _id, email, name, phone } = data;
-    if (!_id) {
-        throw new Error('Do not have _id');
+    const { id, email, name, phone } = data;
+    if (!id) {
+        throw new Error('Do not have id');
     }
-    const updatedUser = await User.findByIdAndUpdate(_id, {
+    const updatedUser = await User.findByIdAndUpdate(id, {
         name,
         phone,
         email,
@@ -102,17 +78,17 @@ const updateUser = async (data: InputUpdateUser) => {
     })
     .select('-password'); // Remove password to response
     if (!updatedUser) {
-        throw new Error('Failed finding user to update with _id: ' + _id);
+        throw new Error('Failed finding user to update with _id: ' + id);
     }
-    return updatedUser;
+    return mapId(updatedUser);
 };
 
 const updateUserById = async (data: InputUpdateUser) => {
-    const { _id, email, name, phone, role } = data;
-    if (!_id) {
-        throw new Error('Do not have _id');
+    const { id, email, name, phone, role } = data;
+    if (!id) {
+        throw new Error('Do not have id');
     }
-    const updatedUser = await User.findByIdAndUpdate(_id, {
+    const updatedUser = await User.findByIdAndUpdate(id, {
         name,
         phone,
         email,
@@ -123,17 +99,17 @@ const updateUserById = async (data: InputUpdateUser) => {
     })
     .select('-password'); // Remove password to response
     if (!updatedUser) {
-        throw new Error('Failed finding user to update with _id: ' + _id);
+        throw new Error('Failed finding user to update with _id: ' + id);
     }
-    return updatedUser;
+    return mapId(updatedUser);
 };
 
 const updatePassword = async (data: InputUpdatePassword) => {
-    const { _id, oldPassword, newPassword } = data;
-    if (!_id) {
-        throw new Error('Do not have _id')
+    const { id, oldPassword, newPassword } = data;
+    if (!id) {
+        throw new Error('Do not have id')
     }
-    const user = await User.findById(_id);
+    const user = await User.findById(id);
     if(!user) {
         throw new Error('User not found');
     }
@@ -152,17 +128,17 @@ const updatePassword = async (data: InputUpdatePassword) => {
     };
 };
 
-const deleteUser = async (_id: string) => {
-    if (!_id) {
-        throw new Error('Do not have _id');
+const deleteUser = async (id: string) => {
+    if (!id) {
+        throw new Error('Do not have id');
     }
     const user = await User.findByIdAndUpdate(
-        _id,
+        id,
         { active: false },
         { new: true }
     );
     if (!user) {
-        throw new Error('Failed to delete user with _id: ' + _id);
+        throw new Error('Failed to delete user with id: ' + id);
     }
     return { message: 'User deleted successfully'};
 };

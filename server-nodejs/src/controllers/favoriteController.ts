@@ -4,7 +4,7 @@ import { Request, Response, NextFunction } from 'express';
 
 const addFavorite = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const userId: string | undefined = req.user?.id; // Get user id from req.user
+        const userId = req.user?.id; // Get user id from req.user
         const { roomId } = req.body;
         if (!userId) {
             throw new ApiError('Unauthorized: missing user ID', 401);
@@ -18,7 +18,7 @@ const addFavorite = async (req: Request, res: Response, next: NextFunction) => {
 
 const getFavorites = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const userId: string | undefined = req.user?.id;
+        const userId = req.user?.id;
         if (!userId) {
             throw new ApiError('Unauthorized: missing user ID', 401);
         }
@@ -31,7 +31,7 @@ const getFavorites = async (req: Request, res: Response, next: NextFunction) => 
 
 const deleteFavorite = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const userId: string | undefined = req.user?.id;
+        const userId = req.user?.id;
         if (!userId) {
             throw new ApiError('Unauthorized: missing user ID', 401);
         }

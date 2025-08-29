@@ -1,26 +1,20 @@
 import Room from '@/models/Room';
 import ApiError from '@/utils/apiError';
+import { mapId, mapIds } from '@/utils/mapId';
 import cron from 'node-cron';
-import mongoose, { Types } from 'mongoose';
-
-interface RoomData {
-    id?: string;
-    name: string;
-    room_type: 'Single' | 'Double' | 'Suite';
-    description?: string;
-    amenities: Types.ObjectId[];
-    price: number;
-    images: string[];
-    max_guests: number;
-    quantity: number;
-}
+import mongoose from 'mongoose';
+import {
+    RoomData,
+    GetAllRoomsInput,
+    RoomIdInput
+} from '@/types/room';
 
 const validateRoomData = (data: RoomData) => {
     if (!data.name || typeof data.name !== 'string' || data.name.trim() === "") {
         throw new ApiError("Invalid room name.", 400);
     }
 
-    if (!data.room_type || !['Single', 'Double', 'Suite'].includes(data.room_type)) {
+    if (!data.roomType || !['Single', 'Double', 'Suite'].includes(data.roomType)) {
         throw new ApiError("Invalid room type.", 400);
     }
 
@@ -37,12 +31,12 @@ const validateRoomData = (data: RoomData) => {
     }
 
     // Change max guests to number before validate
-    if (data.max_guests) {
-        const maxGuests = Number(data.max_guests);
+    if (data.maxGuests) {
+        const maxGuests = Number(data.maxGuests);
         if (isNaN(maxGuests) || maxGuests <= 0) {
             throw new ApiError("Invalid max guests.", 400);
         }
-        data.max_guests = maxGuests;
+        data.maxGuests = maxGuests;
     }
     else {
         throw new ApiError("Invalid max guests.", 400);
@@ -99,12 +93,12 @@ const createRoom = async (roomData: RoomData) => {
 
     const newRoom = new Room({
         name: roomData.name,
-        room_type: roomData.room_type,
+        roomType: roomData.roomType,
         description: roomData.description,
         amenities: roomData.amenities.map(id => new mongoose.Types.ObjectId(id)),
         price: roomData.price,
         images: roomData.images,
-        max_guests: roomData.max_guests,
+        maxGuests: roomData.maxGuests,
         quantity: roomData.quantity
         // availability: {
         //     start_date: new Date(roomData.availability.start_date),
@@ -114,10 +108,12 @@ const createRoom = async (roomData: RoomData) => {
     console.log(newRoom);
 
     const room = await newRoom.save();
-    return room;
+    return mapId(room);
 };
 
-const getAllRooms = async (filter: any, page: number, pageSize: number) => {
+const getAllRooms = async (args: GetAllRoomsInput) => {
+    const { filter = {}, page = 1, pageSize = 10 } = args;
+
     const skip = (page - 1) * pageSize;
     const rooms = await Room.find({ ...filter, active: true })
         .skip(skip)
@@ -136,14 +132,16 @@ const getAllRooms = async (filter: any, page: number, pageSize: number) => {
     }
 
     return {
-        rooms: rooms,
+        rooms: mapIds(rooms),
         total: totalRooms,
         currentPage: page,
         pageSize: pageSize
     };
 };
 
-const getRoomById = async (id: string) => {
+const getRoomById = async (arg: RoomIdInput) => {
+    const { id } = arg;
+
     if (!id) {
         throw new ApiError("Invalid room id.", 400);
     }
@@ -158,7 +156,7 @@ const getRoomById = async (id: string) => {
         throw new ApiError("Room not found.", 404);
     }
     
-    return room;
+    return mapId(room);
 };
 
 
@@ -190,12 +188,12 @@ const updateRoom = async (roomData: RoomData) => {
         { _id: roomData.id, active: true },
         {
             name: roomData.name,
-            room_type: roomData.room_type,
+            roomType: roomData.roomType,
             description: roomData.description,
             amenities: roomData.amenities.map(id => new mongoose.Types.ObjectId(id)),
             price: roomData.price,
             images: images,
-            max_guests: roomData.max_guests,
+            maxGuests: roomData.maxGuests,
             quantity: roomData.quantity
             // availability: {
             //     start_date: new Date(roomData.availability.start_date),
@@ -205,10 +203,16 @@ const updateRoom = async (roomData: RoomData) => {
         { new: true }
     );
 
-    return updatedRoom;
+    if (!updatedRoom) {
+        throw new ApiError('Room not found or failed to update.', 404);
+    }
+
+    return mapId(updatedRoom);
 };
 
-const deleteRoom = async (id: string) => {
+const deleteRoom = async (arg: RoomIdInput) => {
+    const { id } = arg;
+
     if (!id) {
         throw new ApiError("Invalid room id.", 400);
     }
