@@ -1,16 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import {
-  UserIcon,
-  HomeIcon,
-  CalendarIcon,
-  CurrencyDollarIcon,
-} from '@heroicons/react/24/outline';
-import { LineChart, Line, XAxis, YAxis, Tooltip, PieChart, Pie, Cell } from 'recharts';
+  Card,
+  Row,
+  Col,
+  Statistic,
+  Table,
+  Typography,
+  Tag,
+} from 'antd';
+import {
+  UserOutlined,
+  HomeOutlined,
+  CalendarOutlined,
+  DollarCircleOutlined,
+} from '@ant-design/icons';
+import { LineChart, Line, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, ResponsiveContainer, Legend } from 'recharts';
+import LoadingSpinner from '@/components/LoadingSpinner';
 import userService from '@/services/userService';
 import roomService from '@/services/roomService';
 import bookingService from '@/services/bookingService';
-import { ClipLoader } from 'react-spinners';
 import { Booking as ApiBooking } from '@/types/booking';
+
+const { Title } = Typography;
 
 // Type definitions
 // (No need for DashboardUser, DashboardRoom, DashboardBooking)
@@ -105,107 +116,150 @@ const DashboardPage: React.FC = () => {
   }, []);
 
   const stats = [
-    { title: 'Tổng số Người dùng', value: totalUsers, icon: UserIcon },
-    { title: 'Tổng số Phòng', value: totalRooms, icon: HomeIcon },
-    { title: 'Tổng số Đơn đặt phòng', value: totalBookings, icon: CalendarIcon },
-    { title: 'Doanh thu thực tế', value: actualRevenue.toLocaleString('vi-VN'), icon: CurrencyDollarIcon, suffix: 'đ' },
+    { 
+      title: 'Tổng số Người dùng', 
+      value: totalUsers, 
+      icon: <UserOutlined style={{ fontSize: '24px', color: '#1890ff' }} />,
+      color: '#1890ff'
+    },
+    { 
+      title: 'Tổng số Phòng', 
+      value: totalRooms, 
+      icon: <HomeOutlined style={{ fontSize: '24px', color: '#52c41a' }} />,
+      color: '#52c41a'
+    },
+    { 
+      title: 'Tổng số Đơn đặt phòng', 
+      value: totalBookings, 
+      icon: <CalendarOutlined style={{ fontSize: '24px', color: '#faad14' }} />,
+      color: '#faad14'
+    },
+    { 
+      title: 'Doanh thu thực tế', 
+      value: actualRevenue, 
+      icon: <DollarCircleOutlined style={{ fontSize: '24px', color: '#f5222d' }} />,
+      suffix: 'đ',
+      color: '#f5222d'
+    },
   ];
 
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
-        <ClipLoader color="#3498db" size={50} />
-        <p className="mt-4 text-gray-600 text-lg font-semibold">
-          Đang tải dữ liệu...
-        </p>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
+  // Define columns for the table
+  const columns = [
+    {
+      title: 'Khách hàng',
+      dataIndex: 'userId',
+      key: 'userId',
+      render: (userId: string | { name?: string }) => getName(userId),
+    },
+    {
+      title: 'Phòng',
+      dataIndex: 'roomId',
+      key: 'roomId',
+      render: (roomId: string | { name?: string }) => getName(roomId),
+    },
+    {
+      title: 'Ngày đặt',
+      dataIndex: 'checkIn',
+      key: 'checkIn',
+      render: (checkIn: string) => new Date(checkIn).toLocaleDateString('vi-VN'),
+    },
+    {
+      title: 'Trạng thái',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status: string) => {
+        const color = status === 'Completed' ? 'green' : 
+                     status === 'Confirmed' ? 'blue' : 
+                     status === 'Pending' ? 'orange' : 'red';
+        return <Tag color={color}>{status}</Tag>;
+      },
+    },
+    {
+      title: 'Tổng giá',
+      dataIndex: 'totalPrice',
+      key: 'totalPrice',
+      render: (price: number) => `${price.toLocaleString('vi-VN')} đ`,
+    },
+  ];
+
   return (
-    <div className="p-6">
+    <div style={{ background: '#fff', minHeight: '100vh' }}>
+      <Title level={2} style={{ marginBottom: '24px' }}>Dashboard</Title>
+      
       {/* Main stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
         {stats.map((stat, index) => (
-          <div key={index} className="bg-white border border-gray-300 shadow-md overflow-hidden rounded-md">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="w-0 flex-1">
-                  <dt className="text-md font-medium text-black-900 truncate">{stat.title}</dt>
-                  <dd className="mt-1 text-3xl font-semibold text-black">
-                    {stat.value} {stat.suffix}
-                  </dd>
-                </div>
-                <div className="ml-5 flex-shrink-0">
-                  <stat.icon className="h-6 w-6 text-black-400" aria-hidden="true" />
-                </div>
-              </div>
-            </div>
-          </div>
+          <Col xs={24} sm={12} lg={6} key={index}>
+            <Card>
+              <Statistic
+                title={stat.title}
+                value={stat.value}
+                prefix={stat.icon}
+                suffix={stat.suffix}
+                valueStyle={{ color: stat.color }}
+              />
+            </Card>
+          </Col>
         ))}
-      </div>
+      </Row>
 
       {/* Chart and Recent Bookings */}
-      <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
         {/* Revenue Chart */}
-        <div className="bg-white p-4 border border-gray-300 shadow-md rounded-md">
-          <h3 className="text-lg font-medium text-gray-900">Doanh thu theo tháng</h3>
-          <LineChart width={500} height={300} data={revenueData}>
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Line type="monotone" dataKey="revenue" stroke="#8884d8" />
-          </LineChart>
-        </div>
+        <Col xs={24} lg={12}>
+          <Card title="Doanh thu theo tháng" style={{ height: '400px' }}>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={revenueData}>
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip formatter={(value) => [`${Number(value).toLocaleString('vi-VN')} đ`, 'Doanh thu']} />
+                <Line type="monotone" dataKey="revenue" stroke="#1890ff" strokeWidth={2} />
+              </LineChart>
+            </ResponsiveContainer>
+          </Card>
+        </Col>
 
         {/* Status bookings chart */}
-        <div className="bg-white p-4 border border-gray-300 shadow-md rounded-md">
-          <h3 className="text-lg font-medium text-gray-900">Trạng thái đặt phòng</h3>
-          <PieChart width={400} height={300}>
-            <Pie
-              data={statusData}
-              cx={200}
-              cy={150}
-              labelLine={false}
-              outerRadius={80}
-              fill="#8884d8"
-              dataKey="value"
-            >
-              {statusData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip />
-          </PieChart>
-        </div>
-      </div>
+        <Col xs={24} lg={12}>
+          <Card title="Trạng thái đặt phòng" style={{ height: '400px' }}>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={statusData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {statusData.map((_entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </Card>
+        </Col>
+      </Row>
 
       {/* Recent bookings list */}
-      <div className="mt-6 bg-white p-4 border border-gray-300 shadow-md rounded-md">
-        <h3 className="text-lg font-medium text-gray-900">Đơn đặt phòng gần đây</h3>
-        <table className="min-w-full divide-y divide-gray-300 mt-4">
-          <thead>
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">Khách hàng</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">Phòng</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">Ngày đặt</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">Trạng thái</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">Tổng giá</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-300">
-            {recentBookings.map((booking) => (
-              <tr key={booking.id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{getName(booking.userId)}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{getName(booking.roomId)}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{new Date(booking.checkIn).toLocaleDateString()}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{booking.status}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{booking.totalPrice.toLocaleString('vi-VN')} đ</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <Card title="Đơn đặt phòng gần đây">
+        <Table
+          dataSource={recentBookings}
+          columns={columns}
+          rowKey="id"
+          pagination={false}
+          scroll={{ x: 'max-content' }}
+        />
+      </Card>
     </div>
   );
 };
