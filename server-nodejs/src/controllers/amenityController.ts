@@ -5,7 +5,7 @@ import { Request, Response, NextFunction } from 'express';
 const createAmenity = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { name } = req.body;
-        const amenity = await amenityService.createAmenity(name);
+        const amenity = await amenityService.createAmenity({ name });
         res.status(201).json(amenity);
     } catch (error: any) {
         next(new ApiError(error.message, error.statusCode || 500));

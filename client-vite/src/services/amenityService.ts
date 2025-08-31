@@ -52,7 +52,7 @@ const updateAmenity = async (amenityData: UpdateAmenityInput): Promise<Amenity> 
 
 const deleteAmenity = async (amenityId: AmenityIdInput): Promise<DeleteAmenityResponse> => {
     try {
-        const response = await api.delete<DeleteAmenityResponse>(`/amenity/${amenityId}`);
+        const response = await api.delete<DeleteAmenityResponse>(`/amenity/${amenityId.id}`);
         return response.data;
     } catch (error) {
         console.error('Error deleting amenity:', error);

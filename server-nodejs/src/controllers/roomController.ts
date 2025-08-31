@@ -67,7 +67,17 @@ const getRoomById = async (req: Request, res: Response, next: NextFunction) => {
 const updateRoom = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
-        const { name, roomType, description, amenities, price, maxGuests, quantity } = req.body;
+        const { name, roomType, description, price, maxGuests, quantity } = req.body;
+        let amenities = req.body.amenities;
+
+        if (amenities && typeof amenities === 'string') {
+            // If only one amenity was sent, it might be parsed as a string
+            amenities = [amenities];
+        } else if (!amenities) {
+            // If no amenities were sent, ensure it's an empty array
+            amenities = [];
+        }
+
         const images = req.files ? (req.files as Express.Multer.File[]).map(file => file.path) : [];
 
         try {
@@ -103,10 +113,21 @@ const deleteRoom = async (req: Request, res: Response, next: NextFunction) => {
     }
 };
 
+const deleteRoomImage = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { imageId } = req.params;
+        const result = await roomService.deleteRoomImage(imageId);
+        res.json(result);
+    } catch (error: any) {
+        next(new ApiError(error.message, error.statusCode || 500));
+    }
+};
+
 export default {
     createRoom,
     getAllRooms,
     getRoomById,
     updateRoom,
     deleteRoom,
+    deleteRoomImage,
 };

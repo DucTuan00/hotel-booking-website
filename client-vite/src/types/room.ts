@@ -41,8 +41,19 @@ export interface Room {
         name: string;
     }>;
     price: number;
-    images: string[];
+    images: Array<{
+        id: string;
+        path: string;
+    }>;
     maxGuests: number;
     quantity: number;
     active: boolean;
+}
+
+export interface RoomImage {
+    id: string;
+    roomId: string;
+    imagePath: string;
+    createdAt?: Date;
+    updatedAt?: Date;
 }

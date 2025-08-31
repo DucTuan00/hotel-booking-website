@@ -4,7 +4,6 @@
     "module": "ESNext",
     "moduleResolution": "node",
     "outDir": "dist",
-    "rootDir": "src",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -13,14 +12,16 @@
     "noEmit": true,
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
-    "baseUrl": "src",
+    "types": ["node"],
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["*"]
+      "@/*": ["src/*"]
     },
   },
   "include": [
     "src/**/*",
-    "src/types/**/*.d.ts"
+    "src/types/**/*.d.ts",
+    "migrations/**/*"
   ], 
   "exclude": [
     "node_modules",

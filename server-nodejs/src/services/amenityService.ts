@@ -1,5 +1,5 @@
 import Amenity from '@/models/Amenity';
-import Room from '@/models/Room';
+import RoomAmenity from '@/models/RoomAmenity';
 import ApiError from '@/utils/apiError';
 import { mapId, mapIds } from '@/utils/mapId';
 import {
@@ -82,10 +82,7 @@ const updateAmenity = async (args: UpdateAmenityInput) => {
 const deleteAmenity = async (arg: GetAmenityByIdInput) => {
     const { id } = arg;
 
-    await Room.updateMany(
-        { amenities: id }, // Find all rooms contains this amenity id
-        { $pull: { amenities: id } } // Remove the amenity id
-    );
+    await RoomAmenity.deleteMany({ amenityId: id });
 
     const amenity = await Amenity.findByIdAndDelete(id);
 

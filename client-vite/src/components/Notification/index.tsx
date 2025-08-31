@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { CheckCircleIcon, XCircleIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import React, { useEffect, useRef } from 'react';
+import { notification } from 'antd';
+import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 
 interface NotificationMessage {
   type: 'success' | 'error';
@@ -12,61 +13,43 @@ interface NotificationProps {
 }
 
 const Notification: React.FC<NotificationProps> = ({ message, onClose }) => {
-  const [isVisible, setIsVisible] = useState(false);
-
-  const handleClose = useCallback(() => {
-    setIsVisible(false);
-    setTimeout(() => {
-      onClose();
-    }, 300);
-  }, [onClose]);
+  const [api, contextHolder] = notification.useNotification();
+  const lastMessageRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (message) {
-      setIsVisible(true);
-      const timer = setTimeout(() => {
-        handleClose();
-      }, 3000);
-      return () => clearTimeout(timer);
-    } else {
-      setIsVisible(false);
+    if (message && message.text !== lastMessageRef.current) {
+      lastMessageRef.current = message.text;
+      
+      const config = {
+        message: message.type === 'success' ? 'Thành công' : 'Lỗi',
+        description: message.text,
+        placement: 'topRight' as const,
+        duration: 3,
+        style: {
+          borderRadius: '8px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+        },
+        onClose: () => {
+          lastMessageRef.current = null;
+          onClose();
+        }
+      };
+
+      if (message.type === 'success') {
+        api.success({
+          ...config,
+          icon: <CheckCircleOutlined style={{ color: '#52c41a' }} />,
+        });
+      } else {
+        api.error({
+          ...config,
+          icon: <CloseCircleOutlined style={{ color: '#ff4d4f' }} />,
+        });
+      }
     }
-  }, [message, handleClose]);
+  }, [message, api, onClose]);
 
-  if (!isVisible || !message) {
-    return null;
-  }
-
-  const isSuccess = message.type === 'success';
-  const bgColor = isSuccess ? 'bg-green-600' : 'bg-red-600';
-  const Icon = isSuccess ? CheckCircleIcon : XCircleIcon;
-
-  return (
-    <div
-      className={`fixed top-5 right-5 w-auto max-w-sm z-50 transform transition-all duration-300 ease-out ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full'}`}
-      role="alert"
-    >
-      <div className={`rounded-lg shadow-lg p-4 text-white ${bgColor}`}>
-        <div className="flex items-start">
-          <div className="flex-shrink-0">
-            <Icon className="h-6 w-6" aria-hidden="true" />
-          </div>
-          <div className="ml-3 flex-1">
-            <p className="text-sm font-medium">{message.text}</p>
-          </div>
-          <div className="ml-4 flex-shrink-0 flex">
-            <button
-              onClick={handleClose}
-              className="inline-flex rounded-md text-white hover:bg-white hover:bg-opacity-20 focus:outline-none focus:ring-2 focus:ring-white p-1"
-            >
-              <span className="sr-only">Close</span>
-              <XMarkIcon className="h-5 w-5" aria-hidden="true" />
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  return <>{contextHolder}</>;
 };
 
 export default Notification;
