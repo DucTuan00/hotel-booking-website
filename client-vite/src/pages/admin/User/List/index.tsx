@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Button, Space, message, Popconfirm, Tag } from 'antd';
+import { Button, Space, Popconfirm, Tag } from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import AdminTable from '@/components/AdminTable';
 import UserForm, { UserFormValues } from '@/pages/admin/User/Form';
 import userService from '@/services/userService';
+import Notification from '@/components/Notification';
 
 interface User {
     id: string;
@@ -12,6 +13,11 @@ interface User {
     email: string;
     phone: string;
     role: 'user' | 'admin';
+}
+
+interface Message {
+    type: 'success' | 'error';
+    text: string;
 }
 
 const UserList: React.FC = () => {
@@ -22,6 +28,7 @@ const UserList: React.FC = () => {
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [pageSize, setPageSize] = useState<number>(10);
     const [totalUsers, setTotalUsers] = useState<number>(0);
+    const [message, setMessage] = useState<Message | null>(null);
 
     const fetchUsers = useCallback(async () => {
         setLoading(true);
@@ -31,7 +38,7 @@ const UserList: React.FC = () => {
             setTotalUsers(data.total ?? 0);
         } catch (error) {
             console.error("Error when fetch users:", error);
-            message.error('Tải danh sách người dùng thất bại.');
+            setMessage({ type: 'error', text: 'Tải danh sách người dùng thất bại.' });
             setUsers([]);
             setTotalUsers(0);
         } finally {
@@ -67,11 +74,11 @@ const UserList: React.FC = () => {
                     role: values.role
                 };
                 await userService.updateUser(editingUser.id, updateData);
-                message.success('Cập nhật người dùng thành công!');
+                setMessage({ type: 'success', text: 'Cập nhật người dùng thành công!' });
             } else {
                 // when creating, password is required
                 if (!values.password || values.password.trim() === '') {
-                    message.error('Mật khẩu là bắt buộc khi tạo người dùng mới.');
+                    setMessage({ type: 'error', text: 'Mật khẩu là bắt buộc khi tạo người dùng mới.' });
                     setLoading(false);
                     return;
                 }
@@ -83,13 +90,13 @@ const UserList: React.FC = () => {
                     password: values.password
                 };
                 await userService.createUser(createData);
-                message.success('Tạo người dùng thành công!');
+                setMessage({ type: 'success', text: 'Tạo người dùng thành công!' });
             }
             fetchUsers(); 
             setIsModalVisible(false);
         } catch (error) {
             console.error("Error when submit form:", error);
-            message.error(editingUser ? 'Cập nhật người dùng thất bại.' : 'Tạo người dùng thất bại.');
+            setMessage({ type: 'error', text: editingUser ? 'Cập nhật người dùng thất bại.' : 'Tạo người dùng thất bại.' });
         } finally {
             setLoading(false);
         }
@@ -98,7 +105,7 @@ const UserList: React.FC = () => {
     const handleDelete = async (userId: string) => {
         try {
             await userService.deleteUser(userId);
-            message.success('Xóa người dùng thành công!');
+            setMessage({ type: 'success', text: 'Xóa người dùng thành công!' });
             
             // If deleting the last item on current page and not on first page, go to previous page
             if (users.length === 1 && currentPage > 1) {
@@ -108,7 +115,7 @@ const UserList: React.FC = () => {
             }
         } catch (error) {
             console.error("Error when delete user:", error);
-            message.error('Xóa người dùng thất bại.');
+            setMessage({ type: 'error', text: 'Xóa người dùng thất bại.' });
         }
     };
 
@@ -179,41 +186,48 @@ const UserList: React.FC = () => {
     ];
 
     return (
-        <AdminTable<User>
-            title="Quản lý Người dùng"
-            columns={columns}
-            dataSource={users}
-            rowKey="id"
-            loading={loading}
-            onAdd={showModal}
-            addButtonText="Thêm người dùng mới"
-            modalTitle={editingUser ? 'Cập nhật người dùng' : 'Thêm người dùng mới'}
-            modalVisible={isModalVisible}
-            onModalCancel={handleCancel}
-            pagination={{
-                current: currentPage,
-                pageSize: pageSize,
-                total: totalUsers,
-                onChange: (page: number, size?: number) => {
-                    setCurrentPage(page);
-                    if (size !== pageSize) {
-                        setPageSize(size || 10);
-                    }
-                },
-                onShowSizeChange: (_current: number, size: number) => {
-                    setCurrentPage(1);
-                    setPageSize(size);
-                },
-            }}
-        >
-            <UserForm
-                visible={isModalVisible}
-                onCancel={handleCancel}
-                onSubmit={handleFormSubmit}
-                initialValues={editingUser || undefined}
-                loading={loading}
+        <>
+            <Notification
+                message={message}
+                onClose={() => setMessage(null)}
             />
-        </AdminTable>
+
+            <AdminTable<User>
+                title="Quản lý Người dùng"
+                columns={columns}
+                dataSource={users}
+                rowKey="id"
+                loading={loading}
+                onAdd={showModal}
+                addButtonText="Thêm người dùng mới"
+                modalTitle={editingUser ? 'Cập nhật người dùng' : 'Thêm người dùng mới'}
+                modalVisible={isModalVisible}
+                onModalCancel={handleCancel}
+                pagination={{
+                    current: currentPage,
+                    pageSize: pageSize,
+                    total: totalUsers,
+                    onChange: (page: number, size?: number) => {
+                        setCurrentPage(page);
+                        if (size !== pageSize) {
+                            setPageSize(size || 10);
+                        }
+                    },
+                    onShowSizeChange: (_current: number, size: number) => {
+                        setCurrentPage(1);
+                        setPageSize(size);
+                    },
+                }}
+            >
+                <UserForm
+                    visible={isModalVisible}
+                    onCancel={handleCancel}
+                    onSubmit={handleFormSubmit}
+                    initialValues={editingUser || undefined}
+                    loading={loading}
+                />
+            </AdminTable>
+        </>
     );
 };
 

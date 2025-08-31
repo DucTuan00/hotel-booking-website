@@ -1,8 +1,6 @@
 import api from '@/services/api';
 import {
     Room,
-    CreateRoomInput,
-    UpdateRoomInput,
     GetAllRoomsInput,
     GetAllRoomsResponse
 } from '@/types/room';
@@ -27,9 +25,13 @@ const getRoomById = async (roomId: string): Promise<Room> => {
     }
 };
 
-const createRoom = async (roomData: CreateRoomInput): Promise<Room> => {
+const createRoom = async (formData: FormData): Promise<Room> => {
     try {
-        const response = await api.post('/room', roomData);
+        const response = await api.post('/room', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            }
+        });
         return response.data;
     } catch (error) {
         console.error('Error creating room:', error);
@@ -37,9 +39,13 @@ const createRoom = async (roomData: CreateRoomInput): Promise<Room> => {
     }
 };
 
-const updateRoom = async (roomId: string, roomData: UpdateRoomInput): Promise<Room> => {
+const updateRoom = async (roomId: string, formData: FormData): Promise<Room> => {
     try {
-        const response = await api.put(`/room/${roomId}`, roomData);
+        const response = await api.put(`/room/${roomId}`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            }
+        });
         return response.data;
     } catch (error) {
         console.error('Error updating room:', error);
@@ -57,10 +63,21 @@ const deleteRoom = async (roomId: string): Promise<{ message: string }> => {
     }
 };
 
+const deleteRoomImage = async (imageId: string): Promise<{ message: string }> => {
+    try {
+        const response = await api.delete(`/room/image/${imageId}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error deleting room image:', error);
+        throw error;
+    }
+};
+
 export default {
     getAllRooms,
     getRoomById,
     createRoom,
     updateRoom,
     deleteRoom,
+    deleteRoomImage,
 };

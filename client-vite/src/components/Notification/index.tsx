@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { notification } from 'antd';
 import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 
@@ -14,9 +14,12 @@ interface NotificationProps {
 
 const Notification: React.FC<NotificationProps> = ({ message, onClose }) => {
   const [api, contextHolder] = notification.useNotification();
+  const lastMessageRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (message) {
+    if (message && message.text !== lastMessageRef.current) {
+      lastMessageRef.current = message.text;
+      
       const config = {
         message: message.type === 'success' ? 'Thành công' : 'Lỗi',
         description: message.text,
@@ -27,6 +30,7 @@ const Notification: React.FC<NotificationProps> = ({ message, onClose }) => {
           boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
         },
         onClose: () => {
+          lastMessageRef.current = null;
           onClose();
         }
       };

@@ -103,10 +103,21 @@ const deleteRoom = async (req: Request, res: Response, next: NextFunction) => {
     }
 };
 
+const deleteRoomImage = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { imageId } = req.params;
+        const result = await roomService.deleteRoomImage(imageId);
+        res.json(result);
+    } catch (error: any) {
+        next(new ApiError(error.message, error.statusCode || 500));
+    }
+};
+
 export default {
     createRoom,
     getAllRooms,
     getRoomById,
     updateRoom,
     deleteRoom,
+    deleteRoomImage,
 };

@@ -22,5 +22,6 @@ router.get('/', roomController.getAllRooms);
 router.get('/:id', roomController.getRoomById);
 router.put('/:id', authMiddleware(['admin']), upload.array('images', 5), roomController.updateRoom);
 router.delete('/:id', authMiddleware(['admin']), roomController.deleteRoom);
+router.delete('/image/:imageId', authMiddleware(['admin']), roomController.deleteRoomImage);
 
 export default router;

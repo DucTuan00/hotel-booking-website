@@ -6,7 +6,6 @@ interface RoomInterface extends Document {
     description?: string;
     amenities: Types.ObjectId[];
     price: number;
-    images: string[];
     maxGuests: number;
     quantity: number;
     active: boolean;
@@ -33,25 +32,10 @@ const roomSchema: Schema = new mongoose.Schema({
         type: Number, 
         required: true 
     }, 
-    images: [String],
     maxGuests: { 
         type: Number, 
         required: true 
     }, 
-    // availability: {
-    //     start_date: {
-    //         type: Date,
-    //         required: true
-    //     },
-    //     end_date: {
-    //         type: Date,
-    //         required: true
-    //     },
-    //     is_available: {
-    //         type: Boolean,
-    //         default: true
-    //     }
-    // },
     quantity: {
         type: Number,
         required: true,

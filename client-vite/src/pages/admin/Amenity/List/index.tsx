@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { 
     Button, 
     Space, 
-    message, 
     Popconfirm 
 } from 'antd';
 import { 
@@ -14,6 +13,12 @@ import AdminTable from '@/components/AdminTable';
 import AmenityForm from '@/pages/admin/Amenity/Form';
 import amenityService from '@/services/amenityService';
 import { Amenity } from '@/types/amenity';
+import Notification from '@/components/Notification';
+
+interface Message {
+    type: 'success' | 'error';
+    text: string;
+}
 
 const AmenityList: React.FC = () => {
     const [amenities, setAmenities] = useState<Amenity[]>([]);
@@ -23,6 +28,7 @@ const AmenityList: React.FC = () => {
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [pageSize, setPageSize] = useState<number>(10);
     const [totalAmenities, setTotalAmenities] = useState<number>(0);
+    const [message, setMessage] = useState<Message | null>(null);
 
     const fetchAmenities = useCallback(async () => {
         setLoading(true);
@@ -31,7 +37,7 @@ const AmenityList: React.FC = () => {
             setAmenities(data.amenities as Amenity[]);
             setTotalAmenities(data.total ?? 0);
         } catch {
-            message.error('Tải danh sách tiện nghi thất bại.');
+            setMessage({ type: 'error', text: 'Tải danh sách tiện nghi thất bại.' });
             setAmenities([]);
             setTotalAmenities(0);
         } finally {
@@ -62,22 +68,22 @@ const AmenityList: React.FC = () => {
         try {
             if (editingAmenity) {
                 await amenityService.updateAmenity({ id: editingAmenity.id, ...values });
-                message.success('Cập nhật tiện nghi thành công!');
+                setMessage({ type: 'success', text: 'Cập nhật tiện nghi thành công!' });
             } else {
                 await amenityService.createAmenity(values);
-                message.success('Thêm tiện nghi thành công!');
+                setMessage({ type: 'success', text: 'Thêm tiện nghi thành công!' });
             }
             await fetchAmenities();
             handleCancel();
         } catch {
-            message.error(editingAmenity ? 'Cập nhật tiện nghi thất bại.' : 'Thêm tiện nghi thất bại.');
+            setMessage({ type: 'error', text: editingAmenity ? 'Cập nhật tiện nghi thất bại.' : 'Thêm tiện nghi thất bại.' });
         }
     };
 
     const handleDelete = async (amenityId: string) => {
         try {
             await amenityService.deleteAmenity({ id: amenityId });
-            message.success('Tiện nghi đã được xóa thành công!');
+            setMessage({ type: 'success', text: 'Tiện nghi đã được xóa thành công!' });
             
             // If deleting the last item on current page and not on first page, go to previous page
             if (amenities.length === 1 && currentPage > 1) {
@@ -86,7 +92,7 @@ const AmenityList: React.FC = () => {
                 await fetchAmenities();
             }
         } catch {
-            message.error('Xóa tiện nghi thất bại.');
+            setMessage({ type: 'error', text: 'Xóa tiện nghi thất bại.' });
         }
     };
 
@@ -134,41 +140,48 @@ const AmenityList: React.FC = () => {
     ];
 
     return (
-        <AdminTable<Amenity>
-            title="Quản lý Tiện nghi"
-            columns={columns}
-            dataSource={amenities}
-            rowKey="id"
-            loading={loading}
-            onAdd={showModal}
-            addButtonText="Thêm tiện nghi mới"
-            modalTitle={editingAmenity ? 'Cập nhật tiện nghi' : 'Thêm tiện nghi mới'}
-            modalVisible={isModalVisible}
-            onModalCancel={handleCancel}
-            pagination={{
-                current: currentPage,
-                pageSize: pageSize,
-                total: totalAmenities,
-                onChange: (page: number, size?: number) => {
-                    setCurrentPage(page);
-                    if (size !== pageSize) {
-                        setPageSize(size || 10);
-                    }
-                },
-                onShowSizeChange: (_current: number, size: number) => {
-                    setCurrentPage(1);
-                    setPageSize(size);
-                },
-            }}
-        >
-            <AmenityForm
-                visible={isModalVisible}
-                onCancel={handleCancel}
-                onSubmit={handleFormSubmit}
-                initialValues={editingAmenity ?? undefined}
-                loading={loading}
+        <>
+            <Notification
+                message={message}
+                onClose={() => setMessage(null)}
             />
-        </AdminTable>
+
+            <AdminTable<Amenity>
+                title="Quản lý Tiện nghi"
+                columns={columns}
+                dataSource={amenities}
+                rowKey="id"
+                loading={loading}
+                onAdd={showModal}
+                addButtonText="Thêm tiện nghi mới"
+                modalTitle={editingAmenity ? 'Cập nhật tiện nghi' : 'Thêm tiện nghi mới'}
+                modalVisible={isModalVisible}
+                onModalCancel={handleCancel}
+                pagination={{
+                    current: currentPage,
+                    pageSize: pageSize,
+                    total: totalAmenities,
+                    onChange: (page: number, size?: number) => {
+                        setCurrentPage(page);
+                        if (size !== pageSize) {
+                            setPageSize(size || 10);
+                        }
+                    },
+                    onShowSizeChange: (_current: number, size: number) => {
+                        setCurrentPage(1);
+                        setPageSize(size);
+                    },
+                }}
+            >
+                <AmenityForm
+                    visible={isModalVisible}
+                    onCancel={handleCancel}
+                    onSubmit={handleFormSubmit}
+                    initialValues={editingAmenity ?? undefined}
+                    loading={loading}
+                />
+            </AdminTable>
+        </>
     );
 };
 

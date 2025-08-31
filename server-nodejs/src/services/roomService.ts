@@ -1,4 +1,5 @@
 import Room from '@/models/Room';
+import RoomImage from '@/models/RoomImage';
 import ApiError from '@/utils/apiError';
 import { mapId, mapIds } from '@/utils/mapId';
 import cron from 'node-cron';
@@ -66,26 +67,6 @@ const validateRoomData = (data: RoomData) => {
             throw new ApiError('Invalid amenities format. It must be a JSON string.', 400);
         }
     }
-
-    // validate availability
-    // if (data.availability) { 
-    //     try {
-    //         // Try to parse availability as JSON if it's a string
-    //         if (typeof data.availability === 'string') {
-    //             data.availability = JSON.parse(data.availability);
-    //         }
-
-    //         // Check for start_date and end_date after parsing
-    //         if (!data.availability.start_date || isNaN(new Date(data.availability.start_date))) {
-    //             throw new ApiError('Invalid start date in availability.', 400);
-    //         }
-    //         if (!data.availability.end_date || isNaN(new Date(data.availability.end_date))) {
-    //             throw new ApiError('Invalid end date in availability.', 400);
-    //         }
-    //     } catch (e) {
-    //         throw new ApiError('Invalid availability format. It must be a JSON string.', 400);
-    //     }
-    // }
 };
 
 const createRoom = async (roomData: RoomData) => {
@@ -97,17 +78,23 @@ const createRoom = async (roomData: RoomData) => {
         description: roomData.description,
         amenities: roomData.amenities.map(id => new mongoose.Types.ObjectId(id)),
         price: roomData.price,
-        images: roomData.images,
         maxGuests: roomData.maxGuests,
         quantity: roomData.quantity
-        // availability: {
-        //     start_date: new Date(roomData.availability.start_date),
-        //     end_date: new Date(roomData.availability.end_date),
-        // },
     });                             
     console.log(newRoom);
 
     const room = await newRoom.save();
+    
+    // Create room images if provided
+    if (roomData.images && roomData.images.length > 0) {
+        const roomImageData = roomData.images.map(imagePath => ({
+            roomId: room._id,
+            imagePath: imagePath
+        }));
+        
+        await RoomImage.insertMany(roomImageData);
+    }
+    
     return mapId(room);
 };
 
@@ -126,13 +113,32 @@ const getAllRooms = async (args: GetAllRoomsInput) => {
         throw new ApiError('Failed to get rooms', 500);
     }
 
+    // Get images for each room
+    const roomsWithImages = await Promise.all(
+        rooms.map(async (room) => {
+            const roomImages = await RoomImage.find({
+                roomId: room._id,
+                deletedAt: null
+            }).select('_id imagePath').sort({ createdAt: 1 });
+            
+            const roomData = mapId(room);
+            return {
+                ...roomData,
+                images: roomImages.map(img => ({
+                    id: (img as any)._id.toString(),
+                    path: img.imagePath
+                }))
+            };
+        })
+    );
+
     const totalRooms = await Room.countDocuments({ ...filter, active: true });
     if (!totalRooms) {
         throw new ApiError('Failed to get total rooms', 500);
     }
 
     return {
-        rooms: mapIds(rooms),
+        rooms: roomsWithImages,
         total: totalRooms,
         currentPage: page,
         pageSize: pageSize
@@ -150,13 +156,26 @@ const getRoomById = async (arg: RoomIdInput) => {
         .populate({
             path: 'amenities',
             select: 'name description',
-        });// find room with existing amenity
+        });
         
     if (!room) {
         throw new ApiError("Room not found.", 404);
     }
     
-    return mapId(room);
+    // Get room images
+    const roomImages = await RoomImage.find({
+        roomId: room._id,
+        deletedAt: null
+    }).select('_id imagePath').sort({ createdAt: 1 });
+    
+    const roomData = mapId(room);
+    return {
+        ...roomData,
+        images: roomImages.map(img => ({
+            id: (img as any)._id.toString(),
+            path: img.imagePath
+        }))
+    };
 };
 
 
@@ -172,18 +191,20 @@ const updateRoom = async (roomData: RoomData) => {
         throw new ApiError('Room not found to update.', 404);
     }
 
-    let images = room.images || [];
+    // Get existing images count
+    const existingImagesCount = await RoomImage.countDocuments({
+        roomId: roomData.id,
+        deletedAt: null
+    });
 
+    // Validate total images limit
     if (roomData.images && roomData.images.length > 0) {
-        if (roomData.images.length + room.images.length > 5) {
+        if (roomData.images.length + existingImagesCount > 5) {
             throw new ApiError('Over 5 images allowed', 400);
-        } else {
-            for (let i = 0; i < roomData.images.length; i++) {
-                images.push(roomData.images[i]);
-            }
         }
-    } 
+    }
 
+    // Update room data
     const updatedRoom = await Room.findOneAndUpdate(
         { _id: roomData.id, active: true },
         {
@@ -192,19 +213,24 @@ const updateRoom = async (roomData: RoomData) => {
             description: roomData.description,
             amenities: roomData.amenities.map(id => new mongoose.Types.ObjectId(id)),
             price: roomData.price,
-            images: images,
             maxGuests: roomData.maxGuests,
             quantity: roomData.quantity
-            // availability: {
-            //     start_date: new Date(roomData.availability.start_date),
-            //     end_date: new Date(roomData.availability.end_date),
-            // },
         },
         { new: true }
     );
 
     if (!updatedRoom) {
         throw new ApiError('Room not found or failed to update.', 404);
+    }
+
+    // Add new images if provided
+    if (roomData.images && roomData.images.length > 0) {
+        const roomImageData = roomData.images.map(imagePath => ({
+            roomId: updatedRoom._id,
+            imagePath: imagePath
+        }));
+        
+        await RoomImage.insertMany(roomImageData);
     }
 
     return mapId(updatedRoom);
@@ -225,8 +251,15 @@ const deleteRoom = async (arg: RoomIdInput) => {
     if (!room) {
         throw new ApiError('Room not found to delete.', 404);
     }
+    
+    // Soft delete all room images
+    await RoomImage.updateMany(
+        { roomId: id, deletedAt: null },
+        { deletedAt: new Date() }
+    );
+    
     return {
-        message: 'Deteled room successfully'
+        message: 'Deleted room successfully'
     };
 };
 
@@ -262,6 +295,26 @@ const deleteRoom = async (arg: RoomIdInput) => {
 //     }
 // };
 
+const deleteRoomImage = async (imageId: string) => {
+    if (!imageId) {
+        throw new ApiError("Invalid image id.", 400);
+    }
+
+    const result = await RoomImage.findByIdAndUpdate(
+        imageId,
+        { deletedAt: new Date() },
+        { new: true }
+    );
+    
+    if (!result) {
+        throw new ApiError('Room image not found', 404);
+    }
+    
+    return {
+        message: 'Deleted room image successfully'
+    };
+};
+
 // Schedule daily update for room availability
 // cron.schedule('0 0 * * *', () => {
 //     updateRoomAvailability();
@@ -276,5 +329,6 @@ export default {
     getRoomById,
     updateRoom,
     deleteRoom,
+    deleteRoomImage,
     //updateRoomAvailability,
 };

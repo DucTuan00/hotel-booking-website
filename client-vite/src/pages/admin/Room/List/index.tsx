@@ -65,12 +65,19 @@ const RoomList: React.FC = () => {
         error?: unknown
     ) => {
         setLoading(isLoadingFromChild);
+        
         if (error) {
-            setMessage({ type: 'error', text: editingRoom ? 'Cập nhật phòng thất bại.' : 'Thêm phòng thất bại.' });
+            const errorMessage = typeof error === 'string' ? error : 
+                (editingRoom ? 'Cập nhật phòng thất bại.' : 'Thêm phòng thất bại.');
+            setMessage({ type: 'error', text: errorMessage });
             return;
         }
+        
         if (!isLoadingFromChild && data) {
-            setMessage({ type: 'success', text: editingRoom ? 'Phòng đã được cập nhật thành công!' : 'Phòng đã được thêm thành công!' });
+            setMessage({ 
+                type: 'success', 
+                text: editingRoom ? 'Phòng đã được cập nhật thành công!' : 'Phòng đã được thêm thành công!' 
+            });
             setEditingRoom(null);
             setIsModalVisible(false);
             fetchRooms();
@@ -110,11 +117,11 @@ const RoomList: React.FC = () => {
             dataIndex: 'images',
             key: 'images',
             width: 120,
-            render: (images: string[], room: Room) => (
+            render: (images: Array<{id: string, path: string}>, room: Room) => (
                 <Image
                     width={80}
                     height={60}
-                    src={images && images.length > 0 ? `http://localhost:3000/${images[0]}` : '/placeholder-image.jpg'}
+                    src={images && images.length > 0 ? `http://localhost:3000/${images[0].path}` : '/placeholder-image.jpg'}
                     alt={`Ảnh phòng ${room.name}`}
                     style={{ objectFit: 'cover', borderRadius: '6px' }}
                     preview={{

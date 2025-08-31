@@ -5,7 +5,7 @@ import type { UploadFile, UploadProps } from 'antd';
 import amenityService from '@/services/amenityService';
 import roomService from '@/services/roomService';
 import { Amenity } from '@/types/amenity';
-import { Room, CreateRoomInput, UpdateRoomInput } from '@/types/room';
+import { Room } from '@/types/room';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -52,12 +52,12 @@ const RoomForm: React.FC<RoomFormProps> = ({ visible, onCancel, onSubmit, initia
                 });
 
                 // Set up existing images for preview
-                const existingFiles: UploadFile[] = initialValues.images?.map((imagePath, index) => ({
+                const existingFiles: UploadFile[] = initialValues.images?.map((imageObj, index) => ({
                     uid: `existing-${index}`,
                     name: `image-${index}`,
                     status: 'done',
-                    url: `http://localhost:3000/${imagePath}`,
-                    response: { path: imagePath }
+                    url: `http://localhost:3000/${imageObj.path}`,
+                    response: { imageId: imageObj.id, path: imageObj.path }
                 })) || [];
                 setFileList(existingFiles);
             } else {
@@ -80,51 +80,50 @@ const RoomForm: React.FC<RoomFormProps> = ({ visible, onCancel, onSubmit, initia
         try {
             onSubmit(true, null, undefined);
             
+            const formData = new FormData();
+            formData.append('name', values.name);
+            formData.append('roomType', values.roomType);
+            formData.append('description', values.description || '');
+            formData.append('price', values.price.toString());
+            formData.append('maxGuests', values.maxGuests.toString());
+            formData.append('quantity', values.quantity.toString());
+            
+            // Add amenities
+            if (values.amenities && values.amenities.length > 0) {
+                values.amenities.forEach(amenityId => {
+                    formData.append('amenities', amenityId);
+                });
+            }
+            
+            // Add new image files (not existing ones)
+            const newFiles = fileList.filter(file => 
+                file.originFileObj && file.status !== 'error'
+            );
+            
+            if (!isEditing && newFiles.length === 0) {
+                onSubmit(false, null, "Vui lòng chọn ít nhất một hình ảnh");
+                return;
+            }
+            
+            newFiles.forEach(file => {
+                if (file.originFileObj) {
+                    formData.append('images', file.originFileObj);
+                }
+            });
+            
             let responseData: Room | null = null;
             
             if (isEditing && initialValues?.id) {
                 // Update room
-                const existingImagePaths = fileList
-                    .filter(file => file.status === 'done' && file.response?.path)
-                    .map(file => file.response.path);
-
-                const updateData: UpdateRoomInput = {
-                    id: initialValues.id,
-                    name: values.name,
-                    roomType: values.roomType,
-                    description: values.description,
-                    price: values.price,
-                    maxGuests: values.maxGuests,
-                    quantity: values.quantity,
-                    amenities: values.amenities || [],
-                    images: existingImagePaths,
-                };
-                responseData = await roomService.updateRoom(initialValues.id, updateData);
+                responseData = await roomService.updateRoom(initialValues.id, formData);
             } else {
                 // Create room
-                if (fileList.length === 0) {
-                    message.error("Vui lòng chọn ít nhất một hình ảnh");
-                    onSubmit(false, null);
-                    return;
-                }
-
-                const createData: CreateRoomInput = {
-                    name: values.name,
-                    roomType: values.roomType,
-                    description: values.description,
-                    price: values.price,
-                    maxGuests: values.maxGuests,
-                    quantity: values.quantity,
-                    amenities: values.amenities || [],
-                    images: [],
-                };
-                responseData = await roomService.createRoom(createData);
+                responseData = await roomService.createRoom(formData);
             }
             
             onSubmit(false, responseData, undefined);
         } catch (error) {
             console.error(`Error ${isEditing ? 'updating' : 'creating'} room:`, error);
-            message.error(`Lỗi ${isEditing ? 'cập nhật' : 'tạo'} phòng`);
             onSubmit(false, null, error);
         }
     };
@@ -153,6 +152,21 @@ const RoomForm: React.FC<RoomFormProps> = ({ visible, onCancel, onSubmit, initia
             const imgWindow = window.open(file.url || file.preview);
             imgWindow?.document.write(image.outerHTML);
         },
+        onRemove: async (file) => {
+            // If this is an existing image (has response.imageId), delete it from server
+            if (file.response?.imageId && isEditing) {
+                try {
+                    await roomService.deleteRoomImage(file.response.imageId);
+                    message.success('Đã xóa hình ảnh');
+                } catch (error) {
+                    console.error('Error deleting image:', error);
+                    message.error('Lỗi xóa hình ảnh');
+                    return false;
+                }
+            }
+            
+            return true; 
+        }
     };
 
     const uploadButton = (
