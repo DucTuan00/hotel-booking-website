@@ -1,5 +1,6 @@
 import Room from '@/models/Room';
 import RoomImage from '@/models/RoomImage';
+import RoomAmenity from '@/models/RoomAmenity';
 import ApiError from '@/utils/apiError';
 import { mapId, mapIds } from '@/utils/mapId';
 import cron from 'node-cron';
@@ -9,6 +10,32 @@ import {
     GetAllRoomsInput,
     RoomIdInput
 } from '@/types/room';
+
+const updateRoomAmenities = async (roomId: string, newAmenityIds: string[]) => {
+    const currentRoomAmenities = await RoomAmenity.find({ roomId }).select('amenityId');
+    const currentAmenityIds = currentRoomAmenities.map(ra => ra.amenityId.toString());
+    
+    const newAmenityIdStrings = newAmenityIds.map(id => id.toString());
+    
+    const amenitiesToAdd = newAmenityIdStrings.filter(id => !currentAmenityIds.includes(id));
+    
+    const amenitiesToRemove = currentAmenityIds.filter(id => !newAmenityIdStrings.includes(id));
+    
+    if (amenitiesToAdd.length > 0) {
+        const roomAmenityData = amenitiesToAdd.map(amenityId => ({
+            roomId: new mongoose.Types.ObjectId(roomId),
+            amenityId: new mongoose.Types.ObjectId(amenityId)
+        }));
+        await RoomAmenity.insertMany(roomAmenityData);
+    }
+    
+    if (amenitiesToRemove.length > 0) {
+        await RoomAmenity.deleteMany({
+            roomId,
+            amenityId: { $in: amenitiesToRemove.map(id => new mongoose.Types.ObjectId(id)) }
+        });
+    }
+};
 
 const validateRoomData = (data: RoomData) => {
     if (!data.name || typeof data.name !== 'string' || data.name.trim() === "") {
@@ -59,12 +86,25 @@ const validateRoomData = (data: RoomData) => {
         throw new ApiError("Invalid images. Images should be an array.", 400);
     }
 
-    // if it's a string, parse it to an array of strings
-    if (typeof data.amenities === 'string') {
-        try {
-            data.amenities = JSON.parse(data.amenities);
-        } catch (e) {
-            throw new ApiError('Invalid amenities format. It must be a JSON string.', 400);
+    // Validate amenities
+    if (data.amenities) {
+        if (typeof data.amenities === 'string') {
+            try {
+                data.amenities = JSON.parse(data.amenities);
+            } catch (e) {
+                throw new ApiError('Invalid amenities format. It must be a JSON string.', 400);
+            }
+        }
+        
+        if (!Array.isArray(data.amenities)) {
+            throw new ApiError("Invalid amenities. Amenities should be an array.", 400);
+        }
+        
+        // Validate each amenity ID
+        for (const amenityId of data.amenities) {
+            if (typeof amenityId !== 'string' || !mongoose.Types.ObjectId.isValid(amenityId)) {
+                throw new ApiError('Invalid amenity ID format.', 400);
+            }
         }
     }
 };
@@ -76,7 +116,6 @@ const createRoom = async (roomData: RoomData) => {
         name: roomData.name,
         roomType: roomData.roomType,
         description: roomData.description,
-        amenities: roomData.amenities.map(id => new mongoose.Types.ObjectId(id)),
         price: roomData.price,
         maxGuests: roomData.maxGuests,
         quantity: roomData.quantity
@@ -84,6 +123,11 @@ const createRoom = async (roomData: RoomData) => {
     console.log(newRoom);
 
     const room = await newRoom.save();
+    
+    // Create room-amenity relationships if provided
+    if (roomData.amenities && roomData.amenities.length > 0) {
+        await updateRoomAmenities((room as any)._id.toString(), roomData.amenities.map(id => id.toString()));
+    }
     
     // Create room images if provided
     if (roomData.images && roomData.images.length > 0) {
@@ -104,22 +148,28 @@ const getAllRooms = async (args: GetAllRoomsInput) => {
     const skip = (page - 1) * pageSize;
     const rooms = await Room.find({ ...filter, active: true })
         .skip(skip)
-        .limit(pageSize)
-        .populate({
-            path: 'amenities',
-            select: 'name',
-        });
+        .limit(pageSize);
+        
     if (!rooms) {
         throw new ApiError('Failed to get rooms', 500);
     }
 
-    // Get images for each room
-    const roomsWithImages = await Promise.all(
+    // Get images and amenities for each room
+    const roomsWithImagesAndAmenities = await Promise.all(
         rooms.map(async (room) => {
+            // Get room images
             const roomImages = await RoomImage.find({
-                roomId: room._id,
+                roomId: (room as any)._id,
                 deletedAt: null
             }).select('_id imagePath').sort({ createdAt: 1 });
+            
+            // Get room amenities through junction table
+            const roomAmenities = await RoomAmenity.find({
+                roomId: (room as any)._id
+            }).populate({
+                path: 'amenityId',
+                select: 'name'
+            });
             
             const roomData = mapId(room);
             return {
@@ -127,6 +177,10 @@ const getAllRooms = async (args: GetAllRoomsInput) => {
                 images: roomImages.map(img => ({
                     id: (img as any)._id.toString(),
                     path: img.imagePath
+                })),
+                amenities: roomAmenities.map(ra => ({
+                    id: (ra as any).amenityId._id.toString(),
+                    name: (ra as any).amenityId.name
                 }))
             };
         })
@@ -138,7 +192,7 @@ const getAllRooms = async (args: GetAllRoomsInput) => {
     }
 
     return {
-        rooms: roomsWithImages,
+        rooms: roomsWithImagesAndAmenities,
         total: totalRooms,
         currentPage: page,
         pageSize: pageSize
@@ -152,11 +206,7 @@ const getRoomById = async (arg: RoomIdInput) => {
         throw new ApiError("Invalid room id.", 400);
     }
 
-    const room = await Room.findOne({ _id: id, active: true })
-        .populate({
-            path: 'amenities',
-            select: 'name description',
-        });
+    const room = await Room.findOne({ _id: id, active: true });
         
     if (!room) {
         throw new ApiError("Room not found.", 404);
@@ -164,9 +214,17 @@ const getRoomById = async (arg: RoomIdInput) => {
     
     // Get room images
     const roomImages = await RoomImage.find({
-        roomId: room._id,
+        roomId: (room as any)._id,
         deletedAt: null
     }).select('_id imagePath').sort({ createdAt: 1 });
+    
+    // Get room amenities through junction table
+    const roomAmenities = await RoomAmenity.find({
+        roomId: (room as any)._id
+    }).populate({
+        path: 'amenityId',
+        select: 'name description'
+    });
     
     const roomData = mapId(room);
     return {
@@ -174,6 +232,11 @@ const getRoomById = async (arg: RoomIdInput) => {
         images: roomImages.map(img => ({
             id: (img as any)._id.toString(),
             path: img.imagePath
+        })),
+        amenities: roomAmenities.map(ra => ({
+            id: (ra as any).amenityId._id.toString(),
+            name: (ra as any).amenityId.name,
+            description: (ra as any).amenityId.description
         }))
     };
 };
@@ -211,7 +274,6 @@ const updateRoom = async (roomData: RoomData) => {
             name: roomData.name,
             roomType: roomData.roomType,
             description: roomData.description,
-            amenities: roomData.amenities.map(id => new mongoose.Types.ObjectId(id)),
             price: roomData.price,
             maxGuests: roomData.maxGuests,
             quantity: roomData.quantity
@@ -221,6 +283,11 @@ const updateRoom = async (roomData: RoomData) => {
 
     if (!updatedRoom) {
         throw new ApiError('Room not found or failed to update.', 404);
+    }
+
+    // Update room-amenity relationships
+    if (roomData.amenities) {
+        await updateRoomAmenities(roomData.id, roomData.amenities.map(id => id.toString()));
     }
 
     // Add new images if provided
@@ -251,6 +318,9 @@ const deleteRoom = async (arg: RoomIdInput) => {
     if (!room) {
         throw new ApiError('Room not found to delete.', 404);
     }
+    
+    // Delete all room-amenity relationships
+    await RoomAmenity.deleteMany({ roomId: id });
     
     // Soft delete all room images
     await RoomImage.updateMany(

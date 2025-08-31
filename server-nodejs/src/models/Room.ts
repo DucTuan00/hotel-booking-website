@@ -4,7 +4,6 @@ interface RoomInterface extends Document {
     name: string;
     roomType: 'Single' | 'Double' | 'Suite';
     description?: string;
-    amenities: Types.ObjectId[];
     price: number;
     maxGuests: number;
     quantity: number;
@@ -24,10 +23,6 @@ const roomSchema: Schema = new mongoose.Schema({
     description: { 
         type: String 
     }, 
-    amenities: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Amenity',
-    }], 
     price: { 
         type: Number, 
         required: true 

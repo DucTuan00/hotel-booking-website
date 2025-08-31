@@ -5,7 +5,7 @@ export interface RoomData {
     name: string;
     roomType: 'Single' | 'Double' | 'Suite';
     description?: string;
-    amenities: Types.ObjectId[];
+    amenities: string[];
     price: number;
     images: string[];
     maxGuests: number;
