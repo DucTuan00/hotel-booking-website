@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, Outlet } from 'react-router-dom';
 import api from '@/services/api';
 import { ClipLoader } from 'react-spinners';
+import { isMobile, getAuthToken } from '@/utils/auth';
 
 interface VerifyTokenResponse {
     role: string;
@@ -10,7 +11,15 @@ interface VerifyTokenResponse {
 const AdminRoute: React.FC = () => {
     const navigate = useNavigate();
 
-    const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+    const checkInitialAuth = () => {
+        if (isMobile()) {
+            return getAuthToken() !== null;
+        } else {
+            return localStorage.getItem('isAuthenticated') === 'true';
+        }
+    };
+
+    const isAuthenticated = checkInitialAuth();
     const [isLoading, setIsLoading] = useState<boolean>(!isAuthenticated);
     const [isAdmin, setIsAdmin] = useState<boolean>(isAuthenticated);
 

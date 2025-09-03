@@ -5,6 +5,7 @@ declare global {
 }
 
 import axios from 'axios';
+import { getAuthToken, isMobile } from '@/utils/auth';
 
 const isAndroid = () => {
     return typeof window !== 'undefined' &&
@@ -23,6 +24,17 @@ const getBaseURL = () => {
 const api = axios.create({
     baseURL: getBaseURL(),
     withCredentials: true,
+});
+
+// Add request interceptor để tự động thêm Authorization header cho mobile
+api.interceptors.request.use((config) => {
+    if (isMobile()) {
+        const token = getAuthToken();
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+    }
+    return config;
 });
 
 export default api;

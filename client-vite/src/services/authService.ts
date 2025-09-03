@@ -1,5 +1,6 @@
 import api from '@/services/api';
 import axios from 'axios';
+import { setAuthToken, removeAuthToken } from '@/utils/auth';
 import {
     RegisterInput,
     LoginInput,
@@ -21,6 +22,12 @@ const register = async (args: RegisterInput): Promise<MessageResponse> => {
 const login = async (args: LoginInput): Promise<MessageResponse> => {
     try {
         const response = await api.post<MessageResponse>('/auth/login', args);
+        
+        // if have accessToken in response, save it to storage (for mobile)
+        if (response.data.accessToken) {
+            setAuthToken(response.data.accessToken);
+        }
+
         return response.data;
     } catch (error) {
         if (axios.isAxiosError(error)) {
@@ -33,8 +40,13 @@ const login = async (args: LoginInput): Promise<MessageResponse> => {
 const logout = async (): Promise<MessageResponse> => {
     try {
         const response = await api.post<MessageResponse>('/auth/logout');
+
+        // if mobile, remove token from storage
+        removeAuthToken();
+
         return response.data;
     } catch (error) {
+        removeAuthToken();
         if (axios.isAxiosError(error)) {
             throw error.response?.data || error.message;
         }

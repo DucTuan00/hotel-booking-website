@@ -89,6 +89,8 @@ const Sidebar: React.FC<SidebarProps> = ({
       navigate('/login');
     } catch (error) {
       console.error('Lỗi khi logout:', error);
+      localStorage.removeItem('isAuthenticated');
+      navigate('/login');
     } finally {
       setIsLoading(false);
     }

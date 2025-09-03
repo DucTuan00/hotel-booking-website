@@ -13,4 +13,5 @@ export interface LoginInput {
 export interface MessageResponse {
     message: string;
     role?: string;
+    accessToken?: string;
 }
