@@ -34,6 +34,8 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
         res.json({
             message: result.message,
             role: result.role,
+            // Return accessToken for mobile apps that can't use cookies
+            accessToken: result.accessToken,
         });
     } catch (error: any) {
         next(new ApiError(error.message, 401));
@@ -51,8 +53,11 @@ const refreshToken = async (req: Request, res: Response, next: NextFunction) => 
         // Update accessToken in HTTP-Only Cookie
         res.cookie('accessToken', result.accessToken, cookieOptions);
 
-        // Return new refreshToken
-        res.json({ message: "Token refreshed" });
+        // Return new accessToken for mobile apps
+        res.json({ 
+            message: "Token refreshed",
+            accessToken: result.accessToken,
+        });
     } catch (error: any) {
         next(new ApiError(error.message, 403));
     }
@@ -76,10 +81,18 @@ const logout = async (req: Request, res: Response, next: NextFunction) => {
 
 const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const accessToken = req.cookies.accessToken; //get token from cookie
+        // Try to get token from cookie first, then from Authorization header
+        let accessToken = req.cookies.accessToken;
+        
+        if (!accessToken) {
+            const authHeader = req.headers.authorization;
+            if (authHeader && authHeader.startsWith('Bearer ')) {
+                accessToken = authHeader.substring(7);
+            }
+        }
 
         if (!accessToken) {
-            return next(new ApiError('Access token not found in headers', 401));
+            return next(new ApiError('Access token not found in cookies or headers', 401));
         }
 
         const userData = await authService.verifyAccessToken({ accessToken });

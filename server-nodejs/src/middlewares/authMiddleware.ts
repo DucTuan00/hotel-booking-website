@@ -4,7 +4,15 @@ import { Request, Response, NextFunction, RequestHandler } from 'express';
 
 const authMiddleware = (roles: string[] = []): RequestHandler => {
     return (req: Request, res: Response, next: NextFunction): void => {
-        let token = req.cookies.accessToken || req.headers.authorization?.split(' ')[1];
+        // Try to get token from cookie first, then from Authorization header
+        let token = req.cookies.accessToken;
+        
+        if (!token) {
+            const authHeader = req.headers.authorization;
+            if (authHeader && authHeader.startsWith('Bearer ')) {
+                token = authHeader.substring(7);
+            }
+        }
 
         if (!token) {
             res.status(401).json({ message: 'Unauthorized - Token missing' });
