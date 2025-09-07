@@ -57,3 +57,62 @@ export interface RoomImage {
     createdAt?: Date;
     updatedAt?: Date;
 }
+
+// Room Availability types
+export interface RoomAvailableData {
+    roomId: string;
+    date: Date;
+    price: number;
+    inventory: number;
+}
+
+export interface RoomAvailableInput {
+    roomId: string;
+    startDate: Date;
+    endDate: Date;
+    price: number;
+    inventory: number;
+}
+
+export interface GetRoomAvailableInput {
+    roomId?: string;
+    startDate?: Date;
+    endDate?: Date;
+    page?: number;
+    pageSize?: number;
+}
+
+export interface UpdateRoomAvailableInput {
+    roomId: string;
+    date: Date;
+    price?: number;
+    inventory?: number;
+}
+
+export interface RoomAvailableResponse {
+    id: string;
+    roomId: string;
+    room: {
+        id: string;
+        name: string;
+        roomType: string;
+    };
+    date: Date;
+    price: number;
+    inventory: number;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+export interface RoomAvailabilityData {
+    id: string;
+    name: string;
+    roomType: 'Single' | 'Double' | 'Suite';
+    defaultPrice: number;
+    defaultInventory: number;
+    availability: Array<{
+        date: Date;
+        price: number;
+        inventory: number;
+    }>;
+}

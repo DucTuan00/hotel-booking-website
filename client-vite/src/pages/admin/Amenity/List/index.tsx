@@ -11,7 +11,7 @@ import {
 import type { ColumnsType } from 'antd/es/table';
 import AdminTable from '@/components/AdminTable';
 import AmenityForm from '@/pages/admin/Amenity/Form';
-import amenityService from '@/services/amenityService';
+import amenityService from '@/services/amenities/amenityService';
 import { Amenity } from '@/types/amenity';
 import Notification from '@/components/Notification';
 

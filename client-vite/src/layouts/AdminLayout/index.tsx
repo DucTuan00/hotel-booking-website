@@ -39,10 +39,10 @@ const AdminLayout: React.FC = () => {
         <Header />
         <Content
           style={{
-            margin: isMobile ? '16px' : '24px',
+            // margin: isMobile ? '16px' : '24px',
             padding: isMobile ? '16px' : '24px',
             background: '#fff',
-            borderRadius: '8px',
+            // borderRadius: '8px',
             boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)',
             minHeight: 'calc(100vh - 112px)',
             overflow: 'auto',

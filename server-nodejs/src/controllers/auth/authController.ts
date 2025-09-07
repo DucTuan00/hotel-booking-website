@@ -1,4 +1,4 @@
-import authService from '@/services/authService';
+import authService from '@/services/auth/authService';
 import ApiError from '@/utils/apiError';
 import { Request, Response, NextFunction } from 'express';
 import { CookieOptions } from 'express';

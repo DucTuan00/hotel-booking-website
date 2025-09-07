@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import favoriteController from '@/controllers/favoriteController';
+import favoriteController from '@/controllers/favorites/favoriteController';
 import authMiddleware from '@/middlewares/authMiddleware';
 
 const router = Router();

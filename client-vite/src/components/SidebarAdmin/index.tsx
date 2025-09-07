@@ -11,7 +11,7 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
 } from '@ant-design/icons';
-import authService from '@/services/authService';
+import authService from '@/services/auth/authService';
 
 const { Sider } = Layout;
 const { Text } = Typography;
@@ -52,32 +52,37 @@ const Sidebar: React.FC<SidebarProps> = ({
     { 
       key: '/dashboard', 
       icon: <DashboardOutlined />, 
-      label: 'Dashboard',
-      path: '/dashboard'
+      label: 'Dashboard'
     },
     { 
       key: '/dashboard/users', 
       icon: <UserOutlined />, 
-      label: 'Người dùng',
-      path: '/dashboard/users'
+      label: 'Người dùng'
     },
     { 
-      key: '/dashboard/rooms', 
+      key: 'rooms', 
       icon: <HomeOutlined />, 
       label: 'Phòng',
-      path: '/dashboard/rooms'
+      children: [
+        {
+          key: '/dashboard/rooms',
+          label: 'Danh sách phòng'
+        },
+        {
+          key: '/dashboard/rooms/pricing',
+          label: 'Tùy chỉnh giá'
+        }
+      ]
     },
     { 
       key: '/dashboard/bookings', 
       icon: <CalendarOutlined />, 
-      label: 'Đơn đặt phòng',
-      path: '/dashboard/bookings'
+      label: 'Đơn đặt phòng'
     },
     { 
       key: '/dashboard/amenities', 
       icon: <TagOutlined />, 
-      label: 'Tiện nghi',
-      path: '/dashboard/amenities'
+      label: 'Tiện nghi'
     },
   ];
 
@@ -97,9 +102,9 @@ const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const handleMenuClick = ({ key }: { key: string }) => {
-    const menuItem = menuItems.find(item => item.key === key);
-    if (menuItem) {
-      navigate(menuItem.path);
+    // Direct navigation for simple keys that are paths
+    if (key.startsWith('/dashboard')) {
+      navigate(key);
     }
   };
 
@@ -168,19 +173,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             border: 'none',
             background: 'transparent',
           }}
-          items={menuItems.map(item => ({
-            key: item.key,
-            icon: item.icon,
-            label: item.label,
-            style: {
-              margin: '4px 8px',
-              borderRadius: '8px',
-              height: '48px',
-              lineHeight: '48px',
-              display: 'flex',
-              alignItems: 'center',
-            }
-          }))}
+          items={menuItems}
         />
       </div>
 

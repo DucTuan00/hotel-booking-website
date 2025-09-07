@@ -1,4 +1,4 @@
-import bookingService from '@/services/bookingService';
+import bookingService from '@/services/bookings/bookingService';
 import ApiError from '@/utils/apiError';
 import { Request, Response, NextFunction } from 'express';
 

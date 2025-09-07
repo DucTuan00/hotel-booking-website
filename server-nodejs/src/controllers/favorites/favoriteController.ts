@@ -1,4 +1,4 @@
-import favoriteService from '@/services/favoriteService';
+import favoriteService from '@/services/favorites/favoriteService';
 import ApiError from '@/utils/apiError';
 import { Request, Response, NextFunction } from 'express';
 

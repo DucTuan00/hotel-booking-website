@@ -4,6 +4,7 @@ import * as Admin from '@/pages/admin';
 import Login from '@/pages/Login';
 import AdminLayout from '@/layouts/AdminLayout';
 import AdminRoute from '@/routes/AdminRoute';
+import RoomPricing from '@/pages/admin/Room/Pricing';
 
 const AppRoutes: React.FC = () => (
     <Routes>
@@ -17,6 +18,7 @@ const AppRoutes: React.FC = () => (
                 <Route index element={<Admin.DashboardPage />} />
                 <Route path="users" element={<Admin.UserList />} />
                 <Route path="rooms" element={<Admin.RoomList />} />
+                <Route path="rooms/pricing" element={<RoomPricing />} />
                 <Route path="bookings" element={<Admin.BookingList />} />
                 <Route path="amenities" element={<Admin.AmenityList />} />
             </Route>

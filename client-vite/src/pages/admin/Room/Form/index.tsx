@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Form, Input, Select, InputNumber, Upload, Button, Checkbox, Row, Col, message } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import type { UploadFile, UploadProps } from 'antd';
-import amenityService from '@/services/amenityService';
-import roomService from '@/services/roomService';
+import amenityService from '@/services/amenities/amenityService';
+import roomService from '@/services/rooms/roomService';
 import { Amenity } from '@/types/amenity';
 import { Room } from '@/types/room';
 

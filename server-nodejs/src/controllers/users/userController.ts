@@ -1,4 +1,4 @@
-import userService from "@/services/userService";
+import userService from "@/services/users/userService";
 import ApiError from '@/utils/apiError';
 import { Request, Response, NextFunction } from 'express';
 

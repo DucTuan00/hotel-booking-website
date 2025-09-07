@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import amenityController from '@/controllers/amenityController';
+import amenityController from '@/controllers/amenities/amenityController';
 import authMiddleware from '@/middlewares/authMiddleware';
 
 const router: Router = Router();

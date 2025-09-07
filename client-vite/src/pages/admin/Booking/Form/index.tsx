@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, Select, Button } from 'antd';
 import { ClockCircleOutlined } from '@ant-design/icons';
-import bookingService from '@/services/bookingService';
+import bookingService from '@/services/bookings/bookingService';
 import { Booking } from '@/types/booking';
 
 const { Option } = Select;

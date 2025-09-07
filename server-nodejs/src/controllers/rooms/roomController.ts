@@ -1,4 +1,4 @@
-import roomService from '@/services/roomService';
+import roomService from '@/services/rooms/roomService';
 import ApiError from '@/utils/apiError';
 import { Request, Response, NextFunction } from 'express';
 

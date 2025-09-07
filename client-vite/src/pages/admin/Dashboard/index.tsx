@@ -16,9 +16,9 @@ import {
 } from '@ant-design/icons';
 import { LineChart, Line, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, ResponsiveContainer, Legend } from 'recharts';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import userService from '@/services/userService';
-import roomService from '@/services/roomService';
-import bookingService from '@/services/bookingService';
+import userService from '@/services/users/userService';
+import roomService from '@/services/rooms/roomService';
+import bookingService from '@/services/bookings/bookingService';
 import { Booking as ApiBooking } from '@/types/booking';
 
 const { Title } = Typography;

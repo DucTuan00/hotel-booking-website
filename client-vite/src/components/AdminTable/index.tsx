@@ -27,7 +27,7 @@ function AdminTable<T = unknown>({
     ...tableProps
 }: AdminTableProps<T>) {
     return (
-        <div style={{ padding: '24px' }}>
+        <div >
             <Card>
                 <div style={{ 
                     marginBottom: '16px', 

@@ -13,7 +13,21 @@ interface BookingInterface extends Document {
     guests: Guests;
     quantity: number;
     totalPrice: number;
-    status: 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed';
+    status: 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed' | 'Rejected';
+    firstName: string;
+    lastName: string;
+    email: string;
+    phoneNumber: string;
+    paymentMethod: 'Online' | 'Onsite';
+    paymentStatus: 'Paid' | 'Unpaid' | 'Refunded';
+    confirmedAt?: Date;
+    rejectedAt?: Date;
+    cancelledAt?: Date;
+    cancellationReason?: string;
+    paidAt?: Date;
+    paymentIntentId?: string;
+    refundedAt?: Date;
+    snapshot: Record<string, any>;
 }
 
 const bookingSchema: Schema = new mongoose.Schema({
@@ -58,9 +72,60 @@ const bookingSchema: Schema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['Pending', 'Confirmed', 'Cancelled', 'Completed'],
+        enum: ['Pending', 'Confirmed', 'Cancelled', 'Completed', 'Rejected'],
         default: 'Pending'
-    }
+    },
+    firstName: { 
+        type: String, 
+        required: true 
+    },
+    lastName: { 
+        type: String, 
+        required: true 
+    },
+    email: { 
+        type: String, 
+        required: true 
+    },
+    phoneNumber: { 
+        type: String, 
+        required: true 
+    },
+    paymentMethod: { 
+        type: String, 
+        enum: ['Online', 'Onsite'], 
+        required: true 
+    },
+    paymentStatus: { 
+        type: String, 
+        enum: ['Paid', 'Unpaid', 'Refunded'], 
+        default: 'Unpaid' 
+    },
+    confirmedAt: { 
+        type: Date 
+    },
+    rejectedAt: { 
+        type: Date 
+    },
+    cancelledAt: { 
+        type: Date 
+    },
+    cancellationReason: { 
+        type: String 
+    },
+    paidAt: { 
+        type: Date 
+    },
+    paymentIntentId: { 
+        type: String 
+    },
+    refundedAt: { 
+        type: Date 
+    },
+    snapshot: { 
+        type: Schema.Types.Mixed, 
+        required: true 
+    },
 }, { timestamps: true });
 
 const Booking = mongoose.model<BookingInterface>('Booking', bookingSchema);

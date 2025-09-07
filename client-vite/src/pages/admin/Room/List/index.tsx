@@ -4,7 +4,7 @@ import { EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 import RoomForm from '@/pages/admin/Room/Form';
 import Notification from '@/components/Notification';
 import AdminTable from '@/components/AdminTable';
-import roomService from '@/services/roomService';
+import roomService from '@/services/rooms/roomService';
 import { Room } from '@/types/room';
 import type { TableColumnsType } from 'antd';
 

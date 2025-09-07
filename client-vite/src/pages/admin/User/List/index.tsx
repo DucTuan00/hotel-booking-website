@@ -4,7 +4,7 @@ import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import AdminTable from '@/components/AdminTable';
 import UserForm, { UserFormValues } from '@/pages/admin/User/Form';
-import userService from '@/services/userService';
+import userService from '@/services/users/userService';
 import Notification from '@/components/Notification';
 
 interface User {

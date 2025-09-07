@@ -4,7 +4,7 @@ import { EditOutlined } from '@ant-design/icons';
 import BookingForm from '@/pages/admin/Booking/Form';
 import Notification from '@/components/Notification';
 import AdminTable from '@/components/AdminTable';
-import bookingService from '@/services/bookingService';
+import bookingService from '@/services/bookings/bookingService';
 import moment from 'moment';
 import { Booking } from '@/types/booking';
 import type { TableColumnsType } from 'antd';

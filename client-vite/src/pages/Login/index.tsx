@@ -1,6 +1,6 @@
 import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react';
 import LoginForm from '@/pages/Login/LoginForm';
-import authService from '@/services/authService';
+import authService from '@/services/auth/authService';
 import { useNavigate } from 'react-router-dom';
 
 interface FormData {

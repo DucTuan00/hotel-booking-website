@@ -1,4 +1,4 @@
-import amenityService from '@/services/amenityService';
+import amenityService from '@/services/amenities/amenityService';
 import ApiError from '@/utils/apiError';
 import { Request, Response, NextFunction } from 'express';
 
