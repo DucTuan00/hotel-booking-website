@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from 'antd';
 import { COLORS, TYPOGRAPHY, DEMO_IMAGES } from '@/config/constants';
-import useIntersectionObserver from '@/utils/useIntersectionObserver';
+import useIntersectionObserver from '@/hooks/useIntersectionObserver';
 
 const RoomsSection: React.FC = () => {
     const { elementRef: sectionRef, isVisible } = useIntersectionObserver({

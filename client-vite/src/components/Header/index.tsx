@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Drawer } from 'antd';
 import { MenuOutlined, CloseOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import { COLORS, TYPOGRAPHY } from '@/config/constants';
 
 interface HeaderProps {
@@ -9,8 +10,32 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const navigate = useNavigate();
 
-    const menuItems = ['Giới thiệu', 'Phòng', 'Bord Hotel', 'Du lịch', 'Ẩm thực', 'Dịch vụ', 'Liên hệ'];
+    const menuItems = [
+        { name: 'Giới thiệu', path: '/#about' },
+        { name: 'Phòng', path: '/rooms' },
+        { name: 'Bord Hotel', path: '/#hotel' },
+        { name: 'Du lịch', path: '/#tours' },
+        { name: 'Ẩm thực', path: '/#dining' },
+        { name: 'Dịch vụ', path: '/#services' },
+        { name: 'Liên hệ', path: '/#contact' },
+    ];
+
+    const handleNavigation = (path: string) => {
+        if (path.startsWith('/#')) {
+            navigate('/');
+            setTimeout(() => {
+                const element = document.querySelector(path.substring(1));
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth' });
+                }
+            }, 100);
+        } else {
+            navigate(path);
+        }
+        setMobileMenuOpen(false);
+    };
 
     return (
         <>
@@ -36,17 +61,17 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
                     {/* Desktop Navigation - Hidden on mobile */}
                     <nav className="hidden lg:flex items-center space-x-6 xl:space-x-8">
                         {menuItems.map((item) => (
-                            <a
-                                key={item}
-                                href="#"
-                                className="text-sm font-medium hover:opacity-75 transition-opacity whitespace-nowrap"
+                            <button
+                                key={item.name}
+                                onClick={() => handleNavigation(item.path)}
+                                className="text-sm font-medium hover:opacity-75 transition-opacity whitespace-nowrap bg-transparent border-none cursor-pointer px-2"
                                 style={{
                                     color: transparent ? COLORS.white : COLORS.gray[700],
                                     fontFamily: TYPOGRAPHY.fontFamily.secondary
                                 }}
                             >
-                                {item}
-                            </a>
+                                {item.name}
+                            </button>
                         ))}
                     </nav>
 
@@ -125,18 +150,17 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
                     {/* Menu Items */}
                     <nav className="flex-1 py-4">
                         {menuItems.map((item) => (
-                            <a
-                                key={item}
-                                href="#"
-                                className="block px-6 py-4 text-base font-medium hover:bg-gray-50 transition-colors border-b border-gray-100"
+                            <button
+                                key={item.name}
+                                onClick={() => handleNavigation(item.path)}
+                                className="block w-full text-left px-6 py-4 text-base font-medium hover:bg-gray-50 transition-colors border-b border-gray-100 bg-transparent border-none"
                                 style={{
                                     color: COLORS.gray[700],
                                     fontFamily: TYPOGRAPHY.fontFamily.secondary
                                 }}
-                                onClick={() => setMobileMenuOpen(false)}
                             >
-                                {item}
-                            </a>
+                                {item.name}
+                            </button>
                         ))}
                     </nav>
 

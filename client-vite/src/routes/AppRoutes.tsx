@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import Home from '@/pages/user/Home';
 import SearchResults from '@/pages/user/SearchResults';
+import Rooms from '@/pages/user/Rooms';
 import * as Admin from '@/pages/admin';
 import Login from '@/pages/Login';
 import AdminLayout from '@/layouts/AdminLayout';
@@ -11,6 +12,7 @@ const AppRoutes: React.FC = () => (
     <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/search" element={<SearchResults />} />
+        <Route path="/rooms" element={<Rooms />} />
         <Route path="/login" element={<Login />} />
         {/* <Route path="/room/:id" element={<RoomDetail />} /> */}
 
