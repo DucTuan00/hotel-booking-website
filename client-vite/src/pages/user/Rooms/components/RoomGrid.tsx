@@ -1,7 +1,7 @@
 import React from 'react';
 import { Room } from '@/pages/user/Rooms';
 import RoomCard from '@/pages/user/Rooms/components/RoomCard';
-import { RoomGridSkeleton } from '@/components/LoadingRoom';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 interface RoomGridProps {
   rooms: Room[];
@@ -19,7 +19,11 @@ const RoomGrid: React.FC<RoomGridProps> = ({
   onBookRoom,
 }) => {
   if (isLoading) {
-    return <RoomGridSkeleton />;
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-12">
+        <LoadingSpinner message="Đang tải danh sách phòng..." />
+      </div>
+    );
   }
 
   if (rooms.length === 0) {

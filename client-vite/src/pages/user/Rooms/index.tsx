@@ -3,7 +3,6 @@ import UserLayout from '@/layouts/UserLayout';
 import RoomFilters from '@/pages/user/Rooms/components/RoomFilters';
 import RoomGrid from '@/pages/user/Rooms/components/RoomGrid';
 import RoomModal from '@/pages/user/Rooms/components/RoomModal';
-import { useLoading } from '@/hooks/useLoading';
 import { DEMO_IMAGES } from '@/config/constants';
 import '@/pages/user/Rooms/Rooms.css';
 
@@ -164,20 +163,20 @@ const useRooms = (initialRooms: Room[]) => {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [filterType, setFilterType] = useState<RoomType>('all');
   const [sortBy, setSortBy] = useState<SortOption>('price-asc');
-  const { isLoading, startLoading, stopLoading } = useLoading();
+  const [isLoading, setIsLoading] = useState(false);
 
   // Simulate loading rooms data
   useEffect(() => {
     const loadRooms = async () => {
-      startLoading();
+      setIsLoading(true);
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       setRooms(initialRooms);
-      await stopLoading();
+      setIsLoading(false);
     };
 
     loadRooms();
-  }, [initialRooms, startLoading, stopLoading]);
+  }, [initialRooms]);
 
   const toggleFavorite = useCallback((roomId: number) => {
     setRooms(prevRooms => prevRooms.map(room => 
@@ -214,20 +213,20 @@ const useRooms = (initialRooms: Room[]) => {
 
   // Handle filter/sort changes with loading
   const handleFilterChange = useCallback(async (newFilterType: RoomType) => {
-    startLoading();
+    setIsLoading(true);
     // Simulate API call delay
     await new Promise(resolve => setTimeout(resolve, 500));
     setFilterType(newFilterType);
-    await stopLoading();
-  }, [startLoading, stopLoading]);
+    setIsLoading(false);
+  }, []);
 
   const handleSortChange = useCallback(async (newSortBy: SortOption) => {
-    startLoading();
+    setIsLoading(true);
     // Simulate API call delay
     await new Promise(resolve => setTimeout(resolve, 500));
     setSortBy(newSortBy);
-    await stopLoading();
-  }, [startLoading, stopLoading]);
+    setIsLoading(false);
+  }, []);
 
   return {
     rooms,

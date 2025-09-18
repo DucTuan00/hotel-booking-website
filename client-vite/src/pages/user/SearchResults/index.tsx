@@ -3,7 +3,6 @@ import UserLayout from '@/layouts/UserLayout';
 import SearchHeader from '@/pages/user/SearchResults/components/SearchHeader';
 import SearchFilters from '@/pages/user/SearchResults/components/SearchFilters';
 import SearchResultsList from '@/pages/user/SearchResults/components/SearchResultsList';
-import { useLoading } from '@/hooks/useLoading';
 import { DEMO_IMAGES } from '@/config/constants';
 import '@/pages/user/SearchResults/SearchResults.css';
 
@@ -98,22 +97,22 @@ const SearchResults: React.FC = () => {
   const [selectedRoomTypes, setSelectedRoomTypes] = useState<string[]>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState('price-asc');
-  const { isLoading, startLoading, stopLoading } = useLoading();
+  const [isLoading, setIsLoading] = useState(false);
 
   const pageSize = 8;
 
   // Simulate loading search results
   useEffect(() => {
     const loadResults = async () => {
-      startLoading();
+      setIsLoading(true);
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1200));
       setRooms(mockRooms);
-      await stopLoading();
+      setIsLoading(false);
     };
 
     loadResults();
-  }, [startLoading, stopLoading]);
+  }, []);
 
   const toggleFavorite = useCallback((roomId: number) => {
     setRooms(prevRooms => prevRooms.map(room => 
@@ -169,35 +168,35 @@ const SearchResults: React.FC = () => {
 
   // Handle filter changes with loading
   const handlePriceRangeChange = useCallback(async (newPriceRange: [number, number]) => {
-    startLoading();
+    setIsLoading(true);
     await new Promise(resolve => setTimeout(resolve, 500));
     setPriceRange(newPriceRange);
     setCurrentPage(1);
-    await stopLoading();
-  }, [startLoading, stopLoading]);
+    setIsLoading(false);
+  }, []);
 
   const handleRoomTypesChange = useCallback(async (newRoomTypes: string[]) => {
-    startLoading();
+    setIsLoading(true);
     await new Promise(resolve => setTimeout(resolve, 500));
     setSelectedRoomTypes(newRoomTypes);
     setCurrentPage(1);
-    await stopLoading();
-  }, [startLoading, stopLoading]);
+    setIsLoading(false);
+  }, []);
 
   const handleAmenitiesChange = useCallback(async (newAmenities: string[]) => {
-    startLoading();
+    setIsLoading(true);
     await new Promise(resolve => setTimeout(resolve, 500));
     setSelectedAmenities(newAmenities);
     setCurrentPage(1);
-    await stopLoading();
-  }, [startLoading, stopLoading]);
+    setIsLoading(false);
+  }, []);
 
   const handleSortChange = useCallback(async (newSortBy: string) => {
-    startLoading();
+    setIsLoading(true);
     await new Promise(resolve => setTimeout(resolve, 500));
     setSortBy(newSortBy);
-    await stopLoading();
-  }, [startLoading, stopLoading]);
+    setIsLoading(false);
+  }, []);
 
   const handleClearFilters = useCallback(() => {
     setPriceRange([1000000, 7000000]);

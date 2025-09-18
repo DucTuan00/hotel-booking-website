@@ -26,7 +26,7 @@ const SearchResultsList: React.FC<SearchResultsListProps> = ({
   if (isLoading) {
     return (
       <div className="flex-1">
-        <LoadingSpinner />
+        <LoadingSpinner message="Đang tìm kiếm phòng..." />
       </div>
     );
   }
