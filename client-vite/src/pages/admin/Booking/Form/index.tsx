@@ -99,7 +99,6 @@ const BookingForm: React.FC<BookingFormProps> = ({ visible, onCancel, onSubmit, 
                         type="primary"
                         htmlType="submit"
                         loading={loading}
-                        className="bg-red-800 hover:bg-red-900"
                     >
                         Cập nhật trạng thái
                     </Button>

@@ -1,21 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { Layout } from 'antd';
-import Sidebar from '@/components/SidebarAdmin';
+import Sidebar, { useSidebarControl } from '@/components/SidebarAdmin';
 import Header from '@/components/HeaderAdmin';
 import { Outlet } from 'react-router-dom';
 
 const { Content } = Layout;
 
 const AdminLayout: React.FC = () => {
-  const [collapsed, setCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const { mobileMenuOpen, toggleMobileMenu, closeMobileMenu } = useSidebarControl();
 
   useEffect(() => {
     const handleResize = () => {
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
-      if (mobile && !collapsed) {
-        setCollapsed(true);
+      // Auto close mobile menu when switching to desktop
+      if (!mobile && mobileMenuOpen) {
+        closeMobileMenu();
       }
     };
 
@@ -23,20 +24,23 @@ const AdminLayout: React.FC = () => {
     handleResize(); // Check on initial load
 
     return () => window.removeEventListener('resize', handleResize);
-  }, [collapsed]);
+  }, [mobileMenuOpen, closeMobileMenu]);
 
-  const siderWidth = collapsed ? 80 : 260;
+  const siderWidth = 260;
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Sidebar collapsed={collapsed} onCollapse={setCollapsed} />
+      <Sidebar 
+        mobileMenuOpen={mobileMenuOpen}
+        onMobileMenuClose={closeMobileMenu}
+      />
       <Layout 
         style={{ 
           marginLeft: isMobile ? 0 : siderWidth,
           transition: 'margin-left 0.2s',
         }}
       >
-        <Header />
+        <Header onMenuToggle={toggleMobileMenu} />
         <Content
           style={{
             // margin: isMobile ? '16px' : '24px',

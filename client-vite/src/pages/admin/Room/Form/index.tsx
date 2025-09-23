@@ -300,7 +300,6 @@ const RoomForm: React.FC<RoomFormProps> = ({ visible, onCancel, onSubmit, initia
                         type="primary"
                         htmlType="submit"
                         loading={loading}
-                        className="bg-red-900 hover:bg-red-800"
                     >
                         {isEditing ? 'Cập nhật' : 'Thêm mới'}
                     </Button>

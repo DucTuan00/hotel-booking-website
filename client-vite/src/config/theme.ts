@@ -3,8 +3,8 @@ import { ThemeConfig } from 'antd';
 const theme: ThemeConfig = {
   token: {
     // Primary colors
-    colorPrimary: '#667eea',
-    colorPrimaryHover: '#764ba2',
+    colorPrimary: '#D4902A',
+    colorPrimaryHover: '#B8761E',
     
     // Error/Danger colors
     colorError: '#ff4d4f',
@@ -39,14 +39,14 @@ const theme: ThemeConfig = {
     Layout: {
       siderBg: '#ffffff',
       triggerBg: '#fafafa',
-      triggerColor: '#667eea',
+      triggerColor: '#D4902A',
     },
     Menu: {
       itemBg: 'transparent',
-      itemSelectedBg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      itemSelectedBg: 'linear-gradient(135deg, #D4902A 0%, #B8761E 100%)',
       itemSelectedColor: '#ffffff',
-      itemHoverBg: 'rgba(102, 126, 234, 0.1)',
-      itemHoverColor: '#667eea',
+      itemHoverBg: 'rgba(212, 144, 42, 0.1)',
+      itemHoverColor: '#D4902A',
       iconSize: 16,
       itemHeight: 48,
       itemMarginInline: 8,

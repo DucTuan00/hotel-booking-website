@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Layout, Menu, Button, Typography } from 'antd';
+import { Layout, Menu, Button, Typography, Drawer } from 'antd';
 import {
   DashboardOutlined,
   UserOutlined,
@@ -8,8 +8,6 @@ import {
   CalendarOutlined,
   TagOutlined,
   LogoutOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
 } from '@ant-design/icons';
 import authService from '@/services/auth/authService';
 
@@ -17,36 +15,29 @@ const { Sider } = Layout;
 const { Text } = Typography;
 
 interface SidebarProps {
-  collapsed?: boolean;
-  onCollapse?: (collapsed: boolean) => void;
+  mobileMenuOpen?: boolean;
+  onMobileMenuClose?: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ 
-  collapsed: externalCollapsed, 
-  onCollapse: externalOnCollapse 
+  mobileMenuOpen = false, 
+  onMobileMenuClose 
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [internalCollapsed, setInternalCollapsed] = useState(false);
-  
-  // Use external collapsed state if provided, otherwise use internal state
-  const collapsed = externalCollapsed !== undefined ? externalCollapsed : internalCollapsed;
-  const onCollapse = externalOnCollapse || setInternalCollapsed;
+  const [isMobile, setIsMobile] = useState(false);
 
-  // Auto collapse on mobile
+  // Check if screen is mobile size
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 768 && !collapsed) {
-        onCollapse(true);
-      }
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768);
     };
 
-    window.addEventListener('resize', handleResize);
-    handleResize(); // Check on initial load
-
-    return () => window.removeEventListener('resize', handleResize);
-  }, [collapsed, onCollapse]);
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
   const menuItems = [
     { 
@@ -106,40 +97,15 @@ const Sidebar: React.FC<SidebarProps> = ({
     if (key.startsWith('/dashboard')) {
       navigate(key);
     }
+    // Close mobile menu after navigation
+    if (isMobile && onMobileMenuClose) {
+      onMobileMenuClose();
+    }
   };
 
-  return (
-    <Sider
-      collapsible
-      collapsed={collapsed}
-      onCollapse={onCollapse}
-      width={260}
-      collapsedWidth={80}
-      style={{
-        height: '100vh',
-        position: 'fixed',
-        left: 0,
-        top: 0,
-        bottom: 0,
-        background: '#fff',
-        borderRight: '1px solid #f0f0f0',
-        boxShadow: '2px 0 8px rgba(0,0,0,0.1)',
-        zIndex: 1000,
-        overflow: 'auto',
-      }}
-      trigger={
-        <div style={{ 
-          textAlign: 'center', 
-          padding: '12px',
-          background: '#fafafa',
-          borderTop: '1px solid #f0f0f0',
-          cursor: 'pointer',
-          transition: 'all 0.2s',
-        }}>
-          {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-        </div>
-      }
-    >
+  // Render sidebar content
+  const renderSidebarContent = () => (
+    <>
       {/* Header */}
       <div style={{
         height: '64px',
@@ -147,24 +113,24 @@ const Sidebar: React.FC<SidebarProps> = ({
         alignItems: 'center',
         justifyContent: 'center',
         borderBottom: '1px solid #f0f0f0',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        background: 'linear-gradient(135deg, #D4902A 0%, #B8761E 100%)',
         margin: 0,
       }}>
         <Text 
           strong 
           style={{ 
             color: '#fff',
-            fontSize: collapsed ? '14px' : '18px',
+            fontSize: '18px',
             transition: 'all 0.2s',
             whiteSpace: 'nowrap',
           }}
         >
-          {collapsed ? 'AP' : 'Admin Panel'}
+          Admin Panel
         </Text>
       </div>
 
       {/* Menu */}
-      <div style={{ flex: 1, padding: '16px 0' }}>
+      <div style={{ flex: 1, padding: '16px 0', overflowY: 'auto' }}>
         <Menu
           mode="inline"
           selectedKeys={[location.pathname]}
@@ -177,11 +143,12 @@ const Sidebar: React.FC<SidebarProps> = ({
         />
       </div>
 
-      {/* Logout Section */}
+      {/* Logout Section - Fixed at bottom of viewport */}
       <div style={{ 
         padding: '16px',
         borderTop: '1px solid #f0f0f0',
-        background: '#fafafa'
+        background: '#fafafa',
+        marginTop: 'auto',
       }}>
         <Button
           type="text"
@@ -194,16 +161,74 @@ const Sidebar: React.FC<SidebarProps> = ({
             height: '48px',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: collapsed ? 'center' : 'flex-start',
+            justifyContent: 'flex-start',
             borderRadius: '8px',
             fontWeight: 500,
           }}
         >
-          {!collapsed && 'Đăng xuất'}
+          Đăng xuất
         </Button>
       </div>
+    </>
+  );
+
+  // Mobile view with Drawer
+  if (isMobile) {
+    return (
+      <>
+        {/* Mobile hamburger button - will be positioned by parent layout */}
+        <Drawer
+          title={null}
+          placement="left"
+          onClose={onMobileMenuClose}
+          open={mobileMenuOpen}
+          bodyStyle={{ padding: 0 }}
+          width={260}
+          style={{ zIndex: 1001 }}
+        >
+          <div style={{
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+          }}>
+            {renderSidebarContent()}
+          </div>
+        </Drawer>
+      </>
+    );
+  }
+
+  // Desktop view with fixed Sider
+
+  return (
+    <Sider
+      width={260}
+      style={{
+        height: '100vh',
+        position: 'fixed',
+        left: 0,
+        top: 0,
+        bottom: 0,
+        background: '#fff',
+        borderRight: '1px solid #f0f0f0',
+        boxShadow: '2px 0 8px rgba(0,0,0,0.1)',
+        zIndex: 1000,
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      {renderSidebarContent()}
     </Sider>
   );
+};
+
+// Export both the component and a function to toggle mobile menu
+export const useSidebarControl = () => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen);
+  const closeMobileMenu = () => setMobileMenuOpen(false);
+  return { mobileMenuOpen, setMobileMenuOpen, toggleMobileMenu, closeMobileMenu };
 };
 
 export default Sidebar;

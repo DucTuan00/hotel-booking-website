@@ -1,11 +1,26 @@
-import React from 'react';
-import { Layout, Typography, Space, Divider } from 'antd';
-import { CrownOutlined } from '@ant-design/icons';
+import React, { useState, useEffect } from 'react';
+import { Layout, Typography, Space, Divider, Button } from 'antd';
+import { CrownOutlined, MenuOutlined } from '@ant-design/icons';
 
 const { Header: AntHeader } = Layout;
 const { Title } = Typography;
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  onMenuToggle?: () => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
   return (
     <AntHeader
       style={{
@@ -16,17 +31,28 @@ const Header: React.FC = () => {
         height: '64px',
         display: 'flex',
         alignItems: 'center',
+        justifyContent: 'space-between',
       }}
     >
       <Space align="center">
+        {/* Hamburger menu for mobile */}
+        {isMobile && (
+          <Button
+            type="text"
+            icon={<MenuOutlined />}
+            onClick={onMenuToggle}
+            style={{
+              fontSize: '18px',
+              color: '#D4902A',
+              marginRight: '12px',
+            }}
+          />
+        )}
+        
         <CrownOutlined 
           style={{ 
             fontSize: '24px', 
-            color: '#667eea',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
+            color: '#D4902A',
           }} 
         />
         <Divider type="vertical" style={{ height: '32px' }} />
@@ -34,10 +60,7 @@ const Header: React.FC = () => {
           level={3} 
           style={{ 
             margin: 0,
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
+            color: '#000',
             fontWeight: 600,
           }}
         >

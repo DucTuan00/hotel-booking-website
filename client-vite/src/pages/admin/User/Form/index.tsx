@@ -149,7 +149,6 @@ const UserForm: React.FC<UserFormProps> = ({ visible, onCancel, onSubmit, initia
                         type="primary"
                         htmlType="submit"
                         loading={loading}
-                        className="bg-red-900 hover:bg-red-800"
                     >
                         {isEditing ? 'Lưu' : 'Thêm'}
                     </Button>
