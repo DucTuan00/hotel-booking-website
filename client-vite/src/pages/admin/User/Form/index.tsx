@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Form, Input, Button, Select, Modal } from 'antd';
+import { Form, Input, Button, Select } from 'antd';
 import { UserOutlined, MailOutlined, PhoneOutlined, LockOutlined } from '@ant-design/icons';
 
 const { Option } = Select;
@@ -48,19 +48,14 @@ const UserForm: React.FC<UserFormProps> = ({ visible, onCancel, onSubmit, initia
         onCancel();
     };
 
+    if (!visible) return null;
+
     return (
-        <Modal
-            title={isEditing ? 'Sửa người dùng' : 'Thêm mới người dùng'}
-            open={visible}
-            onCancel={handleCancel}
-            footer={null}
-            width={600}
+        <Form
+            form={form}
+            layout="vertical"
+            onFinish={handleSubmit}
         >
-            <Form
-                form={form}
-                layout="vertical"
-                onFinish={handleSubmit}
-            >
                 <Form.Item
                     label="Tên người dùng"
                     name="name"
@@ -154,7 +149,6 @@ const UserForm: React.FC<UserFormProps> = ({ visible, onCancel, onSubmit, initia
                     </Button>
                 </Form.Item>
             </Form>
-        </Modal>
     );
 };
 

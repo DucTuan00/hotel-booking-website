@@ -26,19 +26,30 @@ const getUserById = async (arg: UserIdInput) => {
 const getAllUsers = async (args: GetAllUsersInput) => {
     const { filter = {}, page = 1, pageSize = 10 } = args;
 
+    const buildQuery = () => {
+        let query = User.find({ active: true });
+
+        if (filter.search) {
+            query = query.or([
+                { name: new RegExp(filter.search, 'i') }, // 'i' for case-insensitive
+                { email: new RegExp(filter.search, 'i') },
+                { phone: new RegExp(filter.search, 'i') }
+            ]);
+        }
+
+        return query;
+    };
+
     const skip = (page - 1) * pageSize;
-    const users = await User.find({ ...filter, active: true }, { password: 0 })
-        .skip(skip)
-        .limit(pageSize);
+    const [users, totalUsers] = await Promise.all([
+        buildQuery().select('-password').skip(skip).limit(pageSize),
+        buildQuery().countDocuments()
+    ]);
     
     if (!users) {
         throw new Error('Failed finding all users');
     }
-
-    const totalUsers = await User.countDocuments({ ...filter, active: true});
-    if (!totalUsers) {
-        throw new ApiError('Failed to get total users', 500);
-    }
+    
     return {
         users: mapIds(users),
         total: totalUsers,

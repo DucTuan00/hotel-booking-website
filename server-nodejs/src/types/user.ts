@@ -25,7 +25,9 @@ export interface UserIdInput {
 }
 
 export interface GetAllUsersInput {
-    filter?: Record<string, any>;
+    filter?: {
+        search?: string; 
+    };
     page?: number;
     pageSize?: number;
 }

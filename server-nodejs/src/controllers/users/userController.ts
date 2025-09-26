@@ -29,7 +29,7 @@ const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { page = 1, pageSize = 10, ...filter} = req.query;
         const users = await userService.getAllUsers({
-            ...filter, 
+            filter, 
             page: parseInt(page as string), 
             pageSize: parseInt(pageSize as string)
         });

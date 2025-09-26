@@ -14,7 +14,10 @@ const createRoom = async (req: Request, res: Response, next: NextFunction) => {
             // If no amenities were sent, ensure it's an empty array
             amenities = [];
         }
-        const images = req.files ? (req.files as Express.Multer.File[]).map(file => file.path) : [];
+        const images: string[] = [];
+        if (req.files && Array.isArray(req.files)) {
+            images.push(...req.files.map(file => file.path));
+        }
 
         console.log('Request Body:', req.body);
 
@@ -78,7 +81,10 @@ const updateRoom = async (req: Request, res: Response, next: NextFunction) => {
             amenities = [];
         }
 
-        const images = req.files ? (req.files as Express.Multer.File[]).map(file => file.path) : [];
+        const images: string[] = [];
+        if (req.files && Array.isArray(req.files)) {
+            images.push(...req.files.map(file => file.path));
+        }
 
         try {
             const updatedRoom = await roomService.updateRoom({

@@ -3,6 +3,7 @@ import { Button, Space, Popconfirm, Tag } from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import AdminTable from '@/components/AdminTable';
+import SearchTableAdmin, { SearchFilters } from '@/components/SearchTableAdmin';
 import UserForm, { UserFormValues } from '@/pages/admin/User/Form';
 import userService from '@/services/users/userService';
 import Notification from '@/components/Notification';
@@ -29,11 +30,18 @@ const UserList: React.FC = () => {
     const [pageSize, setPageSize] = useState<number>(10);
     const [totalUsers, setTotalUsers] = useState<number>(0);
     const [message, setMessage] = useState<Message | null>(null);
+    const [currentSearchParams, setCurrentSearchParams] = useState<any>({});
 
     const fetchUsers = useCallback(async () => {
         setLoading(true);
         try {
-            const data = await userService.getAllUsers({ page: currentPage, pageSize: pageSize });
+            const params: any = { 
+                page: currentPage, 
+                pageSize: pageSize,
+                ...currentSearchParams
+            };
+
+            const data = await userService.getAllUsers(params);
             setUsers(data.users);
             setTotalUsers(data.total ?? 0);
         } catch (error) {
@@ -44,11 +52,29 @@ const UserList: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    }, [currentPage, pageSize]);
+    }, [currentPage, pageSize, currentSearchParams]);
 
     useEffect(() => {
         fetchUsers();
-    }, [fetchUsers]);    const showModal = () => {
+    }, [fetchUsers]);
+
+    const handleSearch = (filters: SearchFilters) => {
+        setCurrentPage(1); 
+        
+        if (!filters.searchText || !filters.searchText.trim()) {
+            setCurrentSearchParams({});
+            return;
+        }
+        
+        const searchText = filters.searchText.trim();
+        const searchParams: any = {
+            search: searchText  
+        };
+        
+        setCurrentSearchParams(searchParams);
+    };
+
+    const showModal = () => {
         setIsModalVisible(true);
         setEditingUser(null);
     };
@@ -190,6 +216,11 @@ const UserList: React.FC = () => {
             <Notification
                 message={message}
                 onClose={() => setMessage(null)}
+            />
+
+            <SearchTableAdmin
+                onSearch={handleSearch}
+                placeholder="Tìm kiếm theo tên, email hoặc số điện thoại..."
             />
 
             <AdminTable<User>
