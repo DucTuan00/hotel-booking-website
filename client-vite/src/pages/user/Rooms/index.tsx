@@ -272,7 +272,7 @@ const Rooms: React.FC = () => {
 
   return (
     <UserLayout headerTransparent={false}>
-      <div className="rooms-page min-h-screen bg-gray-50 pt-20">
+      <div className="rooms-page min-h-screen bg-gray-50">
         <RoomFilters
           filterType={filterType}
           sortBy={sortBy}

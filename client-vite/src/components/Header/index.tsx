@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Button, Drawer } from 'antd';
+import { Button, Drawer, Layout } from 'antd';
 import { MenuOutlined, CloseOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { COLORS, TYPOGRAPHY } from '@/config/constants';
+
+const { Header: AntHeader } = Layout;
 
 interface HeaderProps {
     transparent?: boolean;
@@ -39,10 +41,16 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
 
     return (
         <>
-            <header
-                className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${transparent ? 'bg-transparent' : 'bg-white shadow-md'
-                    }`}
-                style={{ height: '60px', width: '100%', overflowX: 'hidden' }}
+            <AntHeader
+                style={{
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 50,
+                    width: "100%",
+                    alignItems: "center",
+                    background: "#fff",
+                    borderBottom: "1px solid #f0f0f0",
+                }}
             >
                 <div className="max-w-7xl mx-auto px-3 sm:px-4 h-full flex items-center justify-between">
                     {/* Logo */}
@@ -51,7 +59,9 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
                             className="text-lg sm:text-xl lg:text-2xl font-bold"
                             style={{
                                 fontFamily: TYPOGRAPHY.fontFamily.primary,
-                                color: transparent ? COLORS.white : COLORS.primary
+                                color: transparent
+                                    ? COLORS.white
+                                    : COLORS.primary,
                             }}
                         >
                             LION
@@ -66,8 +76,10 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
                                 onClick={() => handleNavigation(item.path)}
                                 className="text-sm font-medium hover:opacity-75 transition-opacity whitespace-nowrap bg-transparent border-none cursor-pointer px-2"
                                 style={{
-                                    color: transparent ? COLORS.white : COLORS.gray[700],
-                                    fontFamily: TYPOGRAPHY.fontFamily.secondary
+                                    color: transparent
+                                        ? COLORS.white
+                                        : COLORS.gray[700],
+                                    fontFamily: TYPOGRAPHY.fontFamily.secondary,
                                 }}
                             >
                                 {item.name}
@@ -77,18 +89,6 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
 
                     {/* Right Side - Language, Booking Button, Mobile Menu */}
                     <div className="flex items-center space-x-2 sm:space-x-3">
-                        {/* Language Selector */}
-                        <select
-                            className="bg-transparent border-none text-xs sm:text-sm outline-none cursor-pointer"
-                            style={{
-                                color: transparent ? COLORS.white : COLORS.gray[700],
-                                fontFamily: TYPOGRAPHY.fontFamily.secondary
-                            }}
-                        >
-                            <option value="vi">🇻🇳 VI</option>
-                            <option value="en">🇺🇸 EN</option>
-                        </select>
-
                         {/* Desktop Booking Button */}
                         <Button
                             type="primary"
@@ -105,20 +105,24 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
                         </Button>
 
                         {/* Mobile Menu Button */}
-                        <Button
-                            type="text"
-                            icon={<MenuOutlined />}
-                            onClick={() => setMobileMenuOpen(true)}
-                            className="lg:hidden p-1"
-                            style={{
-                                color: transparent ? COLORS.white : COLORS.gray[700],
-                                border: 'none',
-                                boxShadow: 'none',
-                            }}
-                        />
+                        <div className="block lg:hidden">
+                            <Button
+                                type="text"
+                                icon={<MenuOutlined />}
+                                onClick={() => setMobileMenuOpen(true)}
+                                className="p-1"
+                                style={{
+                                    color: transparent
+                                        ? COLORS.white
+                                        : COLORS.gray[700],
+                                    border: "none",
+                                    boxShadow: "none",
+                                }}
+                            />
+                        </div>
                     </div>
                 </div>
-            </header>
+            </AntHeader>
 
             {/* Mobile Drawer Menu */}
             <Drawer
@@ -127,7 +131,7 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
                         className="text-xl font-bold"
                         style={{
                             fontFamily: TYPOGRAPHY.fontFamily.primary,
-                            color: COLORS.primary
+                            color: COLORS.primary,
                         }}
                     >
                         LION
@@ -142,8 +146,8 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
                     body: { padding: 0 },
                     header: {
                         borderBottom: `1px solid ${COLORS.gray[200]}`,
-                        background: 'white'
-                    }
+                        background: "white",
+                    },
                 }}
             >
                 <div className="flex flex-col h-full">
@@ -156,7 +160,7 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
                                 className="block w-full text-left px-6 py-4 text-base font-medium hover:bg-gray-50 transition-colors border-b border-gray-100 bg-transparent border-none"
                                 style={{
                                     color: COLORS.gray[700],
-                                    fontFamily: TYPOGRAPHY.fontFamily.secondary
+                                    fontFamily: TYPOGRAPHY.fontFamily.secondary,
                                 }}
                             >
                                 {item.name}
@@ -176,7 +180,7 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
                                 borderColor: COLORS.primary,
                                 fontFamily: TYPOGRAPHY.fontFamily.secondary,
                                 fontWeight: TYPOGRAPHY.fontWeight.semibold,
-                                height: '48px'
+                                height: "48px",
                             }}
                             onClick={() => setMobileMenuOpen(false)}
                         >
