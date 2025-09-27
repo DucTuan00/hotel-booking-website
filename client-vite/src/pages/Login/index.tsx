@@ -1,7 +1,8 @@
-import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react';
-import LoginForm from '@/pages/Login/LoginForm';
-import authService from '@/services/auth/authService';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
+// import LoginForm from '@/pages/Login/LoginForm';
+import LoginForm2 from "@/pages/Login/LoginForm2";
+import authService from "@/services/auth/authService";
+import { useNavigate } from "react-router-dom";
 
 interface FormData {
     name: string;
@@ -11,64 +12,76 @@ interface FormData {
 }
 
 const Login: React.FC = () => {
-    const [isRegister, setIsRegister] = useState<boolean>(() => localStorage.getItem('isRegister') === 'true');
+    const [isRegister, setIsRegister] = useState<boolean>(
+        () => localStorage.getItem("isRegister") === "true"
+    );
     const [formData, setFormData] = useState<FormData>({
-        name: '',
-        phone: '',
-        email: '',
-        password: '',
+        name: "",
+        phone: "",
+        email: "",
+        password: "",
     });
-    const [error, setError] = useState<string>('');
+    const [error, setError] = useState<string>("");
     const navigate = useNavigate(); // Hook for navigation
 
     useEffect(() => {
-        localStorage.setItem('isRegister', String(isRegister));
+        localStorage.setItem("isRegister", String(isRegister));
     }, [isRegister]);
 
     const toggleAuthMode = () => {
-        setIsRegister(prevState => !prevState);
-        setError('');
+        setIsRegister((prevState) => !prevState);
+        setError("");
     };
 
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (type: 'login' | 'register') => async (e: FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        setError('');
+    const handleSubmit =
+        (type: "login" | "register") =>
+        async (e: FormEvent<HTMLFormElement>) => {
+            e.preventDefault();
+            setError("");
 
-        try {
-            if (type === 'register') {
-                await authService.register({
-                    name: formData.name,
-                    phone: formData.phone,
-                    email: formData.email,
-                    password: formData.password,
-                });
-                console.log('Register successfully');
-                setIsRegister(false); // Set to false to show login form
-            } else if (type === 'login') {
-                const userData = await authService.login({
-                    email: formData.email,
-                    password: formData.password,
-                });
+            try {
+                if (type === "register") {
+                    await authService.register({
+                        name: formData.name,
+                        phone: formData.phone,
+                        email: formData.email,
+                        password: formData.password,
+                    });
+                    console.log("Register successfully");
+                    setIsRegister(false); // Set to false to show login form
+                } else if (type === "login") {
+                    const userData = await authService.login({
+                        email: formData.email,
+                        password: formData.password,
+                    });
 
-                if (userData.role === 'admin') {
-                    navigate('/dashboard'); // Navigate to dashboard
-                } else {
-                    navigate('/'); // Navigate to home
+                    if (userData.role === "admin") {
+                        navigate("/dashboard"); // Navigate to dashboard
+                    } else {
+                        navigate("/"); // Navigate to home
+                    }
                 }
+            } catch (err: unknown) {
+                const errorObj = err as { error?: string; message?: string };
+                console.error("Lỗi:", err);
+                setError(errorObj.error || errorObj.message || "Có lỗi xảy ra");
             }
-        } catch (err: unknown) {
-            const errorObj = err as { error?: string; message?: string };
-            console.error('Lỗi:', err);
-            setError(errorObj.error || errorObj.message || 'Có lỗi xảy ra');
-        }
-    };
+        };
 
     return (
-        <LoginForm
+        // <LoginForm
+        //     onSubmit={handleSubmit}
+        //     onChange={handleChange}
+        //     formData={formData}
+        //     isRegister={isRegister}
+        //     toggleAuthMode={toggleAuthMode}
+        //     error={error}
+        // />
+        <LoginForm2
             onSubmit={handleSubmit}
             onChange={handleChange}
             formData={formData}

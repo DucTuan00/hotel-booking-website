@@ -94,6 +94,7 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
                             type="primary"
                             size="small"
                             className="hidden sm:block text-xs lg:text-sm px-3 lg:px-4 h-8 lg:h-10"
+                            onClick={() => handleNavigation('/login')}
                             style={{
                                 backgroundColor: COLORS.primary,
                                 borderColor: COLORS.primary,
@@ -101,7 +102,7 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
                                 fontWeight: TYPOGRAPHY.fontWeight.medium,
                             }}
                         >
-                            ĐẶT PHÒNG
+                            ĐĂNG NHẬP
                         </Button>
 
                         {/* Mobile Menu Button */}
