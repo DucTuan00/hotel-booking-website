@@ -15,13 +15,12 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
     const navigate = useNavigate();
 
     const menuItems = [
-        { name: 'Giới thiệu', path: '/#about' },
-        { name: 'Phòng', path: '/rooms' },
-        { name: 'Bord Hotel', path: '/#hotel' },
-        { name: 'Du lịch', path: '/#tours' },
-        { name: 'Ẩm thực', path: '/#dining' },
-        { name: 'Dịch vụ', path: '/#services' },
-        { name: 'Liên hệ', path: '/#contact' },
+        { name: 'GIỚI THIỆU', path: '/#about' },
+        { name: 'PHÒNG', path: '/rooms' },
+        { name: 'NHÀ HÀNG', path: '/restaurant' },
+        { name: 'SPA', path: '/spa' },
+        { name: 'AI PLANNER', path: '/#' },
+        { name: 'LIÊN HỆ', path: '/#contact' },
     ];
 
     const handleNavigation = (path: string) => {
