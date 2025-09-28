@@ -1,8 +1,8 @@
-import roomService from '@/services/rooms/roomService';
+import * as roomService from '@/services/rooms/roomService';
 import ApiError from '@/utils/apiError';
 import { Request, Response, NextFunction } from 'express';
 
-const createRoom = async (req: Request, res: Response, next: NextFunction) => {
+export async function createRoom(req: Request, res: Response, next: NextFunction) {
     try {
         const { name, roomType, description, price, maxGuests, quantity } = req.body;
         let amenities = req.body.amenities;
@@ -43,7 +43,7 @@ const createRoom = async (req: Request, res: Response, next: NextFunction) => {
     }
 };
 
-const getAllRooms = async (req: Request, res: Response, next: NextFunction) => {
+export async function getAllRooms(req: Request, res: Response, next: NextFunction) {
     try {
         const { page = 1, pageSize = 10, ...filter } = req.query;
         const result = await roomService.getAllRooms({
@@ -57,7 +57,7 @@ const getAllRooms = async (req: Request, res: Response, next: NextFunction) => {
     }
 };
 
-const getRoomById = async (req: Request, res: Response, next: NextFunction) => {
+export async function getRoomById(req: Request, res: Response, next: NextFunction) {
     try {
         const { id } = req.params;
         const room = await roomService.getRoomById({ id });
@@ -67,7 +67,7 @@ const getRoomById = async (req: Request, res: Response, next: NextFunction) => {
     }
 };
 
-const updateRoom = async (req: Request, res: Response, next: NextFunction) => {
+export async function updateRoom(req: Request, res: Response, next: NextFunction) {
     try {
         const { id } = req.params;
         const { name, roomType, description, price, maxGuests, quantity } = req.body;
@@ -109,7 +109,7 @@ const updateRoom = async (req: Request, res: Response, next: NextFunction) => {
     }
 };
 
-const deleteRoom = async (req: Request, res: Response, next: NextFunction) => {
+export async function deleteRoom(req: Request, res: Response, next: NextFunction) {
     try {
         const { id } = req.params;
         const result = await roomService.deleteRoom({ id });
@@ -119,7 +119,7 @@ const deleteRoom = async (req: Request, res: Response, next: NextFunction) => {
     }
 };
 
-const deleteRoomImage = async (req: Request, res: Response, next: NextFunction) => {
+export async function deleteRoomImage(req: Request, res: Response, next: NextFunction) {
     try {
         const { imageId } = req.params;
         const result = await roomService.deleteRoomImage(imageId);
@@ -127,13 +127,4 @@ const deleteRoomImage = async (req: Request, res: Response, next: NextFunction) 
     } catch (error: any) {
         next(new ApiError(error.message, error.statusCode || 500));
     }
-};
-
-export default {
-    createRoom,
-    getAllRooms,
-    getRoomById,
-    updateRoom,
-    deleteRoom,
-    deleteRoomImage,
 };

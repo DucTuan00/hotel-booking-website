@@ -5,7 +5,7 @@ dotenv.config();
 
 const connectionString: string | undefined = process.env.MONGODB_URI;
 
-const connectDB = async (): Promise<void> => {
+export default async function connectDB(): Promise<void> {
     try {
         if (!connectionString) {
             throw new Error('MONGODB_URI is not defined in the environment variables.');
@@ -20,5 +20,3 @@ const connectDB = async (): Promise<void> => {
         process.exit(1);
     }
 };
-
-export default connectDB;

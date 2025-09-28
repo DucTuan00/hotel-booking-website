@@ -5,7 +5,7 @@ import {
     GetFavoritesInput
 } from '@/types/favorite';
 
-const addFavorite = async (args: FavoriteInput) => {
+export async function addFavorite(args: FavoriteInput) {
     const { userId, roomId } = args;
 
     if (!userId) {
@@ -26,7 +26,7 @@ const addFavorite = async (args: FavoriteInput) => {
     return { message: 'Favorite added successfully' };
 };
 
-const getFavorites = async (arg: GetFavoritesInput) => {
+export async function getFavorites(arg: GetFavoritesInput) {
     const { userId } = arg;
 
     if (!userId) {
@@ -37,7 +37,7 @@ const getFavorites = async (arg: GetFavoritesInput) => {
     return favorites;
 };
 
-const deleteFavorite = async (args: FavoriteInput) => {
+export async function deleteFavorite(args: FavoriteInput) {
     const { userId, roomId } = args;
 
     if (!userId) {
@@ -56,9 +56,3 @@ const deleteFavorite = async (args: FavoriteInput) => {
 
     return { message: 'Favorite deleted successfully' };
 };
-
-export default {
-    addFavorite,
-    getFavorites,
-    deleteFavorite,
-}

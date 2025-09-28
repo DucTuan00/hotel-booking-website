@@ -3,15 +3,15 @@ import RoomImage from '@/models/RoomImage';
 import RoomAmenity from '@/models/RoomAmenity';
 import ApiError from '@/utils/apiError';
 import { mapId, mapIds } from '@/utils/mapId';
-import cron from 'node-cron';
 import mongoose from 'mongoose';
 import {
     RoomData,
     GetAllRoomsInput,
-    RoomIdInput
+    RoomIdInput,
+    RoomType
 } from '@/types/room';
 
-const updateRoomAmenities = async (roomId: string, newAmenityIds: string[]) => {
+export async function updateRoomAmenities(roomId: string, newAmenityIds: string[]) {
     const currentRoomAmenities = await RoomAmenity.find({ roomId }).select('amenityId');
     const currentAmenityIds = currentRoomAmenities.map(ra => ra.amenityId.toString());
     
@@ -37,12 +37,12 @@ const updateRoomAmenities = async (roomId: string, newAmenityIds: string[]) => {
     }
 };
 
-const validateRoomData = (data: RoomData) => {
+export function validateRoomData(data: RoomData) {
     if (!data.name || typeof data.name !== 'string' || data.name.trim() === "") {
         throw new ApiError("Invalid room name.", 400);
     }
 
-    if (!data.roomType || !['Single', 'Double', 'Suite'].includes(data.roomType)) {
+    if (!data.roomType || !Object.values(RoomType).includes(data.roomType)) {
         throw new ApiError("Invalid room type.", 400);
     }
 
@@ -109,7 +109,7 @@ const validateRoomData = (data: RoomData) => {
     }
 };
 
-const createRoom = async (roomData: RoomData) => {
+export async function createRoom(roomData: RoomData) {
     validateRoomData(roomData);
 
     const newRoom = new Room({
@@ -142,7 +142,7 @@ const createRoom = async (roomData: RoomData) => {
     return mapId(room);
 };
 
-const getAllRooms = async (args: GetAllRoomsInput) => {
+export async function getAllRooms(args: GetAllRoomsInput) {
     const { filter = {}, page = 1, pageSize = 10 } = args;
 
     const skip = (page - 1) * pageSize;
@@ -199,7 +199,7 @@ const getAllRooms = async (args: GetAllRoomsInput) => {
     };
 };
 
-const getRoomById = async (arg: RoomIdInput) => {
+export async function getRoomById(arg: RoomIdInput) {
     const { id } = arg;
 
     if (!id) {
@@ -242,7 +242,7 @@ const getRoomById = async (arg: RoomIdInput) => {
 };
 
 
-const updateRoom = async (roomData: RoomData) => {
+export async function updateRoom(roomData: RoomData) {
     if (!roomData.id) {
         throw new ApiError("Invalid room id.", 400);
     }
@@ -303,7 +303,7 @@ const updateRoom = async (roomData: RoomData) => {
     return mapId(updatedRoom);
 };
 
-const deleteRoom = async (arg: RoomIdInput) => {
+export async function deleteRoom(arg: RoomIdInput) {
     const { id } = arg;
 
     if (!id) {
@@ -333,39 +333,7 @@ const deleteRoom = async (arg: RoomIdInput) => {
     };
 };
 
-// const updateRoomAvailability = async () => {
-//     try {
-//         const rooms = await Room.find({ active: true });
-//         const currentDate = new Date();
-//         for (const room of rooms) {
-//             const { start_date, end_date } = room.availability;
-
-//             const startDate = new Date(start_date);
-//             const endDate = new Date(end_date);
-
-//             if (currentDate > endDate) {
-//                 room.availability.is_available = false;
-//                 continue;
-//             }
-//             if (currentDate > startDate) {
-//                 const daysPassed = Math.floor((currentDate - startDate) / (1000 * 60 * 60 * 24));
-
-//                 const newStartDate = new Date(startDate)
-//                 newStartDate.setDate(startDate.getDate() + daysPassed);
-//                 room.availability.start_date = newStartDate;
-
-//                 const newEndDate = new Date(endDate)
-//                 newEndDate.setDate(endDate.getDate() + daysPassed);
-//                 room.availability.end_date = newEndDate;
-//             } 
-//             await room.save();
-//         }
-//     } catch (error) {
-//         console.error('Error updating room availability:', error);
-//     }
-// };
-
-const deleteRoomImage = async (imageId: string) => {
+export async function deleteRoomImage(imageId: string) {
     if (!imageId) {
         throw new ApiError("Invalid image id.", 400);
     }
@@ -383,22 +351,4 @@ const deleteRoomImage = async (imageId: string) => {
     return {
         message: 'Deleted room image successfully'
     };
-};
-
-// Schedule daily update for room availability
-// cron.schedule('0 0 * * *', () => {
-//     updateRoomAvailability();
-// });
-
-// Run immediately when server start
-//updateRoomAvailability();
-
-export default {
-    createRoom,
-    getAllRooms,
-    getRoomById,
-    updateRoom,
-    deleteRoom,
-    deleteRoomImage,
-    //updateRoomAvailability,
 };

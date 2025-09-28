@@ -1,8 +1,8 @@
-import roomAvailableService from '@/services/rooms/roomAvailableService';
+import * as roomAvailableService from '@/services/rooms/roomAvailableService';
 import ApiError from '@/utils/apiError';
 import { Request, Response, NextFunction } from 'express';
 
-const createRoomAvailable = async (req: Request, res: Response, next: NextFunction) => {
+export async function createRoomAvailable(req: Request, res: Response, next: NextFunction) {
     try {
         const { roomId, date, price, inventory } = req.body;
         
@@ -28,7 +28,7 @@ const createRoomAvailable = async (req: Request, res: Response, next: NextFuncti
     }
 };
 
-const createBulkRoomAvailable = async (req: Request, res: Response, next: NextFunction) => {
+export async function createBulkRoomAvailable(req: Request, res: Response, next: NextFunction) {
     try {
         const { roomId, startDate, endDate, price, inventory } = req.body;
         
@@ -57,7 +57,7 @@ const createBulkRoomAvailable = async (req: Request, res: Response, next: NextFu
     }
 };
 
-const getRoomAvailable = async (req: Request, res: Response, next: NextFunction) => {
+export async function getRoomAvailable(req: Request, res: Response, next: NextFunction) {
     try {
         const { roomId, startDate, endDate, page = 1, pageSize = 100 } = req.query;
         
@@ -93,7 +93,7 @@ const getRoomAvailable = async (req: Request, res: Response, next: NextFunction)
     }
 };
 
-const updateRoomAvailable = async (req: Request, res: Response, next: NextFunction) => {
+export async function updateRoomAvailable(req: Request, res: Response, next: NextFunction) {
     try {
         const { roomId, date } = req.params;
         const { price, inventory } = req.body;
@@ -127,7 +127,7 @@ const updateRoomAvailable = async (req: Request, res: Response, next: NextFuncti
     }
 };
 
-const deleteRoomAvailable = async (req: Request, res: Response, next: NextFunction) => {
+export async function deleteRoomAvailable(req: Request, res: Response, next: NextFunction) {
     try {
         const { roomId, date } = req.params;
         
@@ -147,7 +147,7 @@ const deleteRoomAvailable = async (req: Request, res: Response, next: NextFuncti
     }
 };
 
-const getAllRoomsAvailability = async (req: Request, res: Response, next: NextFunction) => {
+export async function getAllRoomsAvailability(req: Request, res: Response, next: NextFunction) {
     try {
         const { startDate, endDate } = req.query;
         
@@ -167,13 +167,4 @@ const getAllRoomsAvailability = async (req: Request, res: Response, next: NextFu
     } catch (error: any) {
         next(new ApiError(error.message, error.statusCode || 500));
     }
-};
-
-export default {
-    createRoomAvailable,
-    createBulkRoomAvailable,
-    getRoomAvailable,
-    updateRoomAvailable,
-    deleteRoomAvailable,
-    getAllRoomsAvailability
 };

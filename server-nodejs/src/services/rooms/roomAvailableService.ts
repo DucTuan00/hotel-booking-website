@@ -3,38 +3,14 @@ import Room from '@/models/Room';
 import ApiError from '@/utils/apiError';
 import { mapId } from '@/utils/mapId';
 import mongoose from 'mongoose';
+import { 
+    RoomAvailableData,
+    RoomAvailableInput,
+    GetRoomAvailableInput,
+    UpdateRoomAvailableInput,
+} from '@/types/room';
 
-export interface RoomAvailableData {
-    roomId: string;
-    date: Date;
-    price: number;
-    inventory: number;
-}
-
-export interface RoomAvailableInput {
-    roomId: string;
-    startDate: Date;
-    endDate: Date;
-    price: number;
-    inventory: number;
-}
-
-export interface GetRoomAvailableInput {
-    roomId?: string;
-    startDate?: Date;
-    endDate?: Date;
-    page?: number;
-    pageSize?: number;
-}
-
-export interface UpdateRoomAvailableInput {
-    roomId: string;
-    date: Date;
-    price?: number;
-    inventory?: number;
-}
-
-const validateRoomAvailableData = (data: RoomAvailableData) => {
+export function validateRoomAvailableData(data: RoomAvailableData) {
     if (!data.roomId || !mongoose.Types.ObjectId.isValid(data.roomId)) {
         throw new ApiError("Invalid room ID.", 400);
     }
@@ -52,7 +28,7 @@ const validateRoomAvailableData = (data: RoomAvailableData) => {
     }
 };
 
-const createRoomAvailable = async (data: RoomAvailableData) => {
+export async function createRoomAvailable(data: RoomAvailableData) {
     validateRoomAvailableData(data);
 
     // Check if room exists
@@ -82,7 +58,7 @@ const createRoomAvailable = async (data: RoomAvailableData) => {
     return mapId(roomAvailable);
 };
 
-const createBulkRoomAvailable = async (input: RoomAvailableInput) => {
+export async function createBulkRoomAvailable(input: RoomAvailableInput) {
     const { roomId, startDate, endDate, price, inventory } = input;
 
     // Validate input
@@ -151,7 +127,7 @@ const createBulkRoomAvailable = async (input: RoomAvailableInput) => {
     }
 };
 
-const getRoomAvailable = async (input: GetRoomAvailableInput) => {
+export async function getRoomAvailable(input: GetRoomAvailableInput) {
     const { roomId, startDate, endDate, page = 1, pageSize = 100 } = input;
 
     const filter: any = {};
@@ -207,7 +183,7 @@ const getRoomAvailable = async (input: GetRoomAvailableInput) => {
     };
 };
 
-const updateRoomAvailable = async (input: UpdateRoomAvailableInput) => {
+export async function updateRoomAvailable(input: UpdateRoomAvailableInput) {
     const { roomId, date, price, inventory } = input;
 
     if (!roomId || !mongoose.Types.ObjectId.isValid(roomId)) {
@@ -267,7 +243,7 @@ const updateRoomAvailable = async (input: UpdateRoomAvailableInput) => {
     };
 };
 
-const deleteRoomAvailable = async (roomId: string, date: Date) => {
+export async function deleteRoomAvailable(roomId: string, date: Date) {
     if (!roomId || !mongoose.Types.ObjectId.isValid(roomId)) {
         throw new ApiError("Invalid room ID.", 400);
     }
@@ -290,7 +266,7 @@ const deleteRoomAvailable = async (roomId: string, date: Date) => {
     };
 };
 
-const getAllRoomsAvailability = async (startDate: Date, endDate: Date) => {
+export async function getAllRoomsAvailability(startDate: Date, endDate: Date) {
     if (!startDate || !endDate) {
         throw new ApiError("Start date and end date are required.", 400);
     }
@@ -329,13 +305,4 @@ const getAllRoomsAvailability = async (startDate: Date, endDate: Date) => {
         defaultInventory: room.quantity,
         availability: availabilityByRoom[(room._id as any).toString()] || []
     }));
-};
-
-export default {
-    createRoomAvailable,
-    createBulkRoomAvailable,
-    getRoomAvailable,
-    updateRoomAvailable,
-    deleteRoomAvailable,
-    getAllRoomsAvailability
 };

@@ -1,9 +1,14 @@
+export enum UserRole {
+    USER = 'user',
+    ADMIN = 'admin',
+}
+
 export interface InputCreateUser {
     email: string;
     password: string;
     name: string;
     phone: string;
-    role: string;
+    role: UserRole;
 }
 
 export interface InputUpdateUser {
@@ -11,7 +16,7 @@ export interface InputUpdateUser {
     email?: string;
     name?: string;
     phone?: string;
-    role?: string;
+    role?: UserRole;
 }
 
 export interface InputUpdatePassword {

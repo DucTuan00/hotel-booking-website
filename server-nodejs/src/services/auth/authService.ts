@@ -10,7 +10,7 @@ import {
     AccessTokenInput
 } from '@/types/auth';
 
-const register = async (args: RegisterInput) => {
+export async function register(args: RegisterInput) {
     const { email, password, name, phone, role } = args;
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -29,7 +29,7 @@ const register = async (args: RegisterInput) => {
     };
 };
 
-const login = async (args: LoginInput) => {
+export async function login(args: LoginInput) {
     const { email, password } = args;
 
     const user = await User.findOne({ email });
@@ -63,7 +63,7 @@ const login = async (args: LoginInput) => {
     };
 };
 
-const refreshAccessToken = async (arg: UserIdInput) => {
+export async function refreshAccessToken(arg: UserIdInput) {
     const { userId } = arg;
     
     const user = await User.findById(userId);
@@ -93,7 +93,7 @@ const refreshAccessToken = async (arg: UserIdInput) => {
     return { accessToken, refreshToken: newRefreshToken };
 };
 
-const logout = async (arg: UserIdInput) => {
+export async function logout(arg: UserIdInput) {
     const { userId } = arg;
 
     const user = await User.findById(userId);
@@ -109,7 +109,7 @@ const logout = async (arg: UserIdInput) => {
     return { message: 'Logged out successfully' };
 };
 
-const verifyAccessToken = async (arg: AccessTokenInput) => {
+export async function verifyAccessToken(arg: AccessTokenInput) {
     const { accessToken } = arg;
 
     const decoded = jwt.verify(accessToken, jwtConfig.secret as string) as JwtPayload;
@@ -125,11 +125,3 @@ const verifyAccessToken = async (arg: AccessTokenInput) => {
         role: user.role,
     };
 };
-
-export default {
-    register,
-    login,
-    refreshAccessToken,
-    logout,
-    verifyAccessToken,
-}

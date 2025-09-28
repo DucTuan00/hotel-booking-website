@@ -1,11 +1,12 @@
 import { Router } from 'express';
-import favoriteController from '@/controllers/favorites/favoriteController';
+import * as favoriteController from '@/controllers/favorites/favoriteController';
 import authMiddleware from '@/middlewares/authMiddleware';
+import { UserRole } from "@/types/user";
 
 const router = Router();
 
-router.post('/', authMiddleware(['user']), favoriteController.addFavorite);
-router.get('/', authMiddleware(['user']), favoriteController.getFavorites);
-router.delete('/:roomId', authMiddleware(['user']), favoriteController.deleteFavorite);
+router.post('/', authMiddleware([UserRole.USER]), favoriteController.addFavorite);
+router.get('/', authMiddleware([UserRole.USER]), favoriteController.getFavorites);
+router.delete('/:roomId', authMiddleware([UserRole.USER]), favoriteController.deleteFavorite);
 
 export default router;

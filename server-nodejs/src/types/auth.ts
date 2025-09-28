@@ -1,9 +1,11 @@
+import { UserRole } from "@/types/user";
+
 export interface RegisterInput {
     email: string;
     password: string;
     name: string;
     phone: string;
-    role: string;
+    role: UserRole;
 }
 
 export interface LoginInput {

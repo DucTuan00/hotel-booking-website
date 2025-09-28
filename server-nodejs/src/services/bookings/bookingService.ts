@@ -11,7 +11,7 @@ import {
     UpdateBookingInput
 } from '@/types/booking';
 
-const createBooking = async (args: CreateBookingInput) => {
+export async function createBooking(args: CreateBookingInput) {
     const { userId, roomId, checkIn, checkOut, guests, quantity } = args;
 
     const existUser = await User.findById({ _id: userId, active: true });
@@ -107,7 +107,7 @@ const createBooking = async (args: CreateBookingInput) => {
     return mapId(booking);
 };
 
-const getBookingById = async (arg: BookingIdInput) => {
+export async function getBookingById(arg: BookingIdInput) {
     const { bookingId } = arg;
 
     const booking = await Booking.findById(bookingId);
@@ -119,7 +119,7 @@ const getBookingById = async (arg: BookingIdInput) => {
     return mapId(booking);
 };
 
-const getBookingsByUserId = async (arg: UserIdInput) => {
+export async function getBookingsByUserId(arg: UserIdInput) {
     const { userId } = arg;
 
     const bookings = await Booking.find({ userId: userId });
@@ -131,7 +131,7 @@ const getBookingsByUserId = async (arg: UserIdInput) => {
     return mapIds(bookings);
 };
 
-const cancelBooking = async (arg: BookingIdInput) => {
+export async function cancelBooking(arg: BookingIdInput) {
     const { bookingId } = arg;
 
     const booking = await Booking.findById(bookingId);
@@ -176,7 +176,7 @@ const cancelBooking = async (arg: BookingIdInput) => {
     return mapId(cancelBooking);
 };
 
-const getAllBookings = async (args: GetAllBookingsInput) => {
+export async function getAllBookings(args: GetAllBookingsInput) {
     const { filter = {}, page = 1, pageSize = 10 } = args;
 
     const skip = (page - 1) * pageSize;
@@ -202,7 +202,7 @@ const getAllBookings = async (args: GetAllBookingsInput) => {
     };
 };
 
-const updateBooking = async (args: UpdateBookingInput) => {
+export async function updateBooking(args: UpdateBookingInput) {
     const { bookingId, status } = args;
 
     if (!status || !['Pending', 'Confirmed', 'Cancelled', 'Completed'].includes(status)) {
@@ -220,13 +220,4 @@ const updateBooking = async (args: UpdateBookingInput) => {
     }
 
     return mapId(updatedBooking);
-};
-
-export default {
-    createBooking,
-    getBookingById,
-    getBookingsByUserId,
-    cancelBooking,
-    getAllBookings,
-    updateBooking,
 };

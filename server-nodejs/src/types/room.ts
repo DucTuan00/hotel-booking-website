@@ -1,9 +1,13 @@
-import { Types } from 'mongoose';
+export enum RoomType {
+    SINGLE = 'Single',
+    DOUBLE = 'Double',
+    SUITE = 'Suite',
+}
 
 export interface RoomData {
     id?: string;
     name: string;
-    roomType: 'Single' | 'Double' | 'Suite';
+    roomType: RoomType;
     description?: string;
     amenities: string[];
     price: number;
@@ -15,7 +19,7 @@ export interface RoomData {
 export interface RoomResponse {
     id: string;
     name: string;
-    roomType: 'Single' | 'Double' | 'Suite';
+    roomType: RoomType;
     description?: string;
     amenities: any[];
     price: number;

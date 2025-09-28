@@ -1,13 +1,14 @@
 import { Router } from 'express';
-import amenityController from '@/controllers/amenities/amenityController';
+import * as amenityController from '@/controllers/amenities/amenityController';
 import authMiddleware from '@/middlewares/authMiddleware';
+import { UserRole } from "@/types/user";
 
 const router: Router = Router();
 
-router.post('/', authMiddleware(['admin']), amenityController.createAmenity);
+router.post('/', authMiddleware([UserRole.ADMIN]), amenityController.createAmenity);
 router.get('/', amenityController.getAllAmenities);
 router.get('/:id', amenityController.getAmenityById);
-router.put('/:id', authMiddleware(['admin']), amenityController.updateAmenity);
-router.delete('/:id', authMiddleware(['admin']), amenityController.deleteAmenity);
+router.put('/:id', authMiddleware([UserRole.ADMIN]), amenityController.updateAmenity);
+router.delete('/:id', authMiddleware([UserRole.ADMIN]), amenityController.deleteAmenity);
 
 export default router;

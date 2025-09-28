@@ -1,16 +1,16 @@
-import authService from '@/services/auth/authService';
+import * as authService from '@/services/auth/authService';
 import ApiError from '@/utils/apiError';
 import { Request, Response, NextFunction } from 'express';
 import { CookieOptions } from 'express';
 
-const register = async (req: Request, res: Response, next: NextFunction) => {
+export async function register(req: Request, res: Response, next: NextFunction) {
     try {
         const { email, password, name, phone, role } = req.body;
         const user = await authService.register({ email, password, name, phone, role });
         res.status(201).json(user);
     } catch (error: any) {
         if (error.message === 'User already exists') {
-            return res.status(400).json({ error: error.message });
+            return next(new ApiError(error.message, 400));
         }
         next(new ApiError(error.message, 400));
     }
@@ -23,7 +23,7 @@ const cookieOptions: CookieOptions = {
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
 };
 
-const login = async (req: Request, res: Response, next: NextFunction) => {
+export async function login(req: Request, res: Response, next: NextFunction) {
     try {
         const { email, password } = req.body;
         const result = await authService.login({ email, password });
@@ -42,7 +42,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
     }
 };
 
-const refreshToken = async (req: Request, res: Response, next: NextFunction) => {
+export async function refreshToken(req: Request, res: Response, next: NextFunction) {
     try {
         const userId = req.user?.id;
         if (!userId) {
@@ -63,7 +63,7 @@ const refreshToken = async (req: Request, res: Response, next: NextFunction) => 
     }
 };
 
-const logout = async (req: Request, res: Response, next: NextFunction) => {
+export async function logout(req: Request, res: Response, next: NextFunction) {
     try {
         const userId = req.user?.id;
         if (!userId) {
@@ -79,7 +79,7 @@ const logout = async (req: Request, res: Response, next: NextFunction) => {
     }
 };
 
-const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
+export async function verifyToken(req: Request, res: Response, next: NextFunction) {
     try {
         // Try to get token from cookie first, then from Authorization header
         let accessToken = req.cookies.accessToken;
@@ -113,13 +113,3 @@ const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
         }
     }
 };
-
-type Controller = (req: Request, res: Response, next: NextFunction) => Promise<any>;
-
-export default {
-    register,
-    login,
-    refreshToken,
-    logout,
-    verifyToken,
-} as Record<string, Controller>;

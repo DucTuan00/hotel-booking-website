@@ -1,8 +1,9 @@
 import { Router } from 'express';
 import multer from 'multer';
-import roomController from '@/controllers/rooms/roomController';
-import roomAvailableController from '@/controllers/rooms/roomAvailableController';
+import * as roomController from '@/controllers/rooms/roomController';
+import * as roomAvailableController from '@/controllers/rooms/roomAvailableController';
 import authMiddleware from '@/middlewares/authMiddleware';
+import { UserRole } from "@/types/user";
 
 const router = Router();
 
@@ -18,19 +19,19 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-router.post('/', authMiddleware(['admin']), upload.array('images', 5), roomController.createRoom);
+router.post('/', authMiddleware([UserRole.ADMIN]), upload.array('images', 5), roomController.createRoom);
 router.get('/', roomController.getAllRooms);
 router.get('/:id', roomController.getRoomById);
-router.put('/:id', authMiddleware(['admin']), upload.array('images', 5), roomController.updateRoom);
-router.delete('/:id', authMiddleware(['admin']), roomController.deleteRoom);
-router.delete('/image/:imageId', authMiddleware(['admin']), roomController.deleteRoomImage);
+router.put('/:id', authMiddleware([UserRole.ADMIN]), upload.array('images', 5), roomController.updateRoom);
+router.delete('/:id', authMiddleware([UserRole.ADMIN]), roomController.deleteRoom);
+router.delete('/image/:imageId', authMiddleware([UserRole.ADMIN]), roomController.deleteRoomImage);
 
 // Room availability routes
-router.post('/availability', authMiddleware(['admin']), roomAvailableController.createRoomAvailable);
-router.post('/availability/bulk', authMiddleware(['admin']), roomAvailableController.createBulkRoomAvailable);
+router.post('/availability', authMiddleware([UserRole.ADMIN]), roomAvailableController.createRoomAvailable);
+router.post('/availability/bulk', authMiddleware([UserRole.ADMIN]), roomAvailableController.createBulkRoomAvailable);
 router.get('/availability', roomAvailableController.getRoomAvailable);
 router.get('/availability/all', roomAvailableController.getAllRoomsAvailability);
-router.put('/availability/:roomId/:date', authMiddleware(['admin']), roomAvailableController.updateRoomAvailable);
-router.delete('/availability/:roomId/:date', authMiddleware(['admin']), roomAvailableController.deleteRoomAvailable);
+router.put('/availability/:roomId/:date', authMiddleware([UserRole.ADMIN]), roomAvailableController.updateRoomAvailable);
+router.delete('/availability/:roomId/:date', authMiddleware([UserRole.ADMIN]), roomAvailableController.deleteRoomAvailable);
 
 export default router;

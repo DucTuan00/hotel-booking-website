@@ -1,8 +1,9 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
+import { RoomType } from '@/types/room';
 
 interface RoomInterface extends Document {
     name: string;
-    roomType: 'Single' | 'Double' | 'Suite';
+    roomType: RoomType;
     description?: string;
     price: number;
     maxGuests: number;
@@ -17,7 +18,7 @@ const roomSchema: Schema = new mongoose.Schema({
     }, 
     roomType: {
         type: String,
-        enum: ['Single', 'Double', 'Suite'],
+        enum: Object.values(RoomType),
         required: true
     },
     description: { 

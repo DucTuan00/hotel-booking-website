@@ -1,8 +1,8 @@
-import userService from "@/services/users/userService";
+import * as userService from "@/services/users/userService";
 import ApiError from '@/utils/apiError';
 import { Request, Response, NextFunction } from 'express';
 
-const getUserInfo = async (req: Request, res: Response, next: NextFunction) => {
+export async function getUserInfo(req: Request, res: Response, next: NextFunction) {
     try {
         const id = req.user?.id;
         if (!id) {
@@ -15,7 +15,7 @@ const getUserInfo = async (req: Request, res: Response, next: NextFunction) => {
     }
 };
 
-const getUserById = async (req: Request, res: Response, next: NextFunction) => {
+export async function getUserById(req: Request, res: Response, next: NextFunction) {
     try {
         const id = req.params.id;
         const user = await userService.getUserById({ id });
@@ -25,7 +25,7 @@ const getUserById = async (req: Request, res: Response, next: NextFunction) => {
     }
 };
 
-const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
+export async function getAllUsers(req: Request, res: Response, next: NextFunction) {
     try {
         const { page = 1, pageSize = 10, ...filter} = req.query;
         const users = await userService.getAllUsers({
@@ -39,20 +39,20 @@ const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
     }
 };
 
-const createUser = async (req: Request, res: Response, next: NextFunction) => {
+export async function createUser(req: Request, res: Response, next: NextFunction) {
     try {
         const { email, password, name, phone, role } = req.body;
         const user = await userService.createUser({ email, password, name, phone, role });
         res.status(201).json(user);
     } catch (error: any) {
         if (error.message === 'User already exists') {
-            return res.status(400).json({ error: error.message });
+            return next(new ApiError(error.message, 400));
         }
         next(new ApiError(error.message, 400));
     }
 };
 
-const updateUser = async (req: Request, res: Response, next: NextFunction) => {
+export async function updateUser(req: Request, res: Response, next: NextFunction) {
     try {
         const id = req.user?.id;
         if (!id) {
@@ -69,7 +69,7 @@ const updateUser = async (req: Request, res: Response, next: NextFunction) => {
     }
 };
 
-const updateUserById = async (req: Request, res: Response, next: NextFunction) => {
+export async function updateUserById(req: Request, res: Response, next: NextFunction) {
     try {
         const id = req.params.id;
         const { email, name, phone, role } = req.body;
@@ -83,7 +83,7 @@ const updateUserById = async (req: Request, res: Response, next: NextFunction) =
     }
 };
 
-const updatePassword = async (req: Request, res: Response, next: NextFunction) => {
+export async function updatePassword(req: Request, res: Response, next: NextFunction) {
     try {
         const id = req.user?.id;
         if (!id) {
@@ -97,7 +97,7 @@ const updatePassword = async (req: Request, res: Response, next: NextFunction) =
     }
 };
 
-const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
+export async function deleteUser(req: Request, res: Response, next: NextFunction) {
     try {
         const _id = req.params.id;
         const result = await userService.deleteUser(_id);
@@ -106,16 +106,3 @@ const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
         next(new ApiError(error.message, 400));
     }
 };
-
-type Controller = (req: Request, res: Response, next: NextFunction) => Promise<any>;
-
-export default {
-    getUserById,
-    getAllUsers,
-    updateUser,
-    updatePassword,
-    deleteUser,
-    getUserInfo,
-    createUser,
-    updateUserById,
-} as Record<string, Controller>;

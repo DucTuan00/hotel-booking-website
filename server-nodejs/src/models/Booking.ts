@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
+import { BookingStatus, PaymentMethod, PaymentStatus } from '@/types/booking';
 
 interface Guests {
     adults: number;
@@ -13,13 +14,13 @@ interface BookingInterface extends Document {
     guests: Guests;
     quantity: number;
     totalPrice: number;
-    status: 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed' | 'Rejected';
+    status: BookingStatus;
     firstName: string;
     lastName: string;
     email: string;
     phoneNumber: string;
-    paymentMethod: 'Online' | 'Onsite';
-    paymentStatus: 'Paid' | 'Unpaid' | 'Refunded';
+    paymentMethod: PaymentMethod;
+    paymentStatus: PaymentStatus;
     confirmedAt?: Date;
     rejectedAt?: Date;
     cancelledAt?: Date;
@@ -72,8 +73,8 @@ const bookingSchema: Schema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['Pending', 'Confirmed', 'Cancelled', 'Completed', 'Rejected'],
-        default: 'Pending'
+        enum: Object.values(BookingStatus),
+        default: BookingStatus.PENDING
     },
     firstName: { 
         type: String, 
@@ -93,13 +94,13 @@ const bookingSchema: Schema = new mongoose.Schema({
     },
     paymentMethod: { 
         type: String, 
-        enum: ['Online', 'Onsite'], 
-        required: true 
+        enum: Object.values(PaymentMethod), 
+        required: true  
     },
     paymentStatus: { 
         type: String, 
-        enum: ['Paid', 'Unpaid', 'Refunded'], 
-        default: 'Unpaid' 
+        enum: Object.values(PaymentStatus), 
+        default: PaymentStatus.UNPAID 
     },
     confirmedAt: { 
         type: Date 

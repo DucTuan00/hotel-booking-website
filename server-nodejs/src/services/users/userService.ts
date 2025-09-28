@@ -10,7 +10,7 @@ import {
     InputUpdatePassword
 } from '@/types/user';
 
-const getUserById = async (arg: UserIdInput) => {
+export async function getUserById(arg: UserIdInput) {
     const { id } = arg;
 
     if (!id) {
@@ -23,7 +23,7 @@ const getUserById = async (arg: UserIdInput) => {
     return mapId(user);
 };
 
-const getAllUsers = async (args: GetAllUsersInput) => {
+export async function getAllUsers(args: GetAllUsersInput) {
     const { filter = {}, page = 1, pageSize = 10 } = args;
 
     const buildQuery = () => {
@@ -58,7 +58,7 @@ const getAllUsers = async (args: GetAllUsersInput) => {
     };
 };
 
-const createUser = async (data: InputCreateUser) => {
+export async function createUser(data: InputCreateUser) {
     const { email, password, name, phone, role } = data;
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({
@@ -74,7 +74,7 @@ const createUser = async (data: InputCreateUser) => {
     };
 };
 
-const updateUser = async (data: InputUpdateUser) => {
+export async function updateUser(data: InputUpdateUser) {
     const { id, email, name, phone } = data;
     if (!id) {
         throw new Error('Do not have id');
@@ -94,7 +94,7 @@ const updateUser = async (data: InputUpdateUser) => {
     return mapId(updatedUser);
 };
 
-const updateUserById = async (data: InputUpdateUser) => {
+export async function updateUserById(data: InputUpdateUser) {
     const { id, email, name, phone, role } = data;
     if (!id) {
         throw new Error('Do not have id');
@@ -115,7 +115,7 @@ const updateUserById = async (data: InputUpdateUser) => {
     return mapId(updatedUser);
 };
 
-const updatePassword = async (data: InputUpdatePassword) => {
+export async function updatePassword(data: InputUpdatePassword) {
     const { id, oldPassword, newPassword } = data;
     if (!id) {
         throw new Error('Do not have id')
@@ -139,7 +139,7 @@ const updatePassword = async (data: InputUpdatePassword) => {
     };
 };
 
-const deleteUser = async (id: string) => {
+export async function deleteUser(id: string) {
     if (!id) {
         throw new Error('Do not have id');
     }
@@ -152,14 +152,4 @@ const deleteUser = async (id: string) => {
         throw new Error('Failed to delete user with id: ' + id);
     }
     return { message: 'User deleted successfully'};
-};
-
-export default {
-    getUserById,
-    getAllUsers,
-    updateUser,
-    updatePassword,
-    deleteUser,
-    createUser,
-    updateUserById,
 };

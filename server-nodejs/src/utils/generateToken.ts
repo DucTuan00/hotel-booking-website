@@ -12,7 +12,7 @@ interface TokenPair {
     refreshToken: string;
 }
 
-const generateToken = (user: UserPayload): TokenPair => {
+export default function generateToken(user: UserPayload): TokenPair {
     const payload: UserPayload = {
         id: user.id,
         email: user.email,
@@ -24,5 +24,3 @@ const generateToken = (user: UserPayload): TokenPair => {
 
     return { accessToken, refreshToken };
 };
-
-export default generateToken;

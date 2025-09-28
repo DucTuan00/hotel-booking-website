@@ -1,8 +1,8 @@
-import amenityService from '@/services/amenities/amenityService';
+import * as amenityService from '@/services/amenities/amenityService';
 import ApiError from '@/utils/apiError';
 import { Request, Response, NextFunction } from 'express';
 
-const createAmenity = async (req: Request, res: Response, next: NextFunction) => {
+export async function createAmenity(req: Request, res: Response, next: NextFunction) {
     try {
         const { name } = req.body;
         const amenity = await amenityService.createAmenity({ name });
@@ -12,7 +12,7 @@ const createAmenity = async (req: Request, res: Response, next: NextFunction) =>
     }
 };
 
-const getAllAmenities = async (req: Request, res: Response, next: NextFunction) => {
+export async function getAllAmenities(req: Request, res: Response, next: NextFunction) {
     try {
         const { page = 1, pageSize = 10, ...filter } = req.query;
         const amenities = await amenityService.getAllAmenities({
@@ -26,7 +26,7 @@ const getAllAmenities = async (req: Request, res: Response, next: NextFunction) 
     }
 };
 
-const getAmenityById = async (req: Request, res: Response, next: NextFunction) => {
+export async function getAmenityById(req: Request, res: Response, next: NextFunction) {
     try {
         const { id } = req.params;
         const amenity = await amenityService.getAmenityById({ id });
@@ -36,7 +36,7 @@ const getAmenityById = async (req: Request, res: Response, next: NextFunction) =
     }
 };
 
-const updateAmenity = async (req: Request, res: Response, next: NextFunction) => {
+export async function updateAmenity(req: Request, res: Response, next: NextFunction) {
     try {
         const { id } = req.params;
         const { name } = req.body;
@@ -47,7 +47,7 @@ const updateAmenity = async (req: Request, res: Response, next: NextFunction) =>
     }
 };
 
-const deleteAmenity = async (req: Request, res: Response, next: NextFunction) => {
+export async function deleteAmenity(req: Request, res: Response, next: NextFunction) {
     try {
         const { id } = req.params;
         const result = await amenityService.deleteAmenity({ id });
@@ -55,13 +55,4 @@ const deleteAmenity = async (req: Request, res: Response, next: NextFunction) =>
     } catch (error: any) {
         next(new ApiError(error.message, error.statusCode || 500));
     }
-};
-
-
-export default {
-    createAmenity,
-    getAllAmenities,
-    getAmenityById,
-    updateAmenity,
-    deleteAmenity,
 };

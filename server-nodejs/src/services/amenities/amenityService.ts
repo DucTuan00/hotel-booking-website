@@ -9,7 +9,7 @@ import {
     UpdateAmenityInput
 } from '@/types/amenity';
 
-const createAmenity = async (arg: CreateAmenityInput) => {
+export async function createAmenity(arg: CreateAmenityInput) {
     const { name } = arg;
 
     if (!name || typeof name !== 'string' || name.trim() === "") {
@@ -21,7 +21,7 @@ const createAmenity = async (arg: CreateAmenityInput) => {
     return mapId(amenity);
 };
 
-const getAllAmenities = async (args: GetAllAmenitiesInput) => {
+export async function getAllAmenities(args: GetAllAmenitiesInput) {
     const { filter = {}, page = 1, pageSize = 10 } = args;
 
     const skip = (page - 1) * pageSize;
@@ -48,7 +48,7 @@ const getAllAmenities = async (args: GetAllAmenitiesInput) => {
     };
 };
 
-const getAmenityById = async (arg: GetAmenityByIdInput) => {
+export async function getAmenityById(arg: GetAmenityByIdInput) {
     const { id } = arg;
     const amenity = await Amenity.findById(id);
 
@@ -59,7 +59,7 @@ const getAmenityById = async (arg: GetAmenityByIdInput) => {
     return mapId(amenity);
 };
 
-const updateAmenity = async (args: UpdateAmenityInput) => {
+export async function updateAmenity(args: UpdateAmenityInput) {
     const { id, name } = args;
 
     if (!name || typeof name !== 'string' || name.trim() === "") {
@@ -79,7 +79,7 @@ const updateAmenity = async (args: UpdateAmenityInput) => {
     return mapId(amenity);
 };
 
-const deleteAmenity = async (arg: GetAmenityByIdInput) => {
+export async function deleteAmenity(arg: GetAmenityByIdInput) {
     const { id } = arg;
 
     await RoomAmenity.deleteMany({ amenityId: id });
@@ -91,12 +91,4 @@ const deleteAmenity = async (arg: GetAmenityByIdInput) => {
     }
     
     return { message: 'Amenity deleted successfully.' };
-};
-
-export default {
-    createAmenity,
-    getAllAmenities,
-    getAmenityById,
-    updateAmenity,
-    deleteAmenity,
 };

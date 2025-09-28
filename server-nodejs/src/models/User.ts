@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
+import { UserRole } from "@/types/user";
 
 interface Notification {
     type: string;
@@ -13,7 +14,7 @@ interface UserInterface extends Document {
     email: string;
     password: string;
     phone: string;
-    role: 'user' | 'admin';
+    role: UserRole;
     notifications: Notification[];
     refreshToken?: string;
     active: boolean;
@@ -39,11 +40,8 @@ const userSchema: Schema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: [
-            'user',
-            'admin',
-        ],
-        default: 'user'
+        enum: Object.values(UserRole),
+        default: UserRole.USER,
     },
     notifications: [
         {

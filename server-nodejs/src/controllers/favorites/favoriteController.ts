@@ -1,8 +1,8 @@
-import favoriteService from '@/services/favorites/favoriteService';
+import * as favoriteService from '@/services/favorites/favoriteService';
 import ApiError from '@/utils/apiError';
 import { Request, Response, NextFunction } from 'express';
 
-const addFavorite = async (req: Request, res: Response, next: NextFunction) => {
+export async function addFavorite(req: Request, res: Response, next: NextFunction) {
     try {
         const userId = req.user?.id; // Get user id from req.user
         const { roomId } = req.body;
@@ -16,7 +16,7 @@ const addFavorite = async (req: Request, res: Response, next: NextFunction) => {
     }
 };
 
-const getFavorites = async (req: Request, res: Response, next: NextFunction) => {
+export async function getFavorites(req: Request, res: Response, next: NextFunction) {
     try {
         const userId = req.user?.id;
         if (!userId) {
@@ -29,7 +29,7 @@ const getFavorites = async (req: Request, res: Response, next: NextFunction) => 
     }
 };
 
-const deleteFavorite = async (req: Request, res: Response, next: NextFunction) => {
+export async function deleteFavorite(req: Request, res: Response, next: NextFunction) {
     try {
         const userId = req.user?.id;
         if (!userId) {
@@ -41,10 +41,4 @@ const deleteFavorite = async (req: Request, res: Response, next: NextFunction) =
     } catch (error: any) {
         next(new ApiError(error.message, 400));
     }
-};
-
-export default {
-    addFavorite,
-    getFavorites,
-    deleteFavorite,
 };

@@ -1,8 +1,8 @@
-import bookingService from '@/services/bookings/bookingService';
+import * as bookingService from '@/services/bookings/bookingService';
 import ApiError from '@/utils/apiError';
 import { Request, Response, NextFunction } from 'express';
 
-const createBooking = async (req: Request, res: Response, next: NextFunction) => {
+export async function createBooking(req: Request, res: Response, next: NextFunction) {
     try {
         const userId = req.user?.id;
         const { roomId, checkIn, checkOut, guests, quantity } = req.body;
@@ -30,7 +30,7 @@ const createBooking = async (req: Request, res: Response, next: NextFunction) =>
     }
 };
 
-const getBookingById = async (req: Request, res: Response, next: NextFunction) => {
+export async function getBookingById(req: Request, res: Response, next: NextFunction) {
     try {
         const bookingId = req.params.id;
         const booking = await bookingService.getBookingById({ bookingId });
@@ -40,7 +40,7 @@ const getBookingById = async (req: Request, res: Response, next: NextFunction) =
     }
 };
 
-const getBookingsByUserId = async (req: Request, res: Response, next: NextFunction) => {
+export async function getBookingsByUserId(req: Request, res: Response, next: NextFunction) {
     try {
         const userId = req.user?.id;
         if (!userId) {
@@ -53,7 +53,7 @@ const getBookingsByUserId = async (req: Request, res: Response, next: NextFuncti
     }
 };
 
-const cancelBooking = async (req: Request, res: Response, next: NextFunction) => {
+export async function cancelBooking(req: Request, res: Response, next: NextFunction) {
     try {
         const bookingId = req.params.id;
         const booking = await bookingService.cancelBooking({ bookingId });
@@ -63,7 +63,7 @@ const cancelBooking = async (req: Request, res: Response, next: NextFunction) =>
     }
 };
 
-const getAllBookings = async (req: Request, res: Response, next: NextFunction) => {
+export async function getAllBookings(req: Request, res: Response, next: NextFunction) {
     try {
         const { page = 1, pageSize = 10, ...filter } = req.query;
         const bookings = await bookingService.getAllBookings({
@@ -77,7 +77,7 @@ const getAllBookings = async (req: Request, res: Response, next: NextFunction) =
     }
 };
 
-const updateBooking = async (req: Request, res: Response, next: NextFunction) => {
+export async function updateBooking(req: Request, res: Response, next: NextFunction) {
     try {
         const bookingId = req.params.id;
         const { status } = req.body; 
@@ -87,13 +87,4 @@ const updateBooking = async (req: Request, res: Response, next: NextFunction) =>
     } catch (error: any) {
         next(new ApiError(error.message, error.statusCode || 500));
     }
-};
-
-export default {
-    createBooking,
-    getBookingById,
-    getBookingsByUserId,
-    cancelBooking,
-    getAllBookings,
-    updateBooking,
 };
