@@ -24,3 +24,10 @@ This folder contains manual migration scripts for updating MongoDB collections a
    - Write a new migration script for each schema or data change.
    - Do not modify or delete old migration scripts.
    - Keep migration scripts idempotent if possible.
+
+5. **Run all
+   # From /server-nodejs
+   npm run migrate
+
+   # Or run
+   npx tsx migrations/run-all-migrations.ts

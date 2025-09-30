@@ -6,7 +6,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "tsx src/server.ts",
     "dev": "nodemon --watch src --ext ts --exec tsx src/server.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "migrate": "tsx migrations/run-all-migrations.ts",
+    "migrate:single": "tsx"
   },
   "keywords": [],
   "author": "",
