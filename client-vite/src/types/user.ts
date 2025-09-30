@@ -1,3 +1,8 @@
+export enum UserRole {
+    USER = 'user',
+    ADMIN = 'admin',
+}
+
 export interface CreateUserInput {
     email: string;
     password: string;
@@ -40,7 +45,7 @@ export interface User {
     name: string;
     email: string;
     phone: string;
-    role: 'user' | 'admin';
+    role: UserRole;
     notifications?: {
         type: string;
         message: string;

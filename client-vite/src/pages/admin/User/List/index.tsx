@@ -7,13 +7,14 @@ import SearchTableAdmin, { SearchFilters } from '@/components/SearchTableAdmin';
 import UserForm, { UserFormValues } from '@/pages/admin/User/Form';
 import userService from '@/services/users/userService';
 import Notification from '@/components/Notification';
+import { UserRole } from '@/types/user';
 
 interface User {
     id: string;
     name: string;
     email: string;
     phone: string;
-    role: 'user' | 'admin';
+    role: UserRole;
 }
 
 interface Message {
@@ -170,8 +171,8 @@ const UserList: React.FC = () => {
             key: 'role',
             width: '15%',
             render: (role: string) => (
-                <Tag color={role === 'admin' ? 'red' : 'blue'}>
-                    {role === 'admin' ? 'Quản trị viên' : 'Người dùng'}
+                <Tag color={role === UserRole.ADMIN ? 'red' : 'blue'}>
+                    {role === UserRole.ADMIN ? 'Quản trị viên' : 'Người dùng'}
                 </Tag>
             ),
         },
@@ -238,6 +239,8 @@ const UserList: React.FC = () => {
                     current: currentPage,
                     pageSize: pageSize,
                     total: totalUsers,
+                    showSizeChanger: true,
+                    showQuickJumper: false,
                     onChange: (page: number, size?: number) => {
                         setCurrentPage(page);
                         if (size !== pageSize) {

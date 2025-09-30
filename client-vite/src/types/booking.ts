@@ -1,3 +1,11 @@
+export enum BookingStatus {
+    PENDING = 'Pending',
+    CONFIRMED = 'Confirmed',
+    CANCELLED = 'Cancelled',
+    COMPLETED = 'Completed',
+    REJECTED = 'Rejected'
+}
+
 export interface CreateBookingInput {
     userId: string;
     roomId: string;
@@ -20,7 +28,7 @@ export interface UserIdInput {
 
 export interface UpdateBookingInput {
     bookingId: string;
-    status: 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed';
+    status: BookingStatus;
 }
 
 export interface GetAllBookingsInput {
@@ -48,5 +56,5 @@ export interface Booking {
     };
     quantity: number;
     totalPrice: number;
-    status: 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed';
+    status: BookingStatus;
 }

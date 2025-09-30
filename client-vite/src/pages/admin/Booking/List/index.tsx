@@ -6,7 +6,7 @@ import Notification from '@/components/Notification';
 import AdminTable from '@/components/AdminTable';
 import bookingService from '@/services/bookings/bookingService';
 import moment from 'moment';
-import { Booking } from '@/types/booking';
+import { Booking, BookingStatus } from '@/types/booking';
 import type { TableColumnsType } from 'antd';
 
 interface Message {
@@ -84,30 +84,34 @@ const BookingList: React.FC = () => {
         }
     };
 
-    const getStatusColor = (status: Booking['status']) => {
+    const getStatusColor = (status: BookingStatus) => {
         switch (status) {
-            case 'Confirmed':
+            case BookingStatus.CONFIRMED:
                 return 'success';
-            case 'Pending':
+            case BookingStatus.PENDING:
                 return 'warning';
-            case 'Cancelled':
+            case BookingStatus.REJECTED:
                 return 'error';
-            case 'Completed':
+            case BookingStatus.CANCELLED:
+                return 'default';
+            case BookingStatus.COMPLETED:
                 return 'processing';
             default:
                 return 'default';
         }
     };
 
-    const getStatusText = (status: Booking['status']) => {
+    const getStatusText = (status: BookingStatus) => {
         switch (status) {
-            case 'Confirmed':
+            case BookingStatus.CONFIRMED:
                 return 'Đã xác nhận';
-            case 'Pending':
+            case BookingStatus.PENDING:
                 return 'Chờ xác nhận';
-            case 'Cancelled':
+            case BookingStatus.REJECTED:
+                return 'Đã từ chối';
+            case BookingStatus.CANCELLED:
                 return 'Đã hủy';
-            case 'Completed':
+            case BookingStatus.COMPLETED:
                 return 'Hoàn thành';
             default:
                 return status;

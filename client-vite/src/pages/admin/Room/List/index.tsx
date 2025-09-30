@@ -5,7 +5,7 @@ import RoomForm from '@/pages/admin/Room/Form';
 import Notification from '@/components/Notification';
 import AdminTable from '@/components/AdminTable';
 import roomService from '@/services/rooms/roomService';
-import { Room } from '@/types/room';
+import { Room, RoomType } from '@/types/room';
 import type { TableColumnsType } from 'antd';
 
 interface Message {
@@ -98,13 +98,13 @@ const RoomList: React.FC = () => {
         }
     };
 
-    const getRoomTypeColor = (type: string) => {
+    const getRoomTypeColor = (type: RoomType) => {
         switch (type) {
-            case 'Single':
+            case RoomType.SINGLE:
                 return 'blue';
-            case 'Double':
+            case RoomType.DOUBLE:
                 return 'green';
-            case 'Suite':
+            case RoomType.SUITE:
                 return 'purple';
             default:
                 return 'default';
@@ -141,7 +141,7 @@ const RoomList: React.FC = () => {
             title: 'Loại phòng',
             dataIndex: 'roomType',
             key: 'roomType',
-            render: (type: string) => (
+            render: (type: RoomType) => (
                 <Tag color={getRoomTypeColor(type)}>{type}</Tag>
             ),
             width: 120,
@@ -222,7 +222,7 @@ const RoomList: React.FC = () => {
                     pageSize: pageSize,
                     total: totalRooms,
                     showSizeChanger: true,
-                    showQuickJumper: true,
+                    showQuickJumper: false,
                     showTotal: (total, range) =>
                         `${range[0]}-${range[1]} của ${total} phòng`,
                     onChange: (page, size) => {

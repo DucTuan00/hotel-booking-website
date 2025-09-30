@@ -5,7 +5,7 @@ import type { UploadFile, UploadProps } from 'antd';
 import amenityService from '@/services/amenities/amenityService';
 import roomService from '@/services/rooms/roomService';
 import { Amenity } from '@/types/amenity';
-import { Room } from '@/types/room';
+import { Room, RoomType } from '@/types/room';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -70,7 +70,7 @@ const RoomForm: React.FC<RoomFormProps> = ({ visible, onCancel, onSubmit, initia
 
     const handleSubmit = async (values: {
         name: string;
-        roomType: 'Single' | 'Double' | 'Suite';
+        roomType: RoomType;
         description: string;
         price: number;
         maxGuests: number;
@@ -210,9 +210,9 @@ const RoomForm: React.FC<RoomFormProps> = ({ visible, onCancel, onSubmit, initia
                             rules={[{ required: true, message: 'Vui lòng chọn loại phòng!' }]}
                         >
                             <Select placeholder="Chọn loại phòng">
-                                <Option value="Single">Single</Option>
-                                <Option value="Double">Double</Option>
-                                <Option value="Suite">Suite</Option>
+                                <Option value={RoomType.SINGLE}>Single</Option>
+                                <Option value={RoomType.DOUBLE}>Double</Option>
+                                <Option value={RoomType.SUITE}>Suite</Option>
                             </Select>
                         </Form.Item>
                     </Col>

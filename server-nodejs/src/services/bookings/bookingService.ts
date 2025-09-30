@@ -8,7 +8,8 @@ import {
     BookingIdInput,
     UserIdInput,
     GetAllBookingsInput,
-    UpdateBookingInput
+    UpdateBookingInput,
+    BookingStatus
 } from '@/types/booking';
 
 export async function createBooking(args: CreateBookingInput) {
@@ -95,7 +96,7 @@ export async function createBooking(args: CreateBookingInput) {
         guests: guests,
         quantity: quantity,
         totalPrice: totalPrice,
-        status: 'Pending'
+        status: BookingStatus.PENDING
     });
 
     const booking = await newBooking.save();
@@ -139,11 +140,11 @@ export async function cancelBooking(arg: BookingIdInput) {
         throw new ApiError('Booking not found', 404);
     }
 
-    if (booking.status === 'Cancelled') {
+    if (booking.status === BookingStatus.CANCELLED) {
         throw new ApiError('Booking already cancelled', 400);
     }
 
-    if (booking.status === 'Confirmed') {
+    if (booking.status === BookingStatus.CONFIRMED) {
         throw new ApiError('Booking already confirmed', 400);
     }
 
@@ -165,7 +166,7 @@ export async function cancelBooking(arg: BookingIdInput) {
 
     const cancelBooking = await Booking.findByIdAndUpdate(
         { _id: bookingId },
-        { status: 'Cancelled' },
+        { status: BookingStatus.CANCELLED },
         { new: true, runValidators: true } // new:true to return updated doc, runValidators to validate status enum
     );
 
@@ -205,15 +206,16 @@ export async function getAllBookings(args: GetAllBookingsInput) {
 export async function updateBooking(args: UpdateBookingInput) {
     const { bookingId, status } = args;
 
-    if (!status || !['Pending', 'Confirmed', 'Cancelled', 'Completed'].includes(status)) {
+    if (!status || !Object.values(BookingStatus).includes(status)) {
         throw new ApiError('Invalid booking status provided.', 400);
     }
 
     const updatedBooking = await Booking.findByIdAndUpdate(
         bookingId,
         { status: status },
-        { new: true, runValidators: true } // new:true to return updated doc, runValidators to validate status enum
-    );
+        { new: true, runValidators: true }
+    ).populate({ path: 'userId', select: 'name email' })
+     .populate({ path: 'roomId', select: 'name price' });
 
     if (!updatedBooking) {
         throw new ApiError('Booking not found for update', 404);

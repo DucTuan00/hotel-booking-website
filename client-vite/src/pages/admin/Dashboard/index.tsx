@@ -19,7 +19,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import userService from '@/services/users/userService';
 import roomService from '@/services/rooms/roomService';
 import bookingService from '@/services/bookings/bookingService';
-import { Booking as ApiBooking } from '@/types/booking';
+import { Booking as ApiBooking, BookingStatus } from '@/types/booking';
 
 const { Title } = Typography;
 
@@ -74,7 +74,7 @@ const DashboardPage: React.FC = () => {
 
       // Calculate revenue from confirmed bookings
       const confirmedBookings: ApiBooking[] = bookingsData.bookings.filter(
-        (booking: ApiBooking) => booking.status === 'Completed'
+        (booking: ApiBooking) => booking.status === BookingStatus.COMPLETED
       );
       const totalRevenue = confirmedBookings.reduce(
         (sum, booking) => sum + booking.totalPrice,
@@ -171,10 +171,11 @@ const DashboardPage: React.FC = () => {
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
-      render: (status: string) => {
-        const color = status === 'Completed' ? 'green' : 
-                     status === 'Confirmed' ? 'blue' : 
-                     status === 'Pending' ? 'orange' : 'red';
+      render: (status: BookingStatus) => {
+        const color = status === BookingStatus.COMPLETED ? 'green' : 
+                     status === BookingStatus.CONFIRMED ? 'blue' : 
+                     status === BookingStatus.REJECTED ? 'gray' : 
+                     status === BookingStatus.PENDING ? 'orange' : 'red';
         return <Tag color={color}>{status}</Tag>;
       },
     },

@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Form, Input, Button, Select } from 'antd';
 import { UserOutlined, MailOutlined, PhoneOutlined, LockOutlined } from '@ant-design/icons';
+import { UserRole } from '@/types/user';
 
 const { Option } = Select;
 
@@ -8,7 +9,7 @@ export interface UserFormValues {
     name: string;
     email: string;
     phone: string;
-    role: 'user' | 'admin';
+    role: UserRole;
     password?: string;
 }
 
@@ -31,7 +32,7 @@ const UserForm: React.FC<UserFormProps> = ({ visible, onCancel, onSubmit, initia
                     name: initialValues.name,
                     email: initialValues.email,
                     phone: initialValues.phone,
-                    role: initialValues.role || 'user',
+                    role: initialValues.role || UserRole.USER,
                 });
             } else {
                 form.resetFields();
@@ -110,8 +111,8 @@ const UserForm: React.FC<UserFormProps> = ({ visible, onCancel, onSubmit, initia
                         placeholder="Chọn vai trò" 
                         size="large"
                     >
-                        <Option value="admin">Admin</Option>
-                        <Option value="user">User</Option>
+                        <Option value={UserRole.ADMIN}>Admin</Option>
+                        <Option value={UserRole.USER}>User</Option>
                     </Select>
                 </Form.Item>
 

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Form, Select, Button } from 'antd';
 import { ClockCircleOutlined } from '@ant-design/icons';
 import bookingService from '@/services/bookings/bookingService';
-import { Booking } from '@/types/booking';
+import { Booking, BookingStatus } from '@/types/booking';
 
 const { Option } = Select;
 
@@ -17,7 +17,7 @@ interface BookingFormProps {
 
 const BookingForm: React.FC<BookingFormProps> = ({ visible, onCancel, onSubmit, initialValues, loading }) => {
     const [form] = Form.useForm();
-    const [bookingStatus, setBookingStatus] = useState<Booking['status']>('Pending');
+    const [bookingStatus, setBookingStatus] = useState<BookingStatus>(BookingStatus.PENDING);
 
     useEffect(() => {
         if (visible) {
@@ -27,13 +27,13 @@ const BookingForm: React.FC<BookingFormProps> = ({ visible, onCancel, onSubmit, 
                     status: initialValues.status
                 });
             } else {
-                setBookingStatus('Pending');
+                setBookingStatus(BookingStatus.PENDING);
                 form.resetFields();
             }
         }
     }, [visible, initialValues, form]);
 
-    const handleSubmit = async (values: { status: Booking['status'] }) => {
+    const handleSubmit = async (values: { status: BookingStatus }) => {
         onSubmit(true, null, undefined);
         try {
             let responseData: Booking | null = null;
@@ -80,10 +80,11 @@ const BookingForm: React.FC<BookingFormProps> = ({ visible, onCancel, onSubmit, 
                         prefix={<ClockCircleOutlined />}
                         onChange={setBookingStatus}
                     >
-                        <Option value="Pending">Chờ xác nhận</Option>
-                        <Option value="Confirmed">Đã xác nhận</Option>
-                        <Option value="Cancelled">Đã hủy</Option>
-                        <Option value="Completed">Hoàn thành</Option>
+                        <Option value={BookingStatus.PENDING}>Chờ xác nhận</Option>
+                        <Option value={BookingStatus.CONFIRMED}>Đã xác nhận</Option>
+                        <Option value={BookingStatus.CANCELLED}>Đã hủy</Option>
+                        <Option value={BookingStatus.REJECTED}>Đã từ chối</Option>
+                        <Option value={BookingStatus.COMPLETED}>Hoàn thành</Option>
                     </Select>
                 </Form.Item>
 

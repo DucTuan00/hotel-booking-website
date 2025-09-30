@@ -19,7 +19,7 @@ const getAllBookings = async (params: GetAllBookingsInput): Promise<GetAllBookin
 const updateBooking = async (args: UpdateBookingInput) => {
     const { bookingId, status } = args;
     try {
-        const response = await api.patch(`/booking/${bookingId}`, status);
+        const response = await api.patch(`/booking/${bookingId}`, { status });
         return response.data;
     } catch (error) {
         console.error(`Error updating booking status for ID ${bookingId}:`, error);

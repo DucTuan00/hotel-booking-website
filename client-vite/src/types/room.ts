@@ -1,6 +1,12 @@
+export enum RoomType {
+    SINGLE = 'Single',
+    DOUBLE = 'Double',
+    SUITE = 'Suite',
+}
+
 export interface CreateRoomInput {
     name: string;
-    roomType: 'Single' | 'Double' | 'Suite';
+    roomType: RoomType;
     description?: string;
     amenities: string[];
     price: number;
@@ -34,7 +40,7 @@ export interface GetAllRoomsResponse {
 export interface Room {
     id: string;
     name: string;
-    roomType: 'Single' | 'Double' | 'Suite';
+    roomType: RoomType;
     description?: string;
     amenities: Array<{
         id: string;
@@ -107,7 +113,7 @@ export interface RoomAvailableResponse {
 export interface RoomAvailabilityData {
     id: string;
     name: string;
-    roomType: 'Single' | 'Double' | 'Suite';
+    roomType: RoomType;
     defaultPrice: number;
     defaultInventory: number;
     availability: Array<{
