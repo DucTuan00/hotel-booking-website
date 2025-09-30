@@ -32,6 +32,9 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
+        position: "sticky",
+        top: 0,
+        zIndex: 50,
       }}
     >
       <Space align="center">
