@@ -2,7 +2,8 @@ import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
 // import LoginForm from '@/pages/Login/LoginForm';
 import LoginForm2 from "@/pages/Login/LoginForm2";
 import authService from "@/services/auth/authService";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { message } from "antd";
 
 interface FormData {
     name: string;
@@ -23,10 +24,47 @@ const Login: React.FC = () => {
     });
     const [error, setError] = useState<string>("");
     const navigate = useNavigate(); // Hook for navigation
+    const [searchParams] = useSearchParams();
 
     useEffect(() => {
         localStorage.setItem("isRegister", String(isRegister));
     }, [isRegister]);
+
+    useEffect(() => {
+        const authParam = searchParams.get('auth');
+        const errorParam = searchParams.get('error');
+
+        if (authParam === 'success') {
+            message.success('Đăng nhập thành công!');
+            // Check user role and redirect
+            authService.verifyToken()
+                .then((userData) => {
+                    if (userData.role === 'admin') {
+                        navigate('/dashboard');
+                    } else {
+                        navigate('/');
+                    }
+                })
+                .catch(() => {
+                    navigate('/');
+                });
+        } else if (errorParam) {
+            switch (errorParam) {
+                case 'oauth_error':
+                    message.error('Lỗi xác thực Google. Vui lòng thử lại.');
+                    break;
+                case 'oauth_failed':
+                    message.error('Đăng nhập Google thất bại. Vui lòng thử lại.');
+                    break;
+                case 'server_error':
+                    message.error('Lỗi server. Vui lòng thử lại sau.');
+                    break;
+                default:
+                    message.error('Có lỗi xảy ra. Vui lòng thử lại.');
+            }
+            navigate('/login', { replace: true });
+        }
+    }, [searchParams, navigate]);
 
     const toggleAuthMode = () => {
         setIsRegister((prevState) => !prevState);

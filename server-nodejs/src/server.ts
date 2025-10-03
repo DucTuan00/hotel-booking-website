@@ -12,6 +12,7 @@ import bookingRoute from '@/routes/bookingRoute';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import '@/config/passport.ts'; 
 
 const app: express.Application = express();
 const PORT: number = Number(process.env.PORT) || 3000;
@@ -45,5 +46,5 @@ app.use('/public/uploads', express.static(path.join(__dirname, '../public/upload
 app.use(errorHandler as ErrorRequestHandler);
 
 app.listen(PORT, (): void => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`⚡ Server running on port http://localhost:${PORT}`);
 });

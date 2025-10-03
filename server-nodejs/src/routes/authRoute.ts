@@ -11,4 +11,8 @@ router.post('/logout', authMiddleware([UserRole.USER, UserRole.ADMIN]), authCont
 router.post('/refresh-token', authMiddleware([UserRole.USER, UserRole.ADMIN]), authController.refreshToken);
 router.post('/verify-token', authController.verifyToken);
 
+// Google OAuth routes
+router.get('/google', authController.googleAuth);
+router.get('/google/callback', authController.googleCallback);
+
 export default router;

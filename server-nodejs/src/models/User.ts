@@ -16,8 +16,8 @@ interface UserInterface extends Document {
     phone: string;
     role: UserRole;
     notifications: Notification[];
-    refreshToken?: string;
     active: boolean;
+    googleId?: string;
 }
 
 const userSchema: Schema = new mongoose.Schema({
@@ -32,16 +32,21 @@ const userSchema: Schema = new mongoose.Schema({
     },
     password: { 
         type: String,
-        required: true 
+        required: false 
     },
     phone: { 
         type: String,
-        required: true 
+        required: false
     },
     role: {
         type: String,
         enum: Object.values(UserRole),
         default: UserRole.USER,
+    },
+    googleId: {
+        type: String,
+        unique: true,
+        sparse: true, 
     },
     notifications: [
         {
@@ -63,9 +68,6 @@ const userSchema: Schema = new mongoose.Schema({
             }
         }
     ],
-    refreshToken: {
-        type: String,
-    },
     active: {
         type: Boolean,
         default: true,

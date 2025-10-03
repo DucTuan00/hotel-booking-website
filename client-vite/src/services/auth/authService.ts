@@ -52,12 +52,25 @@ const logout = async (): Promise<MessageResponse> => {
         }
         throw error;
     }
-}
+};
+
+const verifyToken = async (): Promise<{ userId: string; role: string }> => {
+    try {
+        const response = await api.post<{ userId: string; role: string }>('/auth/verify-token');
+        return response.data;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            throw error.response?.data || error.message;
+        }
+        throw error;
+    }
+};
 
 const authService = {
     register,
     login,
     logout,
+    verifyToken,
 };
 
 export default authService;

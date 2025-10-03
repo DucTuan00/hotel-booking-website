@@ -50,10 +50,6 @@ export async function login(args: LoginInput) {
         role: user.role,
     });
 
-    // Save refresh token in database
-    user.refreshToken = refreshToken;
-    await user.save();
-
     return {
         message: 'Login successfully',
         id: user._id,
@@ -63,23 +59,21 @@ export async function login(args: LoginInput) {
     };
 };
 
-export async function refreshAccessToken(arg: UserIdInput) {
-    const { userId } = arg;
-    
+export async function refreshAccessToken(refreshToken: string) {
+
+    let decoded: any;
+    try {
+        decoded = jwt.verify(refreshToken, jwtConfig.secret as string) as JwtPayload;
+    } catch (err) {
+        throw new Error('Invalid or expired refresh token');
+    }
+
+    const userId = decoded.id;
     const user = await User.findById(userId);
 
     if (!user) {
         throw new Error('User not found');
     }
-
-    // Get refreshToken from database
-    const storedRefreshToken = user.refreshToken;
-
-    if (!storedRefreshToken) {
-        throw new Error('No refresh token found');
-    }
-
-    jwt.verify(storedRefreshToken, jwtConfig.secret as string);
 
     const { accessToken, refreshToken: newRefreshToken } = generateToken({
         id: user._id,
@@ -87,11 +81,11 @@ export async function refreshAccessToken(arg: UserIdInput) {
         role: user.role,
     });
 
-    user.refreshToken = newRefreshToken;
-    await user.save();
-
-    return { accessToken, refreshToken: newRefreshToken };
-};
+    return { 
+        accessToken, 
+        refreshToken: newRefreshToken 
+    };
+}
 
 export async function logout(arg: UserIdInput) {
     const { userId } = arg;
@@ -101,10 +95,6 @@ export async function logout(arg: UserIdInput) {
     if (!user) {
         throw new Error('User not found');
     }
-
-    user.refreshToken = undefined;
-
-    await user.save();
 
     return { message: 'Logged out successfully' };
 };
@@ -121,6 +111,21 @@ export async function verifyAccessToken(arg: AccessTokenInput) {
     }
 
     return {
+        id: user._id,
+        role: user.role,
+    };
+};
+
+export async function generateTokensForUser(user: any) {
+    const { accessToken, refreshToken } = generateToken({
+        id: user._id,
+        email: user.email,
+        role: user.role,
+    });
+
+    return {
+        accessToken,
+        refreshToken,
         id: user._id,
         role: user.role,
     };

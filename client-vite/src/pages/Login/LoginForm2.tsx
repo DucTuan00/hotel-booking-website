@@ -66,6 +66,18 @@ const LoginForm2: React.FC<LoginFormProps> = ({
         };
     };
 
+    const handleGoogleLogin = () => {
+        window.location.href = 'http://localhost:3000/api/auth/google';
+    };
+
+    const handleSocialLogin = (socialName: string) => {
+        if (socialName === 'Google') {
+            handleGoogleLogin();
+        } else {
+            message.info(`Đăng nhập với ${socialName} chưa được hỗ trợ`);
+        }
+    };
+
     const socialLoginButtons = [
         { icon: <GoogleOutlined />, color: "#DB4437", name: "Google" },
         { icon: <FacebookOutlined />, color: "#4267B2", name: "Facebook" },
@@ -364,9 +376,7 @@ const LoginForm2: React.FC<LoginFormProps> = ({
                                         color: social.color,
                                     }}
                                     onClick={() =>
-                                        message.info(
-                                            `Đăng nhập với ${social.name}`
-                                        )
+                                        handleSocialLogin(social.name)
                                     }
                                 >
                                     <span className="hidden sm:inline ml-2">

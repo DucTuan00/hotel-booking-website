@@ -2,6 +2,7 @@ import * as authService from '@/services/auth/authService';
 import ApiError from '@/utils/apiError';
 import { Request, Response, NextFunction } from 'express';
 import { CookieOptions } from 'express';
+import passport from 'passport';
 
 export async function register(req: Request, res: Response, next: NextFunction) {
     try {
@@ -30,6 +31,10 @@ export async function login(req: Request, res: Response, next: NextFunction) {
         
         // Save accessToken to HTTP-Only Cookie
         res.cookie('accessToken', result.accessToken, cookieOptions);
+        res.cookie('refreshToken', result.refreshToken, {
+            ...cookieOptions,
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        });
 
         res.json({
             message: result.message,
@@ -44,17 +49,20 @@ export async function login(req: Request, res: Response, next: NextFunction) {
 
 export async function refreshToken(req: Request, res: Response, next: NextFunction) {
     try {
-        const userId = req.user?.id;
-        if (!userId) {
-            throw new ApiError('Unauthorized: missing user ID', 401);
+        const refreshToken = req.cookies.refreshToken;
+        if (!refreshToken) {
+            throw new ApiError('No refresh token found', 401);
         }
-        const result = await authService.refreshAccessToken({ userId });
 
-        // Update accessToken in HTTP-Only Cookie
+        const result = await authService.refreshAccessToken(refreshToken);
+
         res.cookie('accessToken', result.accessToken, cookieOptions);
+        res.cookie('refreshToken', result.refreshToken, {
+            ...cookieOptions,
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        });
 
-        // Return new accessToken for mobile apps
-        res.json({ 
+        res.json({
             message: "Token refreshed",
             accessToken: result.accessToken,
         });
@@ -73,6 +81,7 @@ export async function logout(req: Request, res: Response, next: NextFunction) {
 
         // Delete accessToken in cookie when logout
         res.clearCookie('accessToken');
+        res.clearCookie('refreshToken');
         res.json(result);
     } catch (error: any) {
         next(new ApiError(error.message, 400));
@@ -111,5 +120,37 @@ export async function verifyToken(req: Request, res: Response, next: NextFunctio
         } else {
             next(new ApiError(error.message, 500));
         }
+    }
+};
+
+export const googleAuth = passport.authenticate('google', {
+    scope: ['profile', 'email']
+});
+
+export async function googleCallback(req: Request, res: Response, next: NextFunction) {
+    try {
+        passport.authenticate('google', { session: false }, async (err: any, user: any) => {
+            if (err) {
+                console.error('Google OAuth error:', err);
+                return res.redirect(`${process.env.FRONTEND_URL}/login?error=oauth_error`);
+            }
+
+            if (!user) {
+                return res.redirect(`${process.env.FRONTEND_URL}/login?error=oauth_failed`);
+            }
+
+            const result = await authService.generateTokensForUser(user);
+
+            res.cookie('accessToken', result.accessToken, cookieOptions);
+            res.cookie('refreshToken', result.refreshToken, {
+                ...cookieOptions,
+                maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+            });
+
+            res.redirect(`${process.env.FRONTEND_URL}/?auth=success`);
+        })(req, res, next);
+    } catch (error: any) {
+        console.error('Google callback error:', error);
+        res.redirect(`${process.env.FRONTEND_URL}/login?error=server_error`);
     }
 };

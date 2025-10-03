@@ -295,8 +295,6 @@ export async function getAllRoomsAvailability(startDate: Date, endDate: Date) {
         return acc;
     }, {});
 
-    console.log(availabilityByRoom);
-
     return rooms.map(room => ({
         id: (room._id as any).toString(),
         name: room.name,
