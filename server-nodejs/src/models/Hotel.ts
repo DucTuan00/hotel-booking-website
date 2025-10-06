@@ -47,9 +47,6 @@ const hotelSchema: Schema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    mapsLink: {
-        type: String,
-    },
 }, { 
     timestamps: true 
 });
