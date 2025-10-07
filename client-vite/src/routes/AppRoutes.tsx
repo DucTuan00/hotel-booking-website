@@ -24,6 +24,7 @@ const AppRoutes: React.FC = () => (
                 <Route path="rooms/pricing" element={<Admin.RoomPricing />} />
                 <Route path="bookings" element={<Admin.BookingList />} />
                 <Route path="amenities" element={<Admin.AmenityList />} />
+                <Route path="restaurant" element={<Admin.RestaurantEdit />} />
             </Route>
         </Route>
     </Routes>

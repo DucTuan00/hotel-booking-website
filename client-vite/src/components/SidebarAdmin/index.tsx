@@ -8,6 +8,7 @@ import {
   CalendarOutlined,
   TagOutlined,
   LogoutOutlined,
+  CoffeeOutlined
 } from '@ant-design/icons';
 import authService from '@/services/auth/authService';
 
@@ -74,6 +75,25 @@ const Sidebar: React.FC<SidebarProps> = ({
       key: '/dashboard/amenities', 
       icon: <TagOutlined />, 
       label: 'Tiện nghi'
+    },
+    {
+      key: 'restaurant',
+      icon: <CoffeeOutlined />,
+      label: 'Nhà hàng',
+      children: [
+        {
+          key: '/dashboard/restaurant',
+          label: 'Thông tin nhà hàng'
+        },
+        {
+          key: '/dashboard/restaurant/services',
+          label: 'Dịch vụ nhà hàng'
+        },
+        {
+          key: '/dashboard/restaurant/images',
+          label: 'Hình ảnh nhà hàng'
+        }
+      ]
     },
   ];
 
