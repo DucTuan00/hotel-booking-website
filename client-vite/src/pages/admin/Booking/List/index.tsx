@@ -8,11 +8,7 @@ import bookingService from '@/services/bookings/bookingService';
 import moment from 'moment';
 import { Booking, BookingStatus } from '@/types/booking';
 import type { TableColumnsType } from 'antd';
-
-interface Message {
-    type: 'success' | 'error';
-    text: string;
-}
+import { Message } from '@/types/message';
 
 // Helper to get name or id from user/room, always returns string  
 const getName = (val: string | { name?: string } | null | undefined): string => {

@@ -8,6 +8,7 @@ import UserForm, { UserFormValues } from '@/pages/admin/User/Form';
 import userService from '@/services/users/userService';
 import Notification from '@/components/Notification';
 import { UserRole } from '@/types/user';
+import { Message } from '@/types/message';
 
 interface User {
     id: string;
@@ -15,11 +16,6 @@ interface User {
     email: string;
     phone: string;
     role: UserRole;
-}
-
-interface Message {
-    type: 'success' | 'error';
-    text: string;
 }
 
 const UserList: React.FC = () => {

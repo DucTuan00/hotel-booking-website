@@ -14,11 +14,7 @@ import AmenityForm from '@/pages/admin/Amenity/Form';
 import amenityService from '@/services/amenities/amenityService';
 import { Amenity } from '@/types/amenity';
 import Notification from '@/components/Notification';
-
-interface Message {
-    type: 'success' | 'error';
-    text: string;
-}
+import { Message } from '@/types/message';
 
 const AmenityList: React.FC = () => {
     const [amenities, setAmenities] = useState<Amenity[]>([]);

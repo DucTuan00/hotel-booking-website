@@ -4,7 +4,6 @@ import {
     InputNumber,
     Select,
     Button,
-    message,
     Typography,
     Row,
     Col,
@@ -16,6 +15,8 @@ import roomAvailableService from '@/services/rooms/roomAvailableService';
 import roomService from '@/services/rooms/roomService';
 import { Room } from '@/types/room';
 import dayjs from 'dayjs';
+import Notification from '@/components/Notification';
+import { Message } from '@/types/message';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -38,6 +39,7 @@ const RoomPricing: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [roomPricingData, setRoomPricingData] = useState<RoomPricingData[]>([]);
+    const [message, setMessage] = useState<Message | null>(null);
 
     // Generate dates from today to 1 month later
     const generateDates = useCallback(() => {
@@ -104,7 +106,7 @@ const RoomPricing: React.FC = () => {
             setRoomPricingData(transformedData);
         } catch (error) {
             console.error('Error loading data:', error);
-            message.error('Không thể tải dữ liệu phòng và giá');
+            setMessage({ type: 'error', text: 'Không thể tải dữ liệu' });
         } finally {
             setLoading(false);
         }
@@ -114,7 +116,6 @@ const RoomPricing: React.FC = () => {
         loadData();
     }, [loadData]);
 
-    // Handle price change
     const handlePriceChange = (roomIndex: number, dayIndex: number, value: number | null) => {
         if (value === null || value < 0) return;
 
@@ -124,7 +125,6 @@ const RoomPricing: React.FC = () => {
         setRoomPricingData(newData);
     };
 
-    // Handle inventory change
     const handleInventoryChange = (roomIndex: number, dayIndex: number, value: number) => {
         if (value < 0) return;
 
@@ -134,7 +134,6 @@ const RoomPricing: React.FC = () => {
         setRoomPricingData(newData);
     };
 
-    // Save all changes
     const handleSaveAll = async () => {
         setSaving(true);
         try {
@@ -144,7 +143,6 @@ const RoomPricing: React.FC = () => {
                 for (const dayData of roomData.days) {
                     if (dayData.isModified) {
                         if (dayData.isNew) {
-                            // Create new availability
                             promises.push(
                                 roomAvailableService.createRoomAvailable({
                                     roomId: roomData.room.id,
@@ -154,7 +152,6 @@ const RoomPricing: React.FC = () => {
                                 })
                             );
                         } else {
-                            // Update existing availability
                             promises.push(
                                 roomAvailableService.updateRoomAvailable({
                                     roomId: roomData.room.id,
@@ -169,11 +166,11 @@ const RoomPricing: React.FC = () => {
             }
 
             await Promise.all(promises);
-            message.success('Lưu tất cả thay đổi thành công!');
-            loadData(); // Reload data
+            setMessage({ type: 'success', text: 'Lưu thay đổi thành công!' });
+            loadData();
         } catch (error) {
             console.error('Error saving changes:', error);
-            message.error('Không thể lưu thay đổi');
+            setMessage({ type: 'error', text: 'Lưu thay đổi thất bại.' });
         } finally {
             setSaving(false);
         }
@@ -185,209 +182,215 @@ const RoomPricing: React.FC = () => {
     );
 
     return (
-        <div style={{ padding: '24px' }}>
-            <div
-                style={{
-                marginBottom: 24,
-            }}
-            >
-                <Title level={3}>Tùy chỉnh giá phòng theo ngày</Title>
-                <p style={{ color: '#666', marginBottom: '16px' }}>
-                    Thiết lập giá và số lượng phòng cho 30 ngày tới (từ hôm nay đến {dayjs().add(29, 'day').format('DD/MM/YYYY')})
-                </p>
+        <>
+            <Notification
+                message={message}
+                onClose={() => setMessage(null)}
+            />
 
-                <Row gutter={16}>
-                    <Col>
-                        <Button
-                            icon={<ReloadOutlined />}
-                            onClick={loadData}
-                            loading={loading}
-                        >
-                            Tải lại dữ liệu
-                        </Button>
-                    </Col>
-                    <Col>
-                        <Button
-                            type="primary"
-                            icon={<SaveOutlined />}
-                            onClick={handleSaveAll}
-                            loading={saving}
-                            disabled={!hasChanges}
-                        >
-                            Lưu tất cả thay đổi
-                        </Button>
-                    </Col>
-                </Row>
-            </div>
+            <div style={{ padding: '24px' }}>
+                <div
+                    style={{
+                        marginBottom: 24,
+                    }}
+                >
+                    <Title level={3}>Tùy chỉnh giá phòng theo ngày</Title>
+                    <p style={{ color: '#666', marginBottom: '16px' }}>
+                        Thiết lập giá và số lượng phòng cho 30 ngày tới (từ hôm nay đến {dayjs().add(29, 'day').format('DD/MM/YYYY')})
+                    </p>
 
-            <Spin spinning={loading}>
-                <Space direction="vertical" style={{ width: '100%' }} size="large">
-                    {roomPricingData.map((roomData, roomIndex) => (
-                        <Card
-                            key={roomData.room.id}
-                            title={
-                                <div>
-                                    <strong>{roomData.room.name}</strong>
-                                    <span style={{ marginLeft: '8px', color: '#666' }}>
-                                        ({roomData.room.roomType})
-                                    </span>
-                                    <span style={{ marginLeft: '16px', color: '#52c41a' }}>
-                                        Giá mặc định: {roomData.room.price.toLocaleString('vi-VN')} VND
-                                    </span>
-                                    <span style={{ marginLeft: '16px', color: '#1890ff' }}>
-                                        Số lượng mặc định: {roomData.room.quantity}
-                                    </span>
-                                </div>
-                            }
-                            size="small"
-                        >
-                            <div className="excel-table-container" style={{ 
-                                border: '1px solid #d9d9d9',
-                                borderRadius: '6px',
-                                overflow: 'hidden',
-                                position: 'relative'
-                            }}>
-                                <div style={{ 
-                                    overflowX: 'auto',
-                                    overflowY: 'hidden'
+                    <Row gutter={16}>
+                        <Col>
+                            <Button
+                                icon={<ReloadOutlined />}
+                                onClick={loadData}
+                                loading={loading}
+                            >
+                                Tải lại dữ liệu
+                            </Button>
+                        </Col>
+                        <Col>
+                            <Button
+                                type="primary"
+                                icon={<SaveOutlined />}
+                                onClick={handleSaveAll}
+                                loading={saving}
+                                disabled={!hasChanges}
+                            >
+                                Lưu tất cả thay đổi
+                            </Button>
+                        </Col>
+                    </Row>
+                </div>
+
+                <Spin spinning={loading}>
+                    <Space direction="vertical" style={{ width: '100%' }} size="large">
+                        {roomPricingData.map((roomData, roomIndex) => (
+                            <Card
+                                key={roomData.room.id}
+                                title={
+                                    <div>
+                                        <strong>{roomData.room.name}</strong>
+                                        <span style={{ marginLeft: '8px', color: '#666' }}>
+                                            ({roomData.room.roomType})
+                                        </span>
+                                        <span style={{ marginLeft: '16px', color: '#52c41a' }}>
+                                            Giá mặc định: {roomData.room.price.toLocaleString('vi-VN')} VND
+                                        </span>
+                                        <span style={{ marginLeft: '16px', color: '#1890ff' }}>
+                                            Số lượng mặc định: {roomData.room.quantity}
+                                        </span>
+                                    </div>
+                                }
+                                size="small"
+                            >
+                                <div className="excel-table-container" style={{
+                                    border: '1px solid #d9d9d9',
+                                    borderRadius: '6px',
+                                    overflow: 'hidden',
+                                    position: 'relative'
                                 }}>
-                                    {/* Header row with dates */}
-                                    <div style={{ 
-                                        display: 'flex', 
-                                        borderBottom: '2px solid #f0f0f0',
-                                        minWidth: `${120 + roomData.days.length * 120}px`
+                                    <div style={{
+                                        overflowX: 'auto',
+                                        overflowY: 'hidden'
                                     }}>
-                                        <div className="sticky-column" style={{ 
-                                            minWidth: '120px', 
-                                            width: '120px',
-                                            padding: '8px', 
-                                            fontWeight: 'bold',
-                                            backgroundColor: '#fafafa',
-                                            borderRight: '2px solid #d9d9d9',
-                                            position: 'sticky',
-                                            left: 0,
-                                            zIndex: 10
-                                        }}>
-                                            Ngày
-                                        </div>
-                                        {roomData.days.map((day) => (
-                                            <div
-                                                key={day.date}
-                                                style={{
-                                                    minWidth: '120px',
-                                                    width: '120px',
-                                                    padding: '8px',
-                                                    textAlign: 'center',
-                                                    backgroundColor: '#fafafa',
-                                                    borderRight: '1px solid #d9d9d9',
-                                                    fontSize: '12px',
-                                                    fontWeight: 'bold'
-                                                }}
-                                            >
-                                                {day.displayDate}
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {/* Price row */}
-                                    <div style={{ 
-                                        display: 'flex', 
-                                        borderBottom: '1px solid #f0f0f0',
-                                        minWidth: `${120 + roomData.days.length * 120}px`
-                                    }}>
-                                        <div className="sticky-column" style={{ 
-                                            minWidth: '120px', 
-                                            width: '120px',
-                                            padding: '8px', 
-                                            fontWeight: 'bold',
-                                            backgroundColor: '#fff7e6',
-                                            borderRight: '2px solid #d9d9d9',
+                                        {/* Header row with dates */}
+                                        <div style={{
                                             display: 'flex',
-                                            alignItems: 'center',
-                                            position: 'sticky',
-                                            left: 0,
-                                            zIndex: 10
+                                            borderBottom: '2px solid #f0f0f0',
+                                            minWidth: `${120 + roomData.days.length * 120}px`
                                         }}>
-                                            Giá (VND)
-                                        </div>
-                                        {roomData.days.map((day, dayIndex) => (
-                                            <div
-                                                key={`price-${day.date}`}
-                                                style={{
-                                                    minWidth: '120px',
-                                                    width: '120px',
-                                                    padding: '4px',
-                                                    borderRight: '1px solid #d9d9d9',
-                                                    backgroundColor: day.isModified ? '#fff1e6' : '#fff'
-                                                }}
-                                            >
-                                                <InputNumber
-                                                    value={day.price}
-                                                    min={0}
-                                                    step={1000}
-                                                    onChange={(value) => handlePriceChange(roomIndex, dayIndex, value)}
-                                                    style={{ width: '100%' }}
-                                                    size="small"
-                                                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                                />
+                                            <div className="sticky-column" style={{
+                                                minWidth: '120px',
+                                                width: '120px',
+                                                padding: '8px',
+                                                fontWeight: 'bold',
+                                                backgroundColor: '#fafafa',
+                                                borderRight: '2px solid #d9d9d9',
+                                                position: 'sticky',
+                                                left: 0,
+                                                zIndex: 10
+                                            }}>
+                                                Ngày
                                             </div>
-                                        ))}
-                                    </div>
-
-                                    {/* Inventory row */}
-                                    <div style={{ 
-                                        display: 'flex',
-                                        minWidth: `${120 + roomData.days.length * 120}px`
-                                    }}>
-                                        <div className="sticky-column" style={{ 
-                                            minWidth: '120px', 
-                                            width: '120px',
-                                            padding: '8px', 
-                                            fontWeight: 'bold',
-                                            backgroundColor: '#e6f7ff',
-                                            borderRight: '2px solid #d9d9d9',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            position: 'sticky',
-                                            left: 0,
-                                            zIndex: 10
-                                        }}>
-                                            Số lượng
-                                        </div>
-                                        {roomData.days.map((day, dayIndex) => (
-                                            <div
-                                                key={`inventory-${day.date}`}
-                                                style={{
-                                                    minWidth: '120px',
-                                                    width: '120px',
-                                                    padding: '4px',
-                                                    borderRight: '1px solid #d9d9d9',
-                                                    backgroundColor: day.isModified ? '#e6f4ff' : '#fff'
-                                                }}
-                                            >
-                                                <Select
-                                                    value={day.inventory}
-                                                    onChange={(value) => handleInventoryChange(roomIndex, dayIndex, value)}
-                                                    style={{ width: '100%' }}
-                                                    size="small"
+                                            {roomData.days.map((day) => (
+                                                <div
+                                                    key={day.date}
+                                                    style={{
+                                                        minWidth: '120px',
+                                                        width: '120px',
+                                                        padding: '8px',
+                                                        textAlign: 'center',
+                                                        backgroundColor: '#fafafa',
+                                                        borderRight: '1px solid #d9d9d9',
+                                                        fontSize: '12px',
+                                                        fontWeight: 'bold'
+                                                    }}
                                                 >
-                                                    {Array.from({ length: 21 }, (_, i) => (
-                                                        <Option key={i} value={i}>
-                                                            {i}
-                                                        </Option>
-                                                    ))}
-                                                </Select>
+                                                    {day.displayDate}
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        {/* Price row */}
+                                        <div style={{
+                                            display: 'flex',
+                                            borderBottom: '1px solid #f0f0f0',
+                                            minWidth: `${120 + roomData.days.length * 120}px`
+                                        }}>
+                                            <div className="sticky-column" style={{
+                                                minWidth: '120px',
+                                                width: '120px',
+                                                padding: '8px',
+                                                fontWeight: 'bold',
+                                                backgroundColor: '#fff7e6',
+                                                borderRight: '2px solid #d9d9d9',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                position: 'sticky',
+                                                left: 0,
+                                                zIndex: 10
+                                            }}>
+                                                Giá (VND)
                                             </div>
-                                        ))}
+                                            {roomData.days.map((day, dayIndex) => (
+                                                <div
+                                                    key={`price-${day.date}`}
+                                                    style={{
+                                                        minWidth: '120px',
+                                                        width: '120px',
+                                                        padding: '4px',
+                                                        borderRight: '1px solid #d9d9d9',
+                                                        backgroundColor: day.isModified ? '#fff1e6' : '#fff'
+                                                    }}
+                                                >
+                                                    <InputNumber
+                                                        value={day.price}
+                                                        min={0}
+                                                        step={1000}
+                                                        onChange={(value) => handlePriceChange(roomIndex, dayIndex, value)}
+                                                        style={{ width: '100%' }}
+                                                        size="small"
+                                                        formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        {/* Inventory row */}
+                                        <div style={{
+                                            display: 'flex',
+                                            minWidth: `${120 + roomData.days.length * 120}px`
+                                        }}>
+                                            <div className="sticky-column" style={{
+                                                minWidth: '120px',
+                                                width: '120px',
+                                                padding: '8px',
+                                                fontWeight: 'bold',
+                                                backgroundColor: '#e6f7ff',
+                                                borderRight: '2px solid #d9d9d9',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                position: 'sticky',
+                                                left: 0,
+                                                zIndex: 10
+                                            }}>
+                                                Số lượng
+                                            </div>
+                                            {roomData.days.map((day, dayIndex) => (
+                                                <div
+                                                    key={`inventory-${day.date}`}
+                                                    style={{
+                                                        minWidth: '120px',
+                                                        width: '120px',
+                                                        padding: '4px',
+                                                        borderRight: '1px solid #d9d9d9',
+                                                        backgroundColor: day.isModified ? '#e6f4ff' : '#fff'
+                                                    }}
+                                                >
+                                                    <Select
+                                                        value={day.inventory}
+                                                        onChange={(value) => handleInventoryChange(roomIndex, dayIndex, value)}
+                                                        style={{ width: '100%' }}
+                                                        size="small"
+                                                    >
+                                                        {Array.from({ length: 21 }, (_, i) => (
+                                                            <Option key={i} value={i}>
+                                                                {i}
+                                                            </Option>
+                                                        ))}
+                                                    </Select>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </Card>
-                    ))}
-                </Space>
-            </Spin>
+                            </Card>
+                        ))}
+                    </Space>
+                </Spin>
 
-            <style>{`
+                <style>{`
                 .excel-table-container {
                     position: relative;
                 }
@@ -449,7 +452,8 @@ const RoomPricing: React.FC = () => {
                     z-index: 10 !important;
                 }
             `}</style>
-        </div>
+            </div>
+        </>
     );
 };
 

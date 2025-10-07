@@ -7,11 +7,7 @@ import AdminTable from '@/components/AdminTable';
 import roomService from '@/services/rooms/roomService';
 import { Room, RoomType } from '@/types/room';
 import type { TableColumnsType } from 'antd';
-
-interface Message {
-    type: 'success' | 'error';
-    text: string;
-}
+import { Message } from '@/types/message';
 
 const RoomList: React.FC = () => {
     const [rooms, setRooms] = useState<Room[]>([]);

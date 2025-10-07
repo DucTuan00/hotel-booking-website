@@ -3,7 +3,8 @@ import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import LoginForm2 from "@/pages/Login/LoginForm2";
 import authService from "@/services/auth/authService";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { message } from "antd";
+import Notification from "@/components/Notification";
+import { Message } from "@/types/message";
 
 interface FormData {
     name: string;
@@ -23,7 +24,8 @@ const Login: React.FC = () => {
         password: "",
     });
     const [error, setError] = useState<string>("");
-    const navigate = useNavigate(); // Hook for navigation
+    const [message, setMessage] = useState<Message | null>(null);
+    const navigate = useNavigate(); 
     const [searchParams] = useSearchParams();
 
     useEffect(() => {
@@ -35,7 +37,6 @@ const Login: React.FC = () => {
         const errorParam = searchParams.get('error');
 
         if (authParam === 'success') {
-            message.success('Đăng nhập thành công!');
             // Check user role and redirect
             authService.verifyToken()
                 .then((userData) => {
@@ -48,19 +49,20 @@ const Login: React.FC = () => {
                 .catch(() => {
                     navigate('/');
                 });
+            setMessage({ type: 'success', text: 'Đăng nhập thành công!' });
         } else if (errorParam) {
             switch (errorParam) {
                 case 'oauth_error':
-                    message.error('Lỗi xác thực Google. Vui lòng thử lại.');
+                    setMessage({ type: 'error', text: 'Lỗi xác thực Google. Vui lòng thử lại.' });
                     break;
                 case 'oauth_failed':
-                    message.error('Đăng nhập Google thất bại. Vui lòng thử lại.');
+                    setMessage({ type: 'error', text: 'Đăng nhập Google thất bại. Vui lòng thử lại.' });
                     break;
                 case 'server_error':
-                    message.error('Lỗi server. Vui lòng thử lại sau.');
+                    setMessage({ type: 'error', text: 'Lỗi server. Vui lòng thử lại sau.' });
                     break;
                 default:
-                    message.error('Có lỗi xảy ra. Vui lòng thử lại.');
+                    setMessage({ type: 'error', text: 'Có lỗi xảy ra. Vui lòng thử lại.' });
             }
             navigate('/login', { replace: true });
         }
@@ -90,20 +92,25 @@ const Login: React.FC = () => {
                         password: formData.password,
                     });
                     console.log("Register successfully");
-                    setIsRegister(false); // Set to false to show login form
+                    setMessage({ type: 'success', text: 'Đăng ký thành công! Vui lòng đăng nhập.' });
+                    setIsRegister(false);
                 } else if (type === "login") {
                     const userData = await authService.login({
                         email: formData.email,
                         password: formData.password,
                     });
 
-                    if (userData.role === "admin") {
-                        navigate("/dashboard"); // Navigate to dashboard
-                    } else {
-                        navigate("/"); // Navigate to home
-                    }
+                    setMessage({ type: 'success', text: 'Đăng nhập thành công!' });
+
+                    setTimeout(() => {
+                        if (userData.role === "admin") {
+                            navigate("/dashboard");
+                        } else {
+                            navigate("/");
+                        }
+                    }, 1500);
                 }
-            } catch (err: unknown) {
+            } catch (err: any) {
                 const errorObj = err as { error?: string; message?: string };
                 console.error("Lỗi:", err);
                 setError(errorObj.error || errorObj.message || "Có lỗi xảy ra");
@@ -119,14 +126,20 @@ const Login: React.FC = () => {
         //     toggleAuthMode={toggleAuthMode}
         //     error={error}
         // />
-        <LoginForm2
-            onSubmit={handleSubmit}
-            onChange={handleChange}
-            formData={formData}
-            isRegister={isRegister}
-            toggleAuthMode={toggleAuthMode}
-            error={error}
-        />
+        <>
+            <Notification
+                message={message}
+                onClose={() => setMessage(null)}
+            />
+            <LoginForm2
+                onSubmit={handleSubmit}
+                onChange={handleChange}
+                formData={formData}
+                isRegister={isRegister}
+                toggleAuthMode={toggleAuthMode}
+                error={error}
+            />
+        </>
     );
 };
 
