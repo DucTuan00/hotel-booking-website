@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
 
-interface RestaurantImageInterface extends Document {
+interface RestaurantServiceInterface extends Document {
     restaurantId: Types.ObjectId;
     imagePath: string;
     title: string;
@@ -9,7 +9,7 @@ interface RestaurantImageInterface extends Document {
     deletedAt?: Date;
 }
 
-const restaurantImageSchema: Schema = new mongoose.Schema({
+const restaurantServiceSchema: Schema = new mongoose.Schema({
     restaurantId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Restaurant',
@@ -17,7 +17,6 @@ const restaurantImageSchema: Schema = new mongoose.Schema({
     },
     imagePath: {
         type: String,
-        required: true
     },
     title: {
         type: String,
@@ -35,9 +34,9 @@ const restaurantImageSchema: Schema = new mongoose.Schema({
     }
 }, { 
     timestamps: true,
-    collection: 'restaurant_images' 
+    collection: 'restaurant_services' 
 });
 
-const RestaurantImage = mongoose.model<RestaurantImageInterface>('RestaurantImage', restaurantImageSchema);
+const RestaurantService = mongoose.model<RestaurantServiceInterface>('RestaurantService', restaurantServiceSchema);
 
-export default RestaurantImage;
+export default RestaurantService;

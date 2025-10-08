@@ -17,7 +17,6 @@ const spaServiceSchema: Schema = new mongoose.Schema({
     },
     imagePath: {
         type: String,
-        required: true
     },
     title: {
         type: String,

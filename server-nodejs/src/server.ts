@@ -10,6 +10,7 @@ import roomRoute from '@/routes/roomRoute';
 import amenityRoute from '@/routes/amenityRoute';
 import bookingRoute from '@/routes/bookingRoute';
 import restaurantRoute from '@/routes/restaurantRoute';
+import uploadRoute from '@/routes/uploadRoute';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -43,6 +44,7 @@ app.use('/api/room', roomRoute);
 app.use('/api/amenity', amenityRoute);
 app.use('/api/booking', bookingRoute);
 app.use('/api/restaurant', restaurantRoute);
+app.use('/api/upload', uploadRoute);
 app.use('/public/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
 app.use(errorHandler as ErrorRequestHandler);
