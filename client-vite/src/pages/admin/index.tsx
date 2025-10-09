@@ -6,6 +6,7 @@ import UserList from '@/pages/admin/User/List';
 import RoomPricing from '@/pages/admin/Room/Pricing';
 import RestaurantEdit from '@/pages/admin/Restaurant/Edit';
 import RestaurantServices from '@/pages/admin/Restaurant/Services';
+import RestaurantImages from '@/pages/admin/Restaurant/Images';
 
 export {
     DashboardPage,
@@ -15,5 +16,6 @@ export {
     UserList,
     RoomPricing,
     RestaurantEdit,
-    RestaurantServices
+    RestaurantServices,
+    RestaurantImages
 }

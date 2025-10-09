@@ -30,3 +30,9 @@ export interface RestaurantService {
     createdAt: Date;
     updatedAt: Date;
 }
+
+export interface CreateRestaurantImageInput {
+    imagePath: string;
+    title?: string;
+    description?: string;
+}

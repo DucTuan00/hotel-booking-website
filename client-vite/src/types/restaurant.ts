@@ -35,3 +35,26 @@ export interface RestaurantService {
     createdAt: Date;
     updatedAt: Date;
 }
+
+export interface CreateRestaurantImageInput {
+    imagePath: string;
+    title?: string;
+    description?: string;
+}
+
+export interface GetAllRestaurantImagesResponse {
+    images: RestaurantImage[];
+    total?: number;
+    currentPage?: number;
+    pageSize?: number;
+}
+
+export interface RestaurantImage {
+    id: string;
+    restaurantId: string;
+    imagePath: string;
+    title?: string;
+    description?: string;
+    createdAt: Date;
+    updatedAt: Date;
+}
