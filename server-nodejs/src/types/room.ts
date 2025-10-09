@@ -23,10 +23,7 @@ export interface RoomResponse {
     description?: string;
     amenities: any[];
     price: number;
-    images: Array<{
-        id: string;
-        path: string;
-    }>; 
+    images: string[]; 
     maxGuests: number;
     quantity: number;
     active: boolean;

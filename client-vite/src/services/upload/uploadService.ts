@@ -23,6 +23,22 @@ const uploadImage = async (file: File): Promise<UploadResponse> => {
     }
 };
 
+const uploadMultipleImages = async (files: File[]): Promise<UploadResponse[]> => {
+    try {
+        const uploadPromises = files.map((file, index) => 
+            uploadImage(file).catch(error => {
+                throw new Error(`Failed to upload file ${index + 1} (${file.name}): ${error.message}`);
+            })
+        );
+        
+        const results = await Promise.all(uploadPromises);
+        return results;
+    } catch (error) {
+        console.error('Error uploading multiple images:', error);
+        throw error;
+    }
+};
+
 const deleteImage = async (filename: string): Promise<{ message: string }> => {
     try {
         const response = await api.delete(`/upload/image/${filename}`);
@@ -35,5 +51,6 @@ const deleteImage = async (filename: string): Promise<{ message: string }> => {
 
 export default {
     uploadImage,
+    uploadMultipleImages,
     deleteImage,
 };

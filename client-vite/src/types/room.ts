@@ -21,7 +21,6 @@ export interface RoomIdInput {
 
 export interface UpdateRoomInput extends CreateRoomInput {
     id: string;
-    existingImages?: string[];
 }
 
 export interface GetAllRoomsInput {

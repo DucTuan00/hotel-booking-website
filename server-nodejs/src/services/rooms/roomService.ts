@@ -254,17 +254,8 @@ export async function updateRoom(roomData: RoomData) {
         throw new ApiError('Room not found to update.', 404);
     }
 
-    // Get existing images count
-    const existingImagesCount = await RoomImage.countDocuments({
-        roomId: roomData.id,
-        deletedAt: null
-    });
-
-    // Validate total images limit
-    if (roomData.images && roomData.images.length > 0) {
-        if (roomData.images.length + existingImagesCount > 5) {
-            throw new ApiError('Over 5 images allowed', 400);
-        }
+    if (roomData.images && roomData.images.length > 5) {
+        throw new ApiError('Maximum 5 images allowed', 400);
     }
 
     // Update room data
@@ -290,14 +281,19 @@ export async function updateRoom(roomData: RoomData) {
         await updateRoomAmenities(roomData.id, roomData.amenities.map(id => id.toString()));
     }
 
-    // Add new images if provided
-    if (roomData.images && roomData.images.length > 0) {
-        const roomImageData = roomData.images.map(imagePath => ({
-            roomId: updatedRoom._id,
-            imagePath: imagePath
-        }));
-        
-        await RoomImage.insertMany(roomImageData);
+    if (roomData.images) {
+        await RoomImage.deleteMany(
+            { roomId: roomData.id, deletedAt: null }
+        );
+
+        if (roomData.images.length > 0) {
+            const roomImageData = roomData.images.map(imagePath => ({
+                roomId: updatedRoom._id,
+                imagePath: imagePath
+            }));
+            
+            await RoomImage.insertMany(roomImageData);
+        }
     }
 
     return mapId(updatedRoom);

@@ -1,6 +1,8 @@
 import api from '@/services/api';
 import {
     Room,
+    CreateRoomInput,
+    UpdateRoomInput,
     GetAllRoomsInput,
     GetAllRoomsResponse
 } from '@/types/room';
@@ -25,13 +27,9 @@ const getRoomById = async (roomId: string): Promise<Room> => {
     }
 };
 
-const createRoom = async (formData: FormData): Promise<Room> => {
+const createRoom = async (data: CreateRoomInput): Promise<Room> => {
     try {
-        const response = await api.post('/room', formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            }
-        });
+        const response = await api.post('/room', data);
         return response.data;
     } catch (error) {
         console.error('Error creating room:', error);
@@ -39,13 +37,9 @@ const createRoom = async (formData: FormData): Promise<Room> => {
     }
 };
 
-const updateRoom = async (roomId: string, formData: FormData): Promise<Room> => {
+const updateRoom = async (roomId: string, data: UpdateRoomInput): Promise<Room> => {
     try {
-        const response = await api.put(`/room/${roomId}`, formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            }
-        });
+        const response = await api.put(`/room/${roomId}`, data);
         return response.data;
     } catch (error) {
         console.error('Error updating room:', error);

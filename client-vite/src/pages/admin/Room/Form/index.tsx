@@ -4,8 +4,9 @@ import { PlusOutlined } from '@ant-design/icons';
 import type { UploadFile, UploadProps } from 'antd';
 import amenityService from '@/services/amenities/amenityService';
 import roomService from '@/services/rooms/roomService';
+import uploadService from '@/services/upload/uploadService';
 import { Amenity } from '@/types/amenity';
-import { Room, RoomType } from '@/types/room';
+import { Room, RoomType, CreateRoomInput, UpdateRoomInput } from '@/types/room';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -80,45 +81,63 @@ const RoomForm: React.FC<RoomFormProps> = ({ visible, onCancel, onSubmit, initia
         try {
             onSubmit(true, null, undefined);
             
-            const formData = new FormData();
-            formData.append('name', values.name);
-            formData.append('roomType', values.roomType);
-            formData.append('description', values.description || '');
-            formData.append('price', values.price.toString());
-            formData.append('maxGuests', values.maxGuests.toString());
-            formData.append('quantity', values.quantity.toString());
-            
-            // Add amenities
-            if (values.amenities && values.amenities.length > 0) {
-                values.amenities.forEach(amenityId => {
-                    formData.append('amenities', amenityId);
-                });
-            }
-            
-            // Add new image files (not existing ones)
-            const newFiles = fileList.filter(file => 
-                file.originFileObj && file.status !== 'error'
-            );
-            
-            if (!isEditing && newFiles.length === 0) {
+            if (fileList.length === 0) {
                 onSubmit(false, null, "Vui lòng chọn ít nhất một hình ảnh");
                 return;
             }
             
-            newFiles.forEach(file => {
+            if (fileList.length > 5) {
+                onSubmit(false, null, "Tối đa 5 hình ảnh được phép");
+                return;
+            }
+            
+            const newFiles: File[] = [];
+            const existingPaths: string[] = [];
+            
+            for (const file of fileList) {
                 if (file.originFileObj) {
-                    formData.append('images', file.originFileObj);
+                    // New file to upload
+                    newFiles.push(file.originFileObj);
+                } else if (file.response?.path) {
+                    // Existing file - keep the path
+                    existingPaths.push(file.response.path);
+                } else if (file.url) {
+                    // Existing file with direct URL
+                    const path = file.url.replace('http://localhost:3000/', '');
+                    existingPaths.push(path);
                 }
-            });
+            }
+            
+            let newImagePaths: string[] = [];
+            if (newFiles.length > 0) {
+                const uploadResults = await uploadService.uploadMultipleImages(newFiles);
+                newImagePaths = uploadResults.map(result => result.url);
+            }
+            
+            const allImagePaths = [...existingPaths, ...newImagePaths];
+            
+            const roomData = {
+                name: values.name,
+                roomType: values.roomType,
+                description: values.description || '',
+                price: values.price,
+                maxGuests: values.maxGuests,
+                quantity: values.quantity,
+                amenities: values.amenities || [],
+                images: allImagePaths
+            };
             
             let responseData: Room | null = null;
             
             if (isEditing && initialValues?.id) {
-                // Update room
-                responseData = await roomService.updateRoom(initialValues.id, formData);
+                const updateData: UpdateRoomInput = {
+                    id: initialValues.id,
+                    ...roomData
+                };
+                responseData = await roomService.updateRoom(initialValues.id, updateData);
             } else {
-                // Create room
-                responseData = await roomService.createRoom(formData);
+                const createData: CreateRoomInput = roomData;
+                responseData = await roomService.createRoom(createData);
             }
             
             onSubmit(false, responseData, undefined);

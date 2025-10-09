@@ -4,20 +4,7 @@ import { Request, Response, NextFunction } from 'express';
 
 export async function createRoom(req: Request, res: Response, next: NextFunction) {
     try {
-        const { name, roomType, description, price, maxGuests, quantity } = req.body;
-        let amenities = req.body.amenities;
-
-        if (amenities && typeof amenities === 'string') {
-            // If only one amenity was sent, it might be parsed as a string
-            amenities = [amenities];
-        } else if (!amenities) {
-            // If no amenities were sent, ensure it's an empty array
-            amenities = [];
-        }
-        const images: string[] = [];
-        if (req.files && Array.isArray(req.files)) {
-            images.push(...req.files.map(file => file.path));
-        }
+        const { name, roomType, description, price, maxGuests, quantity, amenities, images } = req.body;
 
         console.log('Request Body:', req.body);
 
@@ -26,9 +13,9 @@ export async function createRoom(req: Request, res: Response, next: NextFunction
                 name,
                 roomType,
                 description,
-                amenities,
+                amenities: amenities || [],
                 price,
-                images,
+                images: images || [],
                 maxGuests,
                 quantity,
             });
@@ -70,21 +57,7 @@ export async function getRoomById(req: Request, res: Response, next: NextFunctio
 export async function updateRoom(req: Request, res: Response, next: NextFunction) {
     try {
         const { id } = req.params;
-        const { name, roomType, description, price, maxGuests, quantity } = req.body;
-        let amenities = req.body.amenities;
-
-        if (amenities && typeof amenities === 'string') {
-            // If only one amenity was sent, it might be parsed as a string
-            amenities = [amenities];
-        } else if (!amenities) {
-            // If no amenities were sent, ensure it's an empty array
-            amenities = [];
-        }
-
-        const images: string[] = [];
-        if (req.files && Array.isArray(req.files)) {
-            images.push(...req.files.map(file => file.path));
-        }
+        const { name, roomType, description, price, maxGuests, quantity, amenities, images } = req.body;
 
         try {
             const updatedRoom = await roomService.updateRoom({
@@ -92,9 +65,9 @@ export async function updateRoom(req: Request, res: Response, next: NextFunction
                 name,
                 roomType,
                 description,
-                amenities,
+                amenities: amenities || [],
                 price,
-                images,
+                images: images || [],
                 maxGuests,
                 quantity,
             });
