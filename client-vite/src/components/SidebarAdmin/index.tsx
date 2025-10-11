@@ -145,7 +145,11 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   // Render sidebar content
   const renderSidebarContent = () => (
-    <>
+    <div style={{
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+    }}>
       {/* Header */}
       <div style={{
         height: '64px',
@@ -154,7 +158,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         justifyContent: 'center',
         borderBottom: '1px solid #f0f0f0',
         background: 'linear-gradient(135deg, #D4902A 0%, #B8761E 100%)',
-        margin: 0,
+        flexShrink: 0,
       }}>
         <Text 
           strong 
@@ -170,25 +174,33 @@ const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Menu */}
-      <div style={{ flex: 1, padding: '16px 0', overflowY: 'auto' }}>
-        <Menu
-          mode="inline"
-          selectedKeys={[location.pathname]}
-          onClick={handleMenuClick}
-          style={{
-            border: 'none',
-            background: 'transparent',
-          }}
-          items={menuItems}
-        />
+      <div style={{ 
+        flex: 1, 
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        padding: 0,
+        scrollbarWidth: 'thin',
+      }}>
+        <div style={{ padding: '16px 0' }}>
+          <Menu
+            mode="inline"
+            selectedKeys={[location.pathname]}
+            onClick={handleMenuClick}
+            style={{
+              border: 'none',
+              background: 'transparent',
+            }}
+            items={menuItems}
+          />
+        </div>
       </div>
 
-      {/* Logout Section - Fixed at bottom of viewport */}
+      {/* Logout Section */}
       <div style={{ 
         padding: '16px',
         borderTop: '1px solid #f0f0f0',
         background: '#fafafa',
-        marginTop: 'auto',
+        flexShrink: 0,
       }}>
         <Button
           type="text"
@@ -209,7 +221,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           Đăng xuất
         </Button>
       </div>
-    </>
+    </div>
   );
 
   // Mobile view with Drawer
@@ -226,20 +238,13 @@ const Sidebar: React.FC<SidebarProps> = ({
           width={260}
           style={{ zIndex: 1001 }}
         >
-          <div style={{
-            height: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-          }}>
-            {renderSidebarContent()}
-          </div>
+          {renderSidebarContent()}
         </Drawer>
       </>
     );
   }
 
   // Desktop view with fixed Sider
-
   return (
     <Sider
       width={260}
@@ -253,7 +258,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         borderRight: '1px solid #f0f0f0',
         boxShadow: '2px 0 8px rgba(0,0,0,0.1)',
         zIndex: 1000,
-        overflow: 'hidden',
+        overflow: 'hidden', // Important: prevent outer scroll
         display: 'flex',
         flexDirection: 'column',
       }}
