@@ -148,6 +148,7 @@ const UserList: React.FC = () => {
             dataIndex: 'name',
             key: 'name',
             width: '25%',
+            sorter: (a, b) => a.name.localeCompare(b.name),
         },
         {
             title: 'Email',

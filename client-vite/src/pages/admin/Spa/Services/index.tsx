@@ -196,7 +196,7 @@ const SpaServiceList: React.FC = () => {
 
     return (
         <div>
-            <AdminTable
+            <AdminTable<SpaService>
                 title="Quản lý dịch vụ spa"
                 columns={columns}
                 dataSource={services}

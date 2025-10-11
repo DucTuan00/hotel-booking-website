@@ -98,6 +98,7 @@ const AmenityList: React.FC = () => {
             dataIndex: 'name',
             key: 'name',
             width: '85%',
+            sorter: (a, b) => a.name.localeCompare(b.name),
         },
         {
             title: 'Hành động',

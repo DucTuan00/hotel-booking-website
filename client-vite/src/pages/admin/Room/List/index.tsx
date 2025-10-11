@@ -132,6 +132,7 @@ const RoomList: React.FC = () => {
             key: 'name',
             ellipsis: true,
             width: 250,
+            sorter: (a, b) => a.name.localeCompare(b.name),
         },
         {
             title: 'Loại phòng',
@@ -146,6 +147,7 @@ const RoomList: React.FC = () => {
             title: 'Giá',
             dataIndex: 'price',
             key: 'price',
+            sorter: (a, b) => (a.price || 0) - (b.price || 0),
             render: (price: number) => `${price.toLocaleString('vi-VN')}đ/đêm`,
             width: 150,
         },
@@ -155,6 +157,7 @@ const RoomList: React.FC = () => {
             key: 'maxGuests',
             align: 'center',
             width: 100,
+            sorter: (a, b) => (a.maxGuests || 0) - (b.maxGuests || 0),
         },
         {
             title: 'Số lượng',
@@ -162,6 +165,7 @@ const RoomList: React.FC = () => {
             key: 'quantity',
             align: 'center',
             width: 100,
+            sorter: (a, b) => (a.quantity || 0) - (b.quantity || 0),
         },
         {
             title: 'Hành động',

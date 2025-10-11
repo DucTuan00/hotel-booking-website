@@ -196,7 +196,7 @@ const RestaurantServiceList: React.FC = () => {
 
     return (
         <div>
-            <AdminTable
+            <AdminTable<RestaurantService>
                 title="Quản lý dịch vụ nhà hàng"
                 columns={columns}
                 dataSource={services}
