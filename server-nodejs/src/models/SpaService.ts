@@ -36,3 +36,7 @@ const spaServiceSchema: Schema = new mongoose.Schema({
     timestamps: true,
     collection: 'spa_services' 
 });
+
+const SpaService = mongoose.model<SpaServiceInterface>('SpaService', spaServiceSchema);
+
+export default SpaService;

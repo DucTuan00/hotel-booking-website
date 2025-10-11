@@ -8,7 +8,8 @@ import {
   CalendarOutlined,
   TagOutlined,
   LogoutOutlined,
-  CoffeeOutlined
+  CoffeeOutlined,
+  MoonOutlined
 } from '@ant-design/icons';
 import authService from '@/services/auth/authService';
 
@@ -92,6 +93,25 @@ const Sidebar: React.FC<SidebarProps> = ({
         {
           key: '/dashboard/restaurant/images',
           label: 'Hình ảnh nhà hàng'
+        }
+      ]
+    },
+    {
+      key: 'spa',
+      icon: <MoonOutlined />,
+      label: 'Spa',
+      children: [
+        {
+          key: '/dashboard/spa',
+          label: 'Thông tin Spa'
+        },
+        {
+          key: '/dashboard/spa/services',
+          label: 'Dịch vụ Spa'
+        },
+        {
+          key: '/dashboard/spa/images',
+          label: 'Hình ảnh Spa'
         }
       ]
     },

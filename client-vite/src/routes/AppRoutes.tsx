@@ -27,6 +27,9 @@ const AppRoutes: React.FC = () => (
                 <Route path="restaurant" element={<Admin.RestaurantEdit />} />
                 <Route path="restaurant/services" element={<Admin.RestaurantServices />} />
                 <Route path="restaurant/images" element={<Admin.RestaurantImages />} />
+                <Route path="spa" element={<Admin.SpaEdit />} />
+                <Route path="spa/services" element={<Admin.SpaServices />} />
+                <Route path="spa/images" element={<Admin.SpaImages />} />
             </Route>
         </Route>
     </Routes>

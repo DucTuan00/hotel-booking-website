@@ -7,6 +7,9 @@ import RoomPricing from '@/pages/admin/Room/Pricing';
 import RestaurantEdit from '@/pages/admin/Restaurant/Edit';
 import RestaurantServices from '@/pages/admin/Restaurant/Services';
 import RestaurantImages from '@/pages/admin/Restaurant/Images';
+import SpaEdit from '@/pages/admin/Spa/Edit';
+import SpaServices from '@/pages/admin/Spa/Services';
+import SpaImages from '@/pages/admin/Spa/Images';
 
 export {
     DashboardPage,
@@ -17,5 +20,8 @@ export {
     RoomPricing,
     RestaurantEdit,
     RestaurantServices,
-    RestaurantImages
+    RestaurantImages,
+    SpaEdit,
+    SpaServices,
+    SpaImages
 }
