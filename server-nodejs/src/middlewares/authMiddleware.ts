@@ -22,6 +22,9 @@ export default function authMiddleware(roles: UserRole[] = []): RequestHandler {
 
         jwt.verify(token, jwtConfig.secret as string, (err: any, user: any) => {
             if (err) {
+                if (err.name === 'TokenExpiredError') {
+                    return next(new ApiError('Access token expired', 401));
+                }
                 return next(new ApiError('Forbidden - Invalid token', 403));
             }
 

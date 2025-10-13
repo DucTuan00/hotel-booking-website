@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Outlet } from 'react-router-dom';
 import api from '@/services/api';
-import { isMobile, getAuthToken } from '@/utils/auth';
+import { useAuthToken } from '@/hooks/useAuthToken';
 
 interface VerifyTokenResponse {
     role: string;
@@ -9,50 +9,48 @@ interface VerifyTokenResponse {
 
 const AdminRoute: React.FC = () => {
     const navigate = useNavigate();
-
-    const checkInitialAuth = () => {
-        if (isMobile()) {
-            return getAuthToken() !== null;
-        } else {
-            return localStorage.getItem('isAuthenticated') === 'true';
-        }
-    };
-
-    const isAuthenticated = checkInitialAuth();
-    const [isAdmin, setIsAdmin] = useState<boolean>(isAuthenticated);
+    const { refreshTokenIfNeeded } = useAuthToken();
+    
+    const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
     useEffect(() => {
-
         const verifyToken = async () => {
-
-            if (isAuthenticated) {
-                return;
-            }
-
+            
             try {
-                const response = await api.post<VerifyTokenResponse>('/auth/verify-token', {
-                    withCredentials: true, 
-                });
-
+                const response = await api.post<VerifyTokenResponse>('/auth/verify-token');
+                
                 if (response.data.role === 'admin') {
                     setIsAdmin(true);
                     localStorage.setItem('isAuthenticated', 'true');
                 } else {
-                    navigate('/');
+                    setIsAdmin(false);
+                    localStorage.removeItem('isAuthenticated');
                 }
-            } catch (error: unknown) {
-                if (typeof error === 'object' && error !== null && 'response' in error) {
-                    const err = error as { response?: { data?: unknown } };
-                    console.error('Lỗi xác thực token:', err.response?.data);
-                } else {
-                    console.error('Lỗi xác thực token:', (error as Error).message);
+            } catch {
+                // Try to refresh token first
+                try {
+                    await refreshTokenIfNeeded();
+                    // Retry verification after refresh
+                    const retryResponse = await api.post<VerifyTokenResponse>('/auth/verify-token');
+                    if (retryResponse.data.role === 'admin') {
+                        setIsAdmin(true);
+                        localStorage.setItem('isAuthenticated', 'true');
+                    } else {
+                        setIsAdmin(false);
+                        localStorage.removeItem('isAuthenticated');
+                        navigate('/');
+                    }
+                } catch (refreshError) {
+                    console.error('Token refresh failed:', refreshError);
+                    setIsAdmin(false);
+                    localStorage.removeItem('isAuthenticated');
+                    navigate('/login');
                 }
-                navigate('/login');
             }
         };
 
         verifyToken();
-    }, [navigate, isAuthenticated]);
+    }, [navigate, refreshTokenIfNeeded]);
 
     if (!isAdmin) {
         return <div>Bạn không có quyền truy cập trang này.</div>;

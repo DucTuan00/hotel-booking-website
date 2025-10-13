@@ -66,11 +66,32 @@ const verifyToken = async (): Promise<{ userId: string; role: string }> => {
     }
 };
 
+const refreshToken = async (): Promise<{ accessToken: string; message: string }> => {
+    try {
+        const response = await api.post<{ accessToken: string; message: string }>('/auth/refresh-token');
+        
+        // Update token in storage for mobile
+        if (response.data.accessToken) {
+            setAuthToken(response.data.accessToken);
+        }
+        
+        return response.data;
+    } catch (error) {
+        // If refresh fails, remove tokens and redirect to login
+        removeAuthToken();
+        if (axios.isAxiosError(error)) {
+            throw error.response?.data || error.message;
+        }
+        throw error;
+    }
+};
+
 const authService = {
     register,
     login,
     logout,
     verifyToken,
+    refreshToken,
 };
 
 export default authService;

@@ -60,19 +60,21 @@ export async function login(args: LoginInput) {
 };
 
 export async function refreshAccessToken(refreshToken: string) {
-
     let decoded: any;
     try {
         decoded = jwt.verify(refreshToken, jwtConfig.secret as string) as JwtPayload;
-    } catch (err) {
-        throw new Error('Invalid or expired refresh token');
+    } catch (err: any) {
+        if (err.name === 'TokenExpiredError') {
+            throw new Error('Refresh token expired');
+        }
+        throw new Error('Invalid refresh token');
     }
 
     const userId = decoded.id;
     const user = await User.findById(userId);
 
-    if (!user) {
-        throw new Error('User not found');
+    if (!user || !user.active) {
+        throw new Error('User not found or inactive');
     }
 
     const { accessToken, refreshToken: newRefreshToken } = generateToken({
