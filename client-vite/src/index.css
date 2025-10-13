@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+/* Safe area for mobile apps (notch, status bar, home indicator) */
+:root {
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -7,6 +15,39 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===== MOBILE APP SAFE AREA - ONLY FOR CAPACITOR ===== */
+/* This prevents content from going under the notch/status bar */
+
+/* 1. Add safe area padding to root container */
+body.capacitor #root {
+  padding-top: env(safe-area-inset-top);
+  /* padding-bottom: env(safe-area-inset-bottom); */
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* 2. Remove sticky header on mobile app - let it scroll naturally */
+body.capacitor .ant-layout-header {
+  position: relative !important;
+  top: auto !important;
+}
+
+/* 3. Fix Ant Design Drawer to respect safe area */
+body.capacitor .ant-drawer-content-wrapper {
+  padding-top: env(safe-area-inset-top) !important;
+  box-sizing: border-box;
+}
+
+/* 4. Adjust Drawer header to not have double padding */
+body.capacitor .ant-drawer-header {
+  padding-top: 16px !important;
+}
+
+/* 5. Ensure drawer body fills correctly */
+body.capacitor .ant-drawer-body {
+  height: calc(100% - env(safe-area-inset-top)) !important;
 }
 
 code {

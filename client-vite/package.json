@@ -11,9 +11,11 @@
   },
   "dependencies": {
     "@ant-design/icons": "^6.0.0",
+    "@capacitor-community/safe-area": "^8.0.0",
     "@capacitor/android": "^7.4.3",
     "@capacitor/cli": "^7.4.3",
     "@capacitor/core": "^7.4.3",
+    "@capacitor/status-bar": "^7.0.3",
     "@fortawesome/fontawesome-free": "^6.7.2",
     "@heroicons/react": "^2.2.0",
     "@tailwindcss/vite": "^4.1.3",

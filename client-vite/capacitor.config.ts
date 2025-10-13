@@ -6,6 +6,17 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   server: {
     androidScheme: 'http'
+  },
+  android: {
+    allowMixedContent: true,
+    backgroundColor: '#ffffff'
+  },
+  plugins: {
+    StatusBar: {
+      style: 'LIGHT',
+      backgroundColor: '#ffffff',
+      overlaysWebView: false
+    }
   }
 };
 
