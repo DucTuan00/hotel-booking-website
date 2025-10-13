@@ -26,7 +26,26 @@ const api = axios.create({
     withCredentials: true,
 });
 
-// Add request interceptor để tự động thêm Authorization header cho mobile
+// Track if currently refreshing to prevent multiple simultaneous refresh calls
+let isRefreshing = false;
+let failedQueue: Array<{
+    resolve: (value?: any) => void;
+    reject: (reason?: any) => void;
+}> = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+    failedQueue.forEach(prom => {
+        if (error) {
+            prom.reject(error);
+        } else {
+            prom.resolve(token);
+        }
+    });
+    
+    failedQueue = [];
+};
+
+// Add request interceptor to auto add Authorization header for mobile
 api.interceptors.request.use((config) => {
     if (isMobile()) {
         const token = getAuthToken();
@@ -42,19 +61,53 @@ api.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
         
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        // Only attempt to refresh if we get a 401 and we haven't already retried
+        if (error.response?.status === 401 && 
+            !originalRequest._retry && 
+            !originalRequest.url?.includes('/auth/refresh-token')) {
+            
+            if (isRefreshing) {
+                // If we're already refreshing, queue the request
+                return new Promise((resolve, reject) => {
+                    failedQueue.push({ resolve, reject });
+                }).then(token => {
+                    if (isMobile() && token) {
+                        originalRequest.headers.Authorization = `Bearer ${token}`;
+                    }
+                    return api(originalRequest);
+                }).catch(err => {
+                    return Promise.reject(err);
+                });
+            }
+
             originalRequest._retry = true;
+            isRefreshing = true;
             
             try {
-                const refreshResponse = await api.post('/auth/refresh-token');
+                console.log('🔄 Access token expired, refreshing...');
+                const refreshResponse = await axios.post(
+                    `${getBaseURL()}/auth/refresh-token`,
+                    {},
+                    { withCredentials: true }
+                );
                 
-                if (isMobile() && refreshResponse.data.accessToken) {
-                    setAuthToken(refreshResponse.data.accessToken);
-                    originalRequest.headers.Authorization = `Bearer ${refreshResponse.data.accessToken}`;
+                const newAccessToken = refreshResponse.data.accessToken;
+                console.log('✅ Token refreshed successfully');
+                
+                if (isMobile() && newAccessToken) {
+                    setAuthToken(newAccessToken);
+                    originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
                 }
+                
+                processQueue(null, newAccessToken);
+                isRefreshing = false;
                 
                 return api(originalRequest);
             } catch (refreshError) {
+                console.error('❌ Refresh token failed:', refreshError);
+                processQueue(refreshError, null);
+                isRefreshing = false;
+                
                 removeAuthToken();
                 localStorage.removeItem('isAuthenticated');
                 window.location.href = '/login';
