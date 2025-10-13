@@ -9,7 +9,7 @@ interface Notification {
 }
 
 interface UserInterface extends Document {
-    // _id: string;
+    _id: string;
     name: string;
     email: string;
     password: string;
