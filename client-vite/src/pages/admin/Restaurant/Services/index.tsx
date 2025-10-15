@@ -113,7 +113,7 @@ const RestaurantServiceList: React.FC = () => {
                     <Image
                         width={80}
                         height={60}
-                        src={`http://localhost:3000/${imagePath}`}
+                        src={imagePath}
                         alt="Service"
                         style={{ objectFit: 'cover', borderRadius: '8px' }}
                     />

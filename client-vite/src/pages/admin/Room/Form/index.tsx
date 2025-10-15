@@ -52,13 +52,16 @@ const RoomForm: React.FC<RoomFormProps> = ({ visible, onCancel, onSubmit, initia
                     amenities: initialValues.amenities?.map((amenity: Amenity) => amenity.id) || []
                 });
 
-                // Set up existing images for preview
+                // Set up existing Cloudinary images for preview
                 const existingFiles: UploadFile[] = initialValues.images?.map((imageObj, index) => ({
                     uid: `existing-${index}`,
                     name: `image-${index}`,
                     status: 'done',
-                    url: `http://localhost:3000/${imageObj.path}`,
-                    response: { imageId: imageObj.id, path: imageObj.path }
+                    url: imageObj.path, // Cloudinary URL
+                    response: { 
+                        publicId: imageObj.id, // Cloudinary public_id
+                        url: imageObj.path 
+                    }
                 })) || [];
                 setFileList(existingFiles);
             } else {
@@ -91,30 +94,35 @@ const RoomForm: React.FC<RoomFormProps> = ({ visible, onCancel, onSubmit, initia
                 return;
             }
             
+            // Separate new files and existing Cloudinary images
             const newFiles: File[] = [];
-            const existingPaths: string[] = [];
+            const existingImages: Array<{ publicId: string; url: string }> = [];
             
             for (const file of fileList) {
                 if (file.originFileObj) {
-                    // New file to upload
+                    // New file to upload to Cloudinary
                     newFiles.push(file.originFileObj);
-                } else if (file.response?.path) {
-                    // Existing file - keep the path
-                    existingPaths.push(file.response.path);
-                } else if (file.url) {
-                    // Existing file with direct URL
-                    const path = file.url.replace('http://localhost:3000/', '');
-                    existingPaths.push(path);
+                } else if (file.response?.publicId && file.response?.url) {
+                    // Existing Cloudinary image
+                    existingImages.push({
+                        publicId: file.response.publicId,
+                        url: file.response.url
+                    });
                 }
             }
             
-            let newImagePaths: string[] = [];
+            // Upload new files to Cloudinary
+            let newCloudinaryImages: Array<{ publicId: string; url: string }> = [];
             if (newFiles.length > 0) {
                 const uploadResults = await uploadService.uploadMultipleImages(newFiles);
-                newImagePaths = uploadResults.map(result => result.url);
+                newCloudinaryImages = uploadResults.map(result => ({
+                    publicId: result.publicId,
+                    url: result.url
+                }));
             }
             
-            const allImagePaths = [...existingPaths, ...newImagePaths];
+            // Combine existing and new Cloudinary images
+            const allImages = [...existingImages, ...newCloudinaryImages];
             
             const roomData = {
                 name: values.name,
@@ -124,7 +132,7 @@ const RoomForm: React.FC<RoomFormProps> = ({ visible, onCancel, onSubmit, initia
                 maxGuests: values.maxGuests,
                 quantity: values.quantity,
                 amenities: values.amenities || [],
-                images: allImagePaths
+                images: allImages.map(img => img.url)
             };
             
             let responseData: Room | null = null;
@@ -159,33 +167,14 @@ const RoomForm: React.FC<RoomFormProps> = ({ visible, onCancel, onSubmit, initia
         onChange: ({ fileList: newFileList }) => setFileList(newFileList),
         beforeUpload: () => false, // Prevent auto upload
         onPreview: async (file) => {
-            if (!file.url && !file.preview) {
+            if (!file.url && !file.preview && file.originFileObj) {
                 file.preview = await new Promise((resolve) => {
                     const reader = new FileReader();
                     reader.readAsDataURL(file.originFileObj as File);
                     reader.onload = () => resolve(reader.result as string);
                 });
             }
-            const image = new Image();
-            image.src = file.url || file.preview || '';
-            const imgWindow = window.open(file.url || file.preview);
-            imgWindow?.document.write(image.outerHTML);
         },
-        onRemove: async (file) => {
-            // If this is an existing image (has response.imageId), delete it from server
-            if (file.response?.imageId && isEditing) {
-                try {
-                    await roomService.deleteRoomImage(file.response.imageId);
-                    message.success('Đã xóa hình ảnh');
-                } catch (error) {
-                    console.error('Error deleting image:', error);
-                    message.error('Lỗi xóa hình ảnh');
-                    return false;
-                }
-            }
-            
-            return true; 
-        }
     };
 
     const uploadButton = (
@@ -202,7 +191,7 @@ const RoomForm: React.FC<RoomFormProps> = ({ visible, onCancel, onSubmit, initia
             onCancel={handleCancel}
             footer={null}
             width={800}
-            destroyOnClose
+            destroyOnHidden
         >
             <Form
                 form={form}

@@ -40,7 +40,7 @@ const ImageItems: React.FC<ImageItemsProps> = ({
                             <div style={{ height: '250px', overflow: 'hidden', position: 'relative' }}>
                                 <Image
                                     alt="Restaurant image"
-                                    src={`http://localhost:3000/${image.imagePath}`}
+                                    src={image.imagePath}
                                     style={{ 
                                         width: '100%', 
                                         height: '100%', 
@@ -122,7 +122,7 @@ const ImageItems: React.FC<ImageItemsProps> = ({
                                 <div style={{ height: '250px', overflow: 'hidden', position: 'relative' }}>
                                     <Image
                                         alt="Deleted image"
-                                        src={`http://localhost:3000/${image.imagePath}`}
+                                        src={image.imagePath}
                                         style={{ 
                                             width: '100%', 
                                             height: '100%', 

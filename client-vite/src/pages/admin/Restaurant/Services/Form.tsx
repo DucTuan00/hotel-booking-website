@@ -169,7 +169,7 @@ const RestaurantServiceForm: React.FC<RestaurantServiceFormProps> = ({
                                     <Image
                                         width={100}
                                         height={80}
-                                        src={`http://localhost:3000/${editingService.imagePath}`}
+                                        src={editingService.imagePath}
                                         alt="Current service image"
                                         style={{ objectFit: 'cover', borderRadius: '8px' }}
                                     />

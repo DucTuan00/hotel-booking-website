@@ -117,7 +117,7 @@ const RoomList: React.FC = () => {
                 <Image
                     width={80}
                     height={60}
-                    src={images && images.length > 0 ? `http://localhost:3000/${images[0].path}` : '/placeholder-image.jpg'}
+                    src={images && images.length > 0 ? images[0].path : '/placeholder-image.jpg'}
                     alt={`Ảnh phòng ${room.name}`}
                     style={{ objectFit: 'cover', borderRadius: '6px' }}
                     preview={{

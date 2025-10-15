@@ -1,7 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
-import fs from 'fs';
-import path from 'path';
 import ApiError from '@/utils/apiError';
+import {
+    uploadImageToCloudinary,
+    uploadMultipleImagesToCloudinary,
+    deleteImageFromCloudinary,
+} from '@/services/upload/cloudinaryService';
 
 export async function uploadImage(req: Request, res: Response, next: NextFunction) {
     try {
@@ -9,13 +12,40 @@ export async function uploadImage(req: Request, res: Response, next: NextFunctio
             throw new ApiError('No file uploaded', 400);
         }
 
-        // Return the file path relative to public folder
-        const filePath = req.file.path;
-        
+        const result = await uploadImageToCloudinary(req.file.buffer);
+
         res.json({
             message: 'Image uploaded successfully',
-            url: filePath,
-            filename: req.file.filename
+            url: result.secure_url,
+            publicId: result.public_id,
+            width: result.width,
+            height: result.height,
+            format: result.format,
+        });
+    } catch (error: any) {
+        next(new ApiError(error.message, error.statusCode || 500));
+    }
+}
+
+export async function uploadMultipleImages(req: Request, res: Response, next: NextFunction) {
+    try {
+        if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
+            throw new ApiError('No files uploaded', 400);
+        }
+
+        const fileBuffers = req.files.map((file) => file.buffer);
+        
+        const results = await uploadMultipleImagesToCloudinary(fileBuffers);
+
+        res.json({
+            message: 'Images uploaded successfully',
+            data: results.map((result) => ({
+                url: result.secure_url,
+                publicId: result.public_id,
+                width: result.width,
+                height: result.height,
+                format: result.format,
+            })),
         });
     } catch (error: any) {
         next(new ApiError(error.message, error.statusCode || 500));
@@ -24,21 +54,17 @@ export async function uploadImage(req: Request, res: Response, next: NextFunctio
 
 export async function deleteImage(req: Request, res: Response, next: NextFunction) {
     try {
-        const { filename } = req.params;
-        
-        if (!filename) {
-            throw new ApiError('Filename is required', 400);
+        const { publicId } = req.body;
+
+        if (!publicId) {
+            throw new ApiError('publicId is required', 400);
         }
 
-        const filePath = path.join('public/uploads', filename);
-        
-        // Check if file exists
-        if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
-            res.json({ message: 'Image deleted successfully' });
-        } else {
-            throw new ApiError('File not found', 404);
-        }
+        await deleteImageFromCloudinary(publicId);
+
+        res.json({
+            message: 'Image deleted successfully',
+        });
     } catch (error: any) {
         next(new ApiError(error.message, error.statusCode || 500));
     }

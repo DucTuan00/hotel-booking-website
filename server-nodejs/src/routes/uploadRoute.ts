@@ -6,14 +6,8 @@ import { UserRole } from '@/types/user';
 
 const router = Router();
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'public/uploads/'); 
-    },
-    filename: (req, file, cb) => {
-        cb(null, file.originalname);
-    },
-});
+// Use memory storage for Cloudinary
+const storage = multer.memoryStorage();
 
 const upload = multer({ 
     storage: storage,
@@ -25,11 +19,14 @@ const upload = multer({
         }
     },
     limits: {
-        fileSize: 5 * 1024 * 1024
+        fileSize: 5 * 1024 * 1024 // 5MB limit
     }
 });
 
 router.post('/image', authMiddleware([UserRole.ADMIN]), upload.single('image'), uploadController.uploadImage);
-router.delete('/image/:filename', authMiddleware([UserRole.ADMIN]), uploadController.deleteImage);
+
+router.post('/images', authMiddleware([UserRole.ADMIN]), upload.array('images', 10), uploadController.uploadMultipleImages);
+
+router.delete('/image', authMiddleware([UserRole.ADMIN]), uploadController.deleteImage);
 
 export default router;
