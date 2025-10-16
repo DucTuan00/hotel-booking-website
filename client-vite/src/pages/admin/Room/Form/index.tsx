@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Input, Select, InputNumber, Upload, Button, Checkbox, Row, Col, message } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
-import type { UploadFile, UploadProps } from 'antd';
+import { Modal, Form, Input, Select, InputNumber, Button, Checkbox, Row, Col } from 'antd';
+import type { UploadFile } from 'antd';
 import amenityService from '@/services/amenities/amenityService';
 import roomService from '@/services/rooms/roomService';
 import uploadService from '@/services/upload/uploadService';
 import { Amenity } from '@/types/amenity';
 import { Room, RoomType, CreateRoomInput, UpdateRoomInput } from '@/types/room';
+import ImageItems from '@/pages/admin/Room/Form/ImageItems';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -161,29 +161,6 @@ const RoomForm: React.FC<RoomFormProps> = ({ visible, onCancel, onSubmit, initia
         onCancel();
     };
 
-    const uploadProps: UploadProps = {
-        listType: 'picture-card',
-        fileList,
-        onChange: ({ fileList: newFileList }) => setFileList(newFileList),
-        beforeUpload: () => false, // Prevent auto upload
-        onPreview: async (file) => {
-            if (!file.url && !file.preview && file.originFileObj) {
-                file.preview = await new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.readAsDataURL(file.originFileObj as File);
-                    reader.onload = () => resolve(reader.result as string);
-                });
-            }
-        },
-    };
-
-    const uploadButton = (
-        <div>
-            <PlusOutlined />
-            <div style={{ marginTop: 8 }}>Tải ảnh</div>
-        </div>
-    );
-
     return (
         <Modal
             title={isEditing ? 'Sửa thông tin phòng' : 'Thêm phòng mới'}
@@ -292,12 +269,11 @@ const RoomForm: React.FC<RoomFormProps> = ({ visible, onCancel, onSubmit, initia
                 </Form.Item>
 
                 <Form.Item label="Hình ảnh phòng">
-                    <Upload {...uploadProps}>
-                        {fileList.length >= 5 ? null : uploadButton}
-                    </Upload>
-                    <p style={{ color: '#666', fontSize: '12px', marginTop: '8px' }}>
-                        Tối đa 5 hình ảnh. Định dạng: JPG, PNG
-                    </p>
+                    <ImageItems
+                        fileList={fileList}
+                        onChange={setFileList}
+                        maxCount={5}
+                    />
                 </Form.Item>
 
                 <Form.Item className="mb-0 text-right">
