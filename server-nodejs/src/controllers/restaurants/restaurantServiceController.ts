@@ -4,7 +4,8 @@ import ApiError from '@/utils/apiError';
 
 export async function getAllRestaurantServices(req: Request, res: Response, next: NextFunction) {
     try {
-        const services = await restaurantServiceService.getAllRestaurantServices();
+        const { search } = req.query;
+        const services = await restaurantServiceService.getAllRestaurantServices(search as string);
         res.json({
             services,
             total: services.length

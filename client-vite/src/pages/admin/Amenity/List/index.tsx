@@ -10,6 +10,7 @@ import {
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import AdminTable from '@/components/AdminTable';
+import SearchTableAdmin, { SearchFilters } from '@/components/SearchTableAdmin';
 import AmenityForm from '@/pages/admin/Amenity/Form';
 import amenityService from '@/services/amenities/amenityService';
 import { Amenity } from '@/types/amenity';
@@ -25,11 +26,18 @@ const AmenityList: React.FC = () => {
     const [pageSize, setPageSize] = useState<number>(10);
     const [totalAmenities, setTotalAmenities] = useState<number>(0);
     const [message, setMessage] = useState<Message | null>(null);
+    const [currentSearchParams, setCurrentSearchParams] = useState<any>({});
 
     const fetchAmenities = useCallback(async () => {
         setLoading(true);
         try {
-            const data = await amenityService.getAllAmenities({ page: currentPage, pageSize });
+            const params: any = { 
+                page: currentPage, 
+                pageSize: pageSize,
+                ...currentSearchParams
+            };
+
+            const data = await amenityService.getAllAmenities(params);
             setAmenities(data.amenities as Amenity[]);
             setTotalAmenities(data.total ?? 0);
         } catch {
@@ -39,11 +47,27 @@ const AmenityList: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    }, [currentPage, pageSize]);
+    }, [currentPage, pageSize, currentSearchParams]);
 
     useEffect(() => {
         fetchAmenities();
     }, [fetchAmenities]);
+
+    const handleSearch = (filters: SearchFilters) => {
+        setCurrentPage(1); 
+        
+        if (!filters.searchText || !filters.searchText.trim()) {
+            setCurrentSearchParams({});
+            return;
+        }
+        
+        const searchText = filters.searchText.trim();
+        const searchParams: any = {
+            search: searchText  
+        };
+        
+        setCurrentSearchParams(searchParams);
+    };
 
     const showModal = () => {
         setEditingAmenity(null);
@@ -141,6 +165,11 @@ const AmenityList: React.FC = () => {
             <Notification
                 message={message}
                 onClose={() => setMessage(null)}
+            />
+
+            <SearchTableAdmin
+                onSearch={handleSearch}
+                placeholder="Tìm kiếm theo tên tiện nghi..."
             />
 
             <AdminTable<Amenity>

@@ -4,7 +4,7 @@ import ApiError from '@/utils/apiError';
 import { mapId } from '@/utils/mapId';
 import { CreateRestaurantServiceInput, UpdateRestaurantServiceInput } from '@/types/restaurant';
 
-export async function getAllRestaurantServices() {
+export async function getAllRestaurantServices(search?: string) {
     let restaurant = await Restaurant.findOne();
     
     if (!restaurant) {
@@ -13,10 +13,16 @@ export async function getAllRestaurantServices() {
         });
     }
 
-    const services = await RestaurantService.find({ 
+    const query: any = { 
         restaurantId: restaurant._id,
         deletedAt: null 
-    }).populate('restaurantId');
+    };
+
+    if (search && search.trim()) {
+        query.title = new RegExp(search.trim(), 'i'); // Case-insensitive search by title
+    }
+
+    const services = await RestaurantService.find(query).populate('restaurantId');
     
     return services.map(service => mapId(service));
 }

@@ -4,6 +4,7 @@ import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import RestaurantServiceForm from './Form';
 import Notification from '@/components/Notification';
 import AdminTable from '@/components/AdminTable';
+import SearchTableAdmin, { SearchFilters } from '@/components/SearchTableAdmin';
 import restaurantServiceService from '@/services/restaurants/restaurantServiceService';
 import { RestaurantService } from '@/types/restaurant';
 import type { TableColumnsType } from 'antd';
@@ -21,11 +22,12 @@ const RestaurantServiceList: React.FC = () => {
     const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
     const [editingService, setEditingService] = useState<RestaurantService | null>(null);
     const [message, setMessage] = useState<NotificationMessage | null>(null);
+    const [searchText, setSearchText] = useState<string>('');
 
     const fetchServices = useCallback(async () => {
         setLoading(true);
         try {
-            const data = await restaurantServiceService.getAllRestaurantServices();
+            const data = await restaurantServiceService.getAllRestaurantServices(searchText);
             setServices(data.services as RestaurantService[]);
         } catch (error) {
             console.error("Error when fetch restaurant services:", error);
@@ -34,11 +36,15 @@ const RestaurantServiceList: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [searchText]);
 
     useEffect(() => {
         fetchServices();
     }, [fetchServices]);
+
+    const handleSearch = (filters: SearchFilters) => {
+        setSearchText(filters.searchText?.trim() || '');
+    };
 
     const showModal = () => {
         setIsModalVisible(true);
@@ -196,6 +202,11 @@ const RestaurantServiceList: React.FC = () => {
 
     return (
         <div>
+            <SearchTableAdmin
+                onSearch={handleSearch}
+                placeholder="Tìm kiếm theo tên dịch vụ..."
+            />
+
             <AdminTable<RestaurantService>
                 title="Quản lý dịch vụ nhà hàng"
                 columns={columns}

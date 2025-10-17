@@ -8,7 +8,9 @@ export interface UpdateAmenityInput {
 }
 
 export interface GetAllAmenitiesInput {
-    filter?: Record<string, any>;
+    filter?: {
+        search?: string; 
+    };
     page?: number;
     pageSize?: number;
 }

@@ -4,7 +4,8 @@ import ApiError from '@/utils/apiError';
 
 export async function getAllSpaServices(req: Request, res: Response, next: NextFunction) {
     try {
-        const services = await spaServiceService.getAllSpaServices();
+        const { search } = req.query;
+        const services = await spaServiceService.getAllSpaServices(search as string);
         res.json({
             services,
             total: services.length

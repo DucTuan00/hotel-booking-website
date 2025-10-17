@@ -4,6 +4,7 @@ import { EditOutlined } from '@ant-design/icons';
 import BookingForm from '@/pages/admin/Booking/Form';
 import Notification from '@/components/Notification';
 import AdminTable from '@/components/AdminTable';
+import SearchTableAdmin, { SearchFilters } from '@/components/SearchTableAdmin';
 import bookingService from '@/services/bookings/bookingService';
 import moment from 'moment';
 import { Booking, BookingStatus } from '@/types/booking';
@@ -30,11 +31,18 @@ const BookingList: React.FC = () => {
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [pageSize, setPageSize] = useState<number>(5);
     const [totalBookings, setTotalBookings] = useState<number>(0);
+    const [currentSearchParams, setCurrentSearchParams] = useState<any>({});
 
     const fetchBookings = useCallback(async () => {
         setLoading(true);
         try {
-            const data = await bookingService.getAllBookings({ page: currentPage, pageSize: pageSize });
+            const params: any = { 
+                page: currentPage, 
+                pageSize: pageSize,
+                ...currentSearchParams
+            };
+
+            const data = await bookingService.getAllBookings(params);
             setBookings(data.bookings as Booking[]);
             setTotalBookings(data.total ?? 0);
             setPageSize(data.pageSize ?? 5);
@@ -46,11 +54,27 @@ const BookingList: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    }, [currentPage, pageSize]);
+    }, [currentPage, pageSize, currentSearchParams]);
 
     useEffect(() => {
         fetchBookings();
     }, [fetchBookings]);
+
+    const handleSearch = (filters: SearchFilters) => {
+        setCurrentPage(1); 
+        
+        if (!filters.searchText || !filters.searchText.trim()) {
+            setCurrentSearchParams({});
+            return;
+        }
+        
+        const searchText = filters.searchText.trim();
+        const searchParams: any = {
+            search: searchText  
+        };
+        
+        setCurrentSearchParams(searchParams);
+    };
 
     const handleEdit = (booking: Booking) => {
         setIsModalVisible(true);
@@ -211,6 +235,11 @@ const BookingList: React.FC = () => {
                 onClose={() => setMessage(null)}
             />
             
+            <SearchTableAdmin
+                onSearch={handleSearch}
+                placeholder="Tìm kiếm theo mã đơn..."
+            />
+
             <AdminTable<Booking>
                 title="Quản lý đặt phòng"
                 showAddButton={false}

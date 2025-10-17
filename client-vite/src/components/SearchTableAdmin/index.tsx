@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Input, Button, Space, Card } from 'antd';
+import { Input, Button, Space } from 'antd';
 import { SearchOutlined, ClearOutlined } from '@ant-design/icons';
 
 const useDebounce = (callback: (...args: any[]) => void, delay: number) => {
@@ -75,51 +75,45 @@ const SearchTableAdmin: React.FC<SearchTableAdminProps> = ({
     };
 
     return (
-        <Card 
-            size="small" 
-            style={{ marginBottom: 16 }}
-            bodyStyle={{ padding: '12px 16px' }}
-        >
-            <Space direction="vertical" style={{ width: '100%' }}>
-                <Space wrap style={{ width: '100%', justifyContent: 'space-between' }}>
-                    <Input
-                        placeholder={placeholder}
-                        value={searchText}
-                        onChange={handleSearchTextChange}
-                        onPressEnter={handleSearch}
-                        style={{ 
-                            width: 400,
-                            minWidth: 200
-                        }}
+        <Space direction="vertical" style={{ width: '100%', marginBottom: 16 }}>
+            <Space wrap style={{ width: '100%', justifyContent: 'space-between' }}>
+                <Input
+                    placeholder={placeholder}
+                    value={searchText}
+                    onChange={handleSearchTextChange}
+                    onPressEnter={handleSearch}
+                    style={{
+                        width: 400,
+                        minWidth: 200
+                    }}
+                    size="large"
+                    suffix={
+                        <SearchOutlined
+                            style={{ color: '#bfbfbf', cursor: 'pointer' }}
+                            onClick={handleSearch}
+                        />
+                    }
+                //disabled={loading}
+                />
+
+                {showClearButton && (searchText || extraFilters) && (
+                    <Button
+                        icon={<ClearOutlined />}
+                        onClick={handleClear}
+                        disabled={loading}
                         size="middle"
-                        suffix={
-                            <SearchOutlined 
-                                style={{ color: '#bfbfbf', cursor: 'pointer' }}
-                                onClick={handleSearch}
-                            />
-                        }
-                        //disabled={loading}
-                    />
-
-                    {showClearButton && (searchText || extraFilters) && (
-                        <Button
-                            icon={<ClearOutlined />}
-                            onClick={handleClear}
-                            disabled={loading}
-                            size="middle"
-                        >
-                            Xóa bộ lọc
-                        </Button>
-                    )}
-                </Space>
-
-                {extraFilters && (
-                    <div style={{ marginTop: 8 }}>
-                        {extraFilters}
-                    </div>
+                    >
+                        Xóa bộ lọc
+                    </Button>
                 )}
             </Space>
-        </Card>
+
+            {extraFilters && (
+                <div style={{ marginTop: 8 }}>
+                    {extraFilters}
+                </div>
+            )}
+        </Space>
     );
 };
 

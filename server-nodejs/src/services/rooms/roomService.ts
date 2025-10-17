@@ -145,10 +145,23 @@ export async function createRoom(roomData: RoomData) {
 export async function getAllRooms(args: GetAllRoomsInput) {
     const { filter = {}, page = 1, pageSize = 10 } = args;
 
+    const buildQuery = () => {
+        let query: any = { active: true };
+
+        if (filter.search) {
+            query.name = new RegExp(filter.search, 'i'); // 'i' for case-insensitive
+        }
+
+        return query;
+    };
+
+    const queryConditions = buildQuery();
     const skip = (page - 1) * pageSize;
-    const rooms = await Room.find({ ...filter, active: true })
-        .skip(skip)
-        .limit(pageSize);
+
+    const [rooms, totalRooms] = await Promise.all([
+        Room.find(queryConditions).skip(skip).limit(pageSize),
+        Room.countDocuments(queryConditions)
+    ]);
         
     if (!rooms) {
         throw new ApiError('Failed to get rooms', 500);
@@ -185,11 +198,6 @@ export async function getAllRooms(args: GetAllRoomsInput) {
             };
         })
     );
-
-    const totalRooms = await Room.countDocuments({ ...filter, active: true });
-    if (!totalRooms) {
-        throw new ApiError('Failed to get total rooms', 500);
-    }
 
     return {
         rooms: roomsWithImagesAndAmenities,

@@ -3,6 +3,7 @@ import User from '@/models/User';
 import Room from '@/models/Room';
 import ApiError from '@/utils/apiError';
 import { mapId, mapIds } from '@/utils/mapId';
+import mongoose from 'mongoose';
 import {
     CreateBookingInput,
     BookingIdInput,
@@ -180,21 +181,36 @@ export async function cancelBooking(arg: BookingIdInput) {
 export async function getAllBookings(args: GetAllBookingsInput) {
     const { filter = {}, page = 1, pageSize = 10 } = args;
 
+    const buildQuery = () => {
+        let query: any = {};
+
+        if (filter.search) {
+            const searchText = filter.search.trim();
+            
+            if (mongoose.Types.ObjectId.isValid(searchText) && searchText.length === 24) {
+                query._id = searchText;
+            }
+        }
+
+        return query;
+    };
+
+    const queryConditions = buildQuery();
     const skip = (page - 1) * pageSize;
-    const bookings = await Booking.find({ ...filter })
-        .populate({ path: 'userId', select: 'name' })
-        .populate({ path: 'roomId', select: 'name' })
-        .skip(skip)
-        .limit(pageSize);
+
+    const [bookings, totalBookings] = await Promise.all([
+        Booking.find(queryConditions)
+            .populate({ path: 'userId', select: 'name' })
+            .populate({ path: 'roomId', select: 'name' })
+            .skip(skip)
+            .limit(pageSize),
+        Booking.countDocuments(queryConditions)
+    ]);
 
     if (!bookings) {
         throw new ApiError('Failed to get bookings', 500);
     }
 
-    const totalBookings = await Booking.countDocuments({ ...filter });
-    if (!totalBookings) {
-        throw new ApiError('Failed to get total bookings', 500);
-    }
     return {
         bookings: mapIds(bookings),
         total: totalBookings,

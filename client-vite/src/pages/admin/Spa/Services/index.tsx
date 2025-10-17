@@ -4,6 +4,7 @@ import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import SpaServiceForm from '@/pages/admin/Spa/Services/Form';
 import Notification from '@/components/Notification';
 import AdminTable from '@/components/AdminTable';
+import SearchTableAdmin, { SearchFilters } from '@/components/SearchTableAdmin';
 import spaServiceService from '@/services/spa/spaServiceService';
 import { SpaService } from '@/types/spa';
 import type { TableColumnsType } from 'antd';
@@ -21,11 +22,12 @@ const SpaServiceList: React.FC = () => {
     const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
     const [editingService, setEditingService] = useState<SpaService | null>(null);
     const [message, setMessage] = useState<NotificationMessage | null>(null);
+    const [searchText, setSearchText] = useState<string>('');
 
     const fetchServices = useCallback(async () => {
         setLoading(true);
         try {
-            const data = await spaServiceService.getAllSpaServices();
+            const data = await spaServiceService.getAllSpaServices(searchText);
             setServices(data.services as SpaService[]);
         } catch (error) {
             console.error("Error when fetch spa services:", error);
@@ -34,11 +36,15 @@ const SpaServiceList: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [searchText]);
 
     useEffect(() => {
         fetchServices();
     }, [fetchServices]);
+
+    const handleSearch = (filters: SearchFilters) => {
+        setSearchText(filters.searchText?.trim() || '');
+    };
 
     const showModal = () => {
         setIsModalVisible(true);
@@ -196,6 +202,11 @@ const SpaServiceList: React.FC = () => {
 
     return (
         <div>
+            <SearchTableAdmin
+                onSearch={handleSearch}
+                placeholder="Tìm kiếm theo tên dịch vụ..."
+            />
+
             <AdminTable<SpaService>
                 title="Quản lý dịch vụ spa"
                 columns={columns}

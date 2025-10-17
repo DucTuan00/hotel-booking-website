@@ -4,7 +4,7 @@ import ApiError from '@/utils/apiError';
 import { mapId } from '@/utils/mapId';
 import { CreateSpaServiceInput, UpdateSpaServiceInput } from '@/types/spa';
 
-export async function getAllSpaServices() {
+export async function getAllSpaServices(search?: string) {
     let spa = await Spa.findOne();
     
     if (!spa) {
@@ -13,10 +13,16 @@ export async function getAllSpaServices() {
         });
     }
 
-    const services = await SpaService.find({ 
+    const query: any = { 
         spaId: spa._id,
         deletedAt: null 
-    }).populate('spaId');
+    };
+
+    if (search && search.trim()) {
+        query.title = new RegExp(search.trim(), 'i'); // Case-insensitive search by title
+    }
+
+    const services = await SpaService.find(query).populate('spaId');
     
     return services.map((service: any) => mapId(service));
 }

@@ -4,6 +4,7 @@ import { EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 import RoomForm from '@/pages/admin/Room/Form';
 import Notification from '@/components/Notification';
 import AdminTable from '@/components/AdminTable';
+import SearchTableAdmin, { SearchFilters } from '@/components/SearchTableAdmin';
 import roomService from '@/services/rooms/roomService';
 import { Room, RoomType } from '@/types/room';
 import type { TableColumnsType } from 'antd';
@@ -18,11 +19,18 @@ const RoomList: React.FC = () => {
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [pageSize, setPageSize] = useState<number>(10);
     const [totalRooms, setTotalRooms] = useState<number>(0);
+    const [currentSearchParams, setCurrentSearchParams] = useState<any>({});
 
     const fetchRooms = useCallback(async () => {
         setLoading(true);
         try {
-            const data = await roomService.getAllRooms({ page: currentPage, pageSize: pageSize });
+            const params: any = { 
+                page: currentPage, 
+                pageSize: pageSize,
+                ...currentSearchParams
+            };
+
+            const data = await roomService.getAllRooms(params);
             setRooms(data.rooms as Room[]);
             setTotalRooms(data.total ?? 0);
             setPageSize(data.pageSize ?? 10);
@@ -34,11 +42,27 @@ const RoomList: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    }, [currentPage, pageSize]);
+    }, [currentPage, pageSize, currentSearchParams]);
 
     useEffect(() => {
         fetchRooms();
     }, [fetchRooms]);
+
+    const handleSearch = (filters: SearchFilters) => {
+        setCurrentPage(1); 
+        
+        if (!filters.searchText || !filters.searchText.trim()) {
+            setCurrentSearchParams({});
+            return;
+        }
+        
+        const searchText = filters.searchText.trim();
+        const searchParams: any = {
+            search: searchText  
+        };
+        
+        setCurrentSearchParams(searchParams);
+    };
 
     const showModal = () => {
         setIsModalVisible(true);
@@ -210,6 +234,11 @@ const RoomList: React.FC = () => {
                 onClose={() => setMessage(null)}
             />
             
+            <SearchTableAdmin
+                onSearch={handleSearch}
+                placeholder="Tìm kiếm theo tên phòng..."
+            />
+
             <AdminTable<Room>
                 title="Quản lý phòng"
                 onAdd={showModal}

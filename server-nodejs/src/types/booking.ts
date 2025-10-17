@@ -43,7 +43,9 @@ export interface UpdateBookingInput {
 }
 
 export interface GetAllBookingsInput {
-    filter?: Record<string, any>;
+    filter?: {
+        search?: string; 
+    };
     page?: number;
     pageSize?: number;
 }

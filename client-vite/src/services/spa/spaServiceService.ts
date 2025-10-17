@@ -6,9 +6,10 @@ import {
     GetAllSpaServicesResponse 
 } from '@/types/spa';
 
-const getAllSpaServices = async (): Promise<GetAllSpaServicesResponse> => {
+const getAllSpaServices = async (search?: string): Promise<GetAllSpaServicesResponse> => {
     try {
-        const response = await api.get<GetAllSpaServicesResponse>('/spa/services');
+        const params = search ? { search } : {};
+        const response = await api.get<GetAllSpaServicesResponse>('/spa/services', { params });
         return response.data;
     } catch (error) {
         console.error('Error getting spa services:', error);

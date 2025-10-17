@@ -6,9 +6,10 @@ import {
     GetAllRestaurantServicesResponse 
 } from '@/types/restaurant';
 
-const getAllRestaurantServices = async (): Promise<GetAllRestaurantServicesResponse> => {
+const getAllRestaurantServices = async (search?: string): Promise<GetAllRestaurantServicesResponse> => {
     try {
-        const response = await api.get<GetAllRestaurantServicesResponse>('/restaurant/services');
+        const params = search ? { search } : {};
+        const response = await api.get<GetAllRestaurantServicesResponse>('/restaurant/services', { params });
         return response.data;
     } catch (error) {
         console.error('Error getting restaurant services:', error);

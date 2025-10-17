@@ -16,7 +16,7 @@ export async function getAllAmenities(req: Request, res: Response, next: NextFun
     try {
         const { page = 1, pageSize = 10, ...filter } = req.query;
         const amenities = await amenityService.getAllAmenities({
-            ...filter,
+            filter,
             page: parseInt(page as string),
             pageSize: parseInt(pageSize as string)
         });

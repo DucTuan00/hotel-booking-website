@@ -24,20 +24,26 @@ export async function createAmenity(arg: CreateAmenityInput) {
 export async function getAllAmenities(args: GetAllAmenitiesInput) {
     const { filter = {}, page = 1, pageSize = 10 } = args;
 
-    const skip = (page - 1) * pageSize;
+    const buildQuery = () => {
+        let query = Amenity.find();
 
-    const amenities = await Amenity.find({ ...filter })
-        .skip(skip)
-        .limit(pageSize);
+        if (filter.search) {
+            query = query.or([
+                { name: new RegExp(filter.search, 'i') } // 'i' for case-insensitive
+            ]);
+        }
+
+        return query;
+    };
+
+    const skip = (page - 1) * pageSize;
+    const [amenities, totalAmenities] = await Promise.all([
+        buildQuery().skip(skip).limit(pageSize),
+        buildQuery().countDocuments()
+    ]);
 
     if (!amenities) {
         throw new ApiError('Amenities not found', 404);
-    }
-
-    const totalAmenities = await Amenity.countDocuments({ ...filter });
-
-    if (!totalAmenities) {
-        throw new ApiError('Failed to get total amenities', 500);
     }
 
     return {

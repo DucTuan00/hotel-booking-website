@@ -67,7 +67,7 @@ export async function getAllBookings(req: Request, res: Response, next: NextFunc
     try {
         const { page = 1, pageSize = 10, ...filter } = req.query;
         const bookings = await bookingService.getAllBookings({
-            ...filter, 
+            filter, 
             page: parseInt(page as string), 
             pageSize: parseInt(pageSize as string)
         });
