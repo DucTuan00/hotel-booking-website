@@ -49,6 +49,7 @@ const RoomForm: React.FC<RoomFormProps> = ({ visible, onCancel, onSubmit, initia
                     price: initialValues.price,
                     maxGuests: initialValues.maxGuests,
                     quantity: initialValues.quantity,
+                    roomArea: initialValues.roomArea,
                     amenities: initialValues.amenities?.map((amenity: Amenity) => amenity.id) || []
                 });
 
@@ -79,6 +80,7 @@ const RoomForm: React.FC<RoomFormProps> = ({ visible, onCancel, onSubmit, initia
         price: number;
         maxGuests: number;
         quantity: number;
+        roomArea?: number;
         amenities?: string[];
     }) => {
         try {
@@ -131,6 +133,7 @@ const RoomForm: React.FC<RoomFormProps> = ({ visible, onCancel, onSubmit, initia
                 price: values.price,
                 maxGuests: values.maxGuests,
                 quantity: values.quantity,
+                roomArea: values.roomArea,
                 amenities: values.amenities || [],
                 images: allImages.map(img => img.url)
             };
@@ -252,6 +255,25 @@ const RoomForm: React.FC<RoomFormProps> = ({ visible, onCancel, onSubmit, initia
                             ]}
                         >
                             <InputNumber min={1} max={100} style={{ width: '100%' }} />
+                        </Form.Item>
+                    </Col>
+                </Row>
+
+                <Row gutter={16}>
+                    <Col span={24}>
+                        <Form.Item
+                            label="Diện tích phòng (m²)"
+                            name="roomArea"
+                            rules={[
+                                { type: 'number', min: 1, message: 'Diện tích phải lớn hơn 0!' }
+                            ]}
+                        >
+                            <InputNumber 
+                                min={1} 
+                                max={500} 
+                                style={{ width: '100%' }} 
+                                placeholder="Nhập diện tích phòng"
+                            />
                         </Form.Item>
                     </Col>
                 </Row>

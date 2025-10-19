@@ -13,6 +13,7 @@ export interface CreateRoomInput {
     images?: string[];
     maxGuests: number;
     quantity: number;
+    roomArea?: number;
 }
 
 export interface RoomIdInput {
@@ -31,9 +32,9 @@ export interface GetAllRoomsInput {
 
 export interface GetAllRoomsResponse {
     rooms: Room[];
-    total?: number;
-    currentPage?: number;
-    pageSize?: number;
+    total: number;
+    currentPage: number;
+    pageSize: number;
 }
 
 export interface Room {
@@ -52,6 +53,7 @@ export interface Room {
     }>;
     maxGuests: number;
     quantity: number;
+    roomArea?: number;
     active: boolean;
 }
 

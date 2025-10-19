@@ -6,10 +6,13 @@ import { UserRole } from "@/types/user";
 
 const router = Router();
 
-router.post('/', authMiddleware([UserRole.ADMIN]), roomController.createRoom);
-router.get('/', roomController.getAllRooms);
+router.get('/active', roomController.getActiveRooms);
 router.get('/:id', roomController.getRoomById);
+
+router.post('/', authMiddleware([UserRole.ADMIN]), roomController.createRoom);
+router.get('/', authMiddleware([UserRole.ADMIN]), roomController.getAllRooms);
 router.put('/:id', authMiddleware([UserRole.ADMIN]), roomController.updateRoom);
+router.patch('/:id/toggle-active', authMiddleware([UserRole.ADMIN]), roomController.toggleRoomActive);
 router.delete('/:id', authMiddleware([UserRole.ADMIN]), roomController.deleteRoom);
 router.delete('/image/:imageId', authMiddleware([UserRole.ADMIN]), roomController.deleteRoomImage);
 

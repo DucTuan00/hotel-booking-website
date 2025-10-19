@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Button, Space, Image, Tag, Popconfirm } from 'antd';
+import { Button, Space, Image, Tag, Popconfirm, Switch } from 'antd';
 import { EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 import RoomForm from '@/pages/admin/Room/Form';
 import Notification from '@/components/Notification';
@@ -118,6 +118,23 @@ const RoomList: React.FC = () => {
         }
     };
 
+    const handleToggleActive = async (roomId: string, currentActive: boolean) => {
+        setLoading(true);
+        try {
+            await roomService.toggleRoomActive(roomId);
+            setMessage({ 
+                type: 'success', 
+                text: `Phòng đã được ${currentActive ? 'ẩn' : 'hiển thị'} thành công!` 
+            });
+            fetchRooms();
+        } catch (error) {
+            console.error("Error toggling room active:", error);
+            setMessage({ type: 'error', text: 'Thay đổi trạng thái phòng thất bại.' });
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const getRoomTypeColor = (type: RoomType) => {
         switch (type) {
             case RoomType.SINGLE:
@@ -190,6 +207,30 @@ const RoomList: React.FC = () => {
             align: 'center',
             width: 100,
             sorter: (a, b) => (a.quantity || 0) - (b.quantity || 0),
+        },
+        {
+            title: 'Diện tích (m²)',
+            dataIndex: 'roomArea',
+            key: 'roomArea',
+            align: 'center',
+            width: 120,
+            render: (roomArea?: number) => roomArea ? `${roomArea}m²` : '-',
+            sorter: (a, b) => (a.roomArea || 0) - (b.roomArea || 0),
+        },
+        {
+            title: 'Hiển thị',
+            dataIndex: 'active',
+            key: 'active',
+            align: 'center',
+            width: 100,
+            render: (active: boolean, room) => (
+                <Switch
+                    checked={active}
+                    onChange={() => handleToggleActive(room.id, active)}
+                    checkedChildren="Bật"
+                    unCheckedChildren="Tắt"
+                />
+            ),
         },
         {
             title: 'Hành động',

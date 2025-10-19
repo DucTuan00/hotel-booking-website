@@ -9,6 +9,8 @@ interface RoomInterface extends Document {
     maxGuests: number;
     quantity: number;
     active: boolean;
+    roomArea?: number;
+    deletedAt?: Date;
 }
 
 const roomSchema: Schema = new mongoose.Schema({
@@ -40,7 +42,15 @@ const roomSchema: Schema = new mongoose.Schema({
     },
     active: {
         type: Boolean,
-        default: true
+        default: false
+    },
+    roomArea: {
+        type: Number,
+        min: 0
+    },
+    deletedAt: {
+        type: Date,
+        default: null
     }
 }, { timestamps: true });
 

@@ -17,6 +17,16 @@ const getAllRooms = async (params: GetAllRoomsInput): Promise<GetAllRoomsRespons
     }
 };
 
+const getActiveRooms = async (params: GetAllRoomsInput): Promise<GetAllRoomsResponse> => {
+    try {
+        const response = await api.get('/room/active', { params });
+        return response.data;
+    } catch (error) {
+        console.error('Error getting active room lists:', error);
+        throw error; 
+    }
+};
+
 const getRoomById = async (roomId: string): Promise<Room> => {
     try {
         const response = await api.get(`/room/${roomId}`);
@@ -67,11 +77,23 @@ const deleteRoomImage = async (imageId: string): Promise<{ message: string }> =>
     }
 };
 
+const toggleRoomActive = async (roomId: string): Promise<{ message: string; active: boolean }> => {
+    try {
+        const response = await api.patch(`/room/${roomId}/toggle-active`);
+        return response.data;
+    } catch (error) {
+        console.error('Error toggling room active status:', error);
+        throw error;
+    }
+};
+
 export default {
     getAllRooms,
+    getActiveRooms,
     getRoomById,
     createRoom,
     updateRoom,
     deleteRoom,
     deleteRoomImage,
+    toggleRoomActive,
 };

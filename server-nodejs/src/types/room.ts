@@ -14,6 +14,8 @@ export interface RoomData {
     images: string[];
     maxGuests: number;
     quantity: number;
+    roomArea?: number;
+    active?: boolean;
 }
 
 export interface RoomResponse {
@@ -21,12 +23,27 @@ export interface RoomResponse {
     name: string;
     roomType: RoomType;
     description?: string;
-    amenities: any[];
+    amenities: Array<{
+        id: string;
+        name: string;
+    }>;
     price: number;
-    images: string[]; 
+    images: Array<{
+        id: string;
+        path: string;
+    }>;
     maxGuests: number;
     quantity: number;
+    roomArea?: number;
     active: boolean;
+    deletedAt?: Date | null;
+}
+
+export interface GetAllRoomsResponse {
+    rooms: RoomResponse[];
+    total: number;
+    currentPage: number;
+    pageSize: number;
 }
 
 export interface GetAllRoomsInput {

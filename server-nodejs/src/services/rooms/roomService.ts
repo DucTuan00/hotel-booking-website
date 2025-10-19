@@ -6,7 +6,9 @@ import { mapId, mapIds } from '@/utils/mapId';
 import mongoose from 'mongoose';
 import {
     RoomData,
+    RoomResponse,
     GetAllRoomsInput,
+    GetAllRoomsResponse,
     RoomIdInput,
     RoomType
 } from '@/types/room';
@@ -81,6 +83,15 @@ export function validateRoomData(data: RoomData) {
         throw new ApiError("Invalid room quantity.", 400);
     }
 
+    // Validate roomArea
+    if (data.roomArea !== undefined && data.roomArea !== null) {
+        const roomArea = Number(data.roomArea);
+        if (isNaN(roomArea) || roomArea <= 0) {
+            throw new ApiError("Invalid room area. Must be greater than 0.", 400);
+        }
+        data.roomArea = roomArea;
+    }
+
     // Validate images
     if (data.images && !Array.isArray(data.images)) {
         throw new ApiError("Invalid images. Images should be an array.", 400);
@@ -118,7 +129,9 @@ export async function createRoom(roomData: RoomData) {
         description: roomData.description,
         price: roomData.price,
         maxGuests: roomData.maxGuests,
-        quantity: roomData.quantity
+        quantity: roomData.quantity,
+        roomArea: roomData.roomArea,
+        active: false
     });                             
     console.log(newRoom);
 
@@ -142,11 +155,11 @@ export async function createRoom(roomData: RoomData) {
     return mapId(room);
 };
 
-export async function getAllRooms(args: GetAllRoomsInput) {
+export async function getAllRooms(args: GetAllRoomsInput): Promise<GetAllRoomsResponse> {
     const { filter = {}, page = 1, pageSize = 10 } = args;
 
     const buildQuery = () => {
-        let query: any = { active: true };
+        let query: any = { deletedAt: null }; 
 
         if (filter.search) {
             query.name = new RegExp(filter.search, 'i'); // 'i' for case-insensitive
@@ -207,14 +220,81 @@ export async function getAllRooms(args: GetAllRoomsInput) {
     };
 };
 
-export async function getRoomById(arg: RoomIdInput) {
+export async function getActiveRooms(args: GetAllRoomsInput): Promise<GetAllRoomsResponse> {
+    const { filter = {}, page = 1, pageSize = 10 } = args;
+
+    const buildQuery = () => {
+        let query: any = { 
+            deletedAt: null, 
+            active: true 
+        };
+
+        if (filter.search) {
+            query.name = new RegExp(filter.search, 'i');
+        }
+
+        return query;
+    };
+
+    const queryConditions = buildQuery();
+    const skip = (page - 1) * pageSize;
+
+    const [rooms, totalRooms] = await Promise.all([
+        Room.find(queryConditions).skip(skip).limit(pageSize),
+        Room.countDocuments(queryConditions)
+    ]);
+        
+    if (!rooms) {
+        throw new ApiError('Failed to get active rooms', 500);
+    }
+
+    // Get images and amenities for each room
+    const roomsWithImagesAndAmenities = await Promise.all(
+        rooms.map(async (room) => {
+            
+            const roomImages = await RoomImage.find({
+                roomId: (room as any)._id,
+                deletedAt: null
+            }).select('_id imagePath').sort({ createdAt: 1 });
+            
+            const roomAmenities = await RoomAmenity.find({
+                roomId: (room as any)._id
+            }).populate({
+                path: 'amenityId',
+                select: 'name'
+            });
+            
+            const roomData = mapId(room);
+            return {
+                ...roomData,
+                images: roomImages.map(img => ({
+                    id: (img as any)._id.toString(),
+                    path: img.imagePath
+                })),
+                amenities: roomAmenities.map(ra => ({
+                    id: (ra as any).amenityId._id.toString(),
+                    name: (ra as any).amenityId.name,
+                }))
+            };
+        })
+    );
+
+    return {
+        rooms: roomsWithImagesAndAmenities,
+        total: totalRooms,
+        currentPage: page,
+        pageSize: pageSize
+    };
+};
+
+export async function getRoomById(arg: RoomIdInput): Promise<RoomResponse> {
     const { id } = arg;
 
     if (!id) {
         throw new ApiError("Invalid room id.", 400);
     }
 
-    const room = await Room.findOne({ _id: id, active: true });
+    const room = await Room.findOne({ _id: id, deletedAt: null, active: true });
         
     if (!room) {
         throw new ApiError("Room not found.", 404);
@@ -231,7 +311,7 @@ export async function getRoomById(arg: RoomIdInput) {
         roomId: (room as any)._id
     }).populate({
         path: 'amenityId',
-        select: 'name description'
+        select: 'name'
     });
     
     const roomData = mapId(room);
@@ -244,7 +324,6 @@ export async function getRoomById(arg: RoomIdInput) {
         amenities: roomAmenities.map(ra => ({
             id: (ra as any).amenityId._id.toString(),
             name: (ra as any).amenityId.name,
-            description: (ra as any).amenityId.description
         }))
     };
 };
@@ -268,14 +347,15 @@ export async function updateRoom(roomData: RoomData) {
 
     // Update room data
     const updatedRoom = await Room.findOneAndUpdate(
-        { _id: roomData.id, active: true },
+        { _id: roomData.id, deletedAt: null },
         {
             name: roomData.name,
             roomType: roomData.roomType,
             description: roomData.description,
             price: roomData.price,
             maxGuests: roomData.maxGuests,
-            quantity: roomData.quantity
+            quantity: roomData.quantity,
+            roomArea: roomData.roomArea
         },
         { new: true }
     );
@@ -315,8 +395,8 @@ export async function deleteRoom(arg: RoomIdInput) {
     }
 
     const room = await Room.findOneAndUpdate(
-        { _id: id, active: true },
-        { active: false }, // Change active to false
+        { _id: id, deletedAt: null },
+        { deletedAt: new Date() },
         { new: true }
     );
     if (!room) {
@@ -334,6 +414,34 @@ export async function deleteRoom(arg: RoomIdInput) {
     
     return {
         message: 'Deleted room successfully'
+    };
+};
+
+export async function toggleRoomActive(arg: RoomIdInput) {
+    const { id } = arg;
+
+    if (!id) {
+        throw new ApiError("Invalid room id.", 400);
+    }
+
+    const room = await Room.findOne({ _id: id, deletedAt: null });
+    if (!room) {
+        throw new ApiError('Room not found.', 404);
+    }
+
+    const updatedRoom = await Room.findOneAndUpdate(
+        { _id: id, deletedAt: null },
+        { active: !room.active },
+        { new: true }
+    );
+
+    if (!updatedRoom) {
+        throw new ApiError('Failed to toggle room active status.', 500);
+    }
+
+    return {
+        ...mapId(updatedRoom),
+        message: `Room ${updatedRoom.active ? 'activated' : 'deactivated'} successfully`
     };
 };
 
