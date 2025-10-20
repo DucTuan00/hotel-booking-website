@@ -24,7 +24,6 @@ import { Booking as ApiBooking, BookingStatus } from '@/types/booking';
 const { Title } = Typography;
 
 // Type definitions
-// (No need for DashboardUser, DashboardRoom, DashboardBooking)
 interface RevenueChartData {
   name: string;
   revenue: number;
@@ -34,12 +33,18 @@ interface StatusChartData {
   value: number;
 }
 
-// Helper to get name from id or populated object
-function getName(val: string | { name?: string } | null | undefined): string {
-  if (val && typeof val === 'object' && 'name' in val) {
-    return val.name ?? '';
-  }
-  return '';
+// Helper to get user display name from userId field
+function getUserName(userId: ApiBooking['userId']): string {
+  if (!userId) return 'N/A';
+  if (typeof userId === 'string') return userId;
+  return userId.name || userId.email || 'N/A';
+}
+
+// Helper to get room display name from roomId field
+function getRoomName(roomId: ApiBooking['roomId']): string {
+  if (!roomId) return 'N/A';
+  if (typeof roomId === 'string') return roomId;
+  return roomId.name || 'N/A';
 }
 
 const DashboardPage: React.FC = () => {
@@ -72,26 +77,42 @@ const DashboardPage: React.FC = () => {
       // Get 5 first booking data (simple slice)
       setRecentBookings(bookingsData.bookings.slice(0, 5));
 
-      // Calculate revenue from confirmed bookings
-      const confirmedBookings: ApiBooking[] = bookingsData.bookings.filter(
-        (booking: ApiBooking) => booking.status === BookingStatus.COMPLETED
+      // Calculate revenue from checked-out bookings (CHECKED_OUT status = completed bookings)
+      const completedBookings: ApiBooking[] = bookingsData.bookings.filter(
+        (booking: ApiBooking) => booking.status === BookingStatus.CHECKED_OUT
       );
-      const totalRevenue = confirmedBookings.reduce(
+      const totalRevenue = completedBookings.reduce(
         (sum, booking) => sum + booking.totalPrice,
         0
       );
       setActualRevenue(totalRevenue);
 
-      // Create data for revenue chart
-      const revenueByMonth: { [key: string]: number } = {};
-      confirmedBookings.forEach((booking) => {
-        const month = new Date(booking.checkIn).toLocaleString('default', { month: 'short' });
-        revenueByMonth[month] = (revenueByMonth[month] || 0) + booking.totalPrice;
+      // Create data for revenue chart (group by month from checkOut date)
+      const revenueByMonth: { [key: string]: { revenue: number; date: Date } } = {};
+      completedBookings.forEach((booking) => {
+        const checkOutDate = new Date(booking.checkOut);
+        const monthKey = checkOutDate.toLocaleString('vi-VN', { month: 'short', year: 'numeric' });
+        
+        if (!revenueByMonth[monthKey]) {
+          // Store first day of month for sorting
+          revenueByMonth[monthKey] = {
+            revenue: 0,
+            date: new Date(checkOutDate.getFullYear(), checkOutDate.getMonth(), 1)
+          };
+        }
+        revenueByMonth[monthKey].revenue += booking.totalPrice;
       });
-      const revenueChartData: RevenueChartData[] = Object.entries(revenueByMonth).map(([name, revenue]) => ({
-        name,
-        revenue: Number(revenue),
-      }));
+      
+      // Convert to array and sort by date (oldest to newest)
+      const revenueChartData: RevenueChartData[] = Object.entries(revenueByMonth)
+        .map(([name, data]) => ({
+          name,
+          revenue: Number(data.revenue),
+          sortDate: data.date
+        }))
+        .sort((a, b) => a.sortDate.getTime() - b.sortDate.getTime())
+        .map(({ name, revenue }) => ({ name, revenue }));
+      
       setRevenueData(revenueChartData);
 
       // Create data for status chart
@@ -153,30 +174,47 @@ const DashboardPage: React.FC = () => {
       title: 'Khách hàng',
       dataIndex: 'userId',
       key: 'userId',
-      render: (userId: string | { name?: string }) => getName(userId),
+      render: (_: unknown, record: ApiBooking) => getUserName(record.userId),
     },
     {
       title: 'Phòng',
       dataIndex: 'roomId',
       key: 'roomId',
-      render: (roomId: string | { name?: string }) => getName(roomId),
+      render: (_: unknown, record: ApiBooking) => getRoomName(record.roomId),
     },
     {
-      title: 'Ngày đặt',
+      title: 'Check-in',
       dataIndex: 'checkIn',
       key: 'checkIn',
       render: (checkIn: string) => new Date(checkIn).toLocaleDateString('vi-VN'),
+    },
+    {
+      title: 'Check-out',
+      dataIndex: 'checkOut',
+      key: 'checkOut',
+      render: (checkOut: string) => new Date(checkOut).toLocaleDateString('vi-VN'),
+    },
+    {
+      title: 'Số lượng',
+      dataIndex: 'quantity',
+      key: 'quantity',
+      render: (quantity: number) => `${quantity} phòng`,
     },
     {
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
       render: (status: BookingStatus) => {
-        const color = status === BookingStatus.COMPLETED ? 'green' : 
-                     status === BookingStatus.CONFIRMED ? 'blue' : 
-                     status === BookingStatus.REJECTED ? 'gray' : 
-                     status === BookingStatus.PENDING ? 'orange' : 'red';
-        return <Tag color={color}>{status}</Tag>;
+        const statusConfig: Record<BookingStatus, { color: string; text: string }> = {
+          [BookingStatus.PENDING]: { color: 'orange', text: 'Chờ xác nhận' },
+          [BookingStatus.CONFIRMED]: { color: 'blue', text: 'Đã xác nhận' },
+          [BookingStatus.CHECKED_IN]: { color: 'cyan', text: 'Đã nhận phòng' },
+          [BookingStatus.CHECKED_OUT]: { color: 'green', text: 'Hoàn thành' },
+          [BookingStatus.CANCELLED]: { color: 'red', text: 'Đã hủy' },
+          [BookingStatus.REJECTED]: { color: 'volcano', text: 'Bị từ chối' },
+        };
+        const config = statusConfig[status] || { color: 'default', text: status };
+        return <Tag color={config.color}>{config.text}</Tag>;
       },
     },
     {

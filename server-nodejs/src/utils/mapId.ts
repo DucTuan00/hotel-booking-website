@@ -1,3 +1,5 @@
+import mongoose from 'mongoose';
+
 export function mapId<T extends { _id?: any }>(doc: T): Omit<T, '_id'> & { id: string } {
     if (!doc) return doc as any;
     
@@ -9,13 +11,24 @@ export function mapId<T extends { _id?: any }>(doc: T): Omit<T, '_id'> & { id: s
         delete obj._id;
     }
     
-    // Map nested _id for populate fields and arrays
+    // Convert all ObjectId fields to strings
     for (const key in obj) {
         const value = obj[key];
-        if (value && typeof value === 'object') {
+        
+        // Handle ObjectId directly
+        if (value && mongoose.Types.ObjectId.isValid(value) && typeof value === 'object' && value.constructor.name === 'ObjectId') {
+            obj[key] = value.toString();
+        }
+        // Handle objects
+        else if (value && typeof value === 'object') {
             // Handle array of objects
             if (Array.isArray(value)) {
                 obj[key] = value.map(item => {
+                    // Convert ObjectId in array
+                    if (item && mongoose.Types.ObjectId.isValid(item) && typeof item === 'object' && item.constructor.name === 'ObjectId') {
+                        return item.toString();
+                    }
+                    // Handle nested object with _id
                     if (item && typeof item === 'object' && '_id' in item) {
                         const mappedItem = { ...item };
                         mappedItem.id = mappedItem._id?.toString?.() || mappedItem._id;
@@ -25,7 +38,7 @@ export function mapId<T extends { _id?: any }>(doc: T): Omit<T, '_id'> & { id: s
                     return item;
                 });
             } 
-            // Handle single nested object
+            // Handle single nested object with _id
             else if ('_id' in value) {
                 obj[key] = { ...value };
                 obj[key].id = obj[key]._id?.toString?.() || obj[key]._id;

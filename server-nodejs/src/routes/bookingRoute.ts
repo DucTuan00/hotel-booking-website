@@ -5,6 +5,7 @@ import { UserRole } from "@/types/user";
 
 const router = Router();
 
+router.get('/preview-price', bookingController.previewBookingPrice);
 router.post('/', authMiddleware([UserRole.USER, UserRole.ADMIN]), bookingController.createBooking);
 router.get('/user', authMiddleware([UserRole.USER]), bookingController.getBookingsByUserId);
 router.get('/:id', authMiddleware([UserRole.USER, UserRole.ADMIN]), bookingController.getBookingById);

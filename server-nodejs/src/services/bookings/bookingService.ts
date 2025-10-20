@@ -1,6 +1,8 @@
 import Booking from '@/models/Booking';
+import BookingItem from '@/models/BookingItem';
 import User from '@/models/User';
 import Room from '@/models/Room';
+import CelebrateItem from '@/models/CelebrateItem';
 import ApiError from '@/utils/apiError';
 import { mapId, mapIds } from '@/utils/mapId';
 import mongoose from 'mongoose';
@@ -10,129 +12,258 @@ import {
     UserIdInput,
     GetAllBookingsInput,
     UpdateBookingInput,
-    BookingStatus
+    BookingStatus,
+    PaymentMethod,
+    PaymentStatus
 } from '@/types/booking';
+import {
+    normalizeDate,
+    checkAvailability,
+    calculateBookingPrice,
+    updateInventory,
+    calculateCancellationFee,
+    createBookingSnapshot
+} from '@/utils/bookingHelpers';
 
+/**
+ * Create a new booking with dynamic pricing, inventory management, and celebrate items
+ */
 export async function createBooking(args: CreateBookingInput) {
-    const { userId, roomId, checkIn, checkOut, guests, quantity } = args;
+    const { 
+        userId, 
+        roomId, 
+        checkIn, 
+        checkOut, 
+        guests, 
+        quantity,
+        firstName,
+        lastName,
+        email,
+        phoneNumber,
+        paymentMethod,
+        celebrateItems = []
+    } = args;
 
-    const existUser = await User.findById({ _id: userId, active: true });
-    if (!existUser) {
-        throw new ApiError('User not found', 404);
+    // 1. Validate user
+    const existUser = await User.findById(userId);
+    if (!existUser || !existUser.active) {
+        throw new ApiError('User not found or inactive', 404);
     }
 
-    const existRoom = await Room.findById({ _id: roomId, active: true });
-    if (!existRoom) {
-        throw new ApiError('Room not found', 404);
+    // 2. Validate room
+    const existRoom = await Room.findById(roomId);
+    if (!existRoom || !existRoom.active || existRoom.deletedAt) {
+        throw new ApiError('Room not found or inactive', 404);
     }
 
-    // if (!existRoom.availability.is_available) {
-    //     throw new ApiError('Room not available', 400);
-    // }
-
+    // 3. Validate dates
     if (!checkIn || isNaN(new Date(checkIn).getTime())) {
-        throw new ApiError('Invalid chech in date', 400);
+        throw new ApiError('Invalid check-in date', 400);
     }
 
     if (!checkOut || isNaN(new Date(checkOut).getTime())) {
-        throw new ApiError('Invalid chech out date', 400);
+        throw new ApiError('Invalid check-out date', 400);
     }
 
-    if (isNaN(guests.adults) || isNaN(Number(guests.children)) || guests.adults <= 0 || (guests.children !== undefined && guests.children < 0)) {
-        throw new ApiError("Invalid guests.", 400);
-    }
+    const checkInDate = normalizeDate(new Date(checkIn));
+    const checkOutDate = normalizeDate(new Date(checkOut));
+    const today = normalizeDate(new Date());
 
-    if (isNaN(quantity) || quantity <= 0) {
-        throw new ApiError("Invalid quantity", 400);
-    }
-
-    const checkInDate = new Date(checkIn);
-    const checkOutDate = new Date(checkOut);
-    const currentDate = new Date(Date.UTC(
-        new Date().getUTCFullYear(),
-        new Date().getUTCMonth(),
-        new Date().getUTCDate()
-    ));
-
-    if (checkInDate < currentDate) {
-        throw new ApiError('Check in date is in the past', 400);
+    if (checkInDate < today) {
+        throw new ApiError('Check-in date cannot be in the past', 400);
     }
 
     if (checkInDate >= checkOutDate) {
-        throw new ApiError('Check in date must not greater or equal than check out date', 400);
+        throw new ApiError('Check-out date must be after check-in date', 400);
     }
 
-    // Check empty rooms per day
-    const existingBookings = await Booking.find({ roomId: existRoom.id });
-    const bookingDays: Date[] = [];
-    for (let d = new Date(checkInDate); d <= checkOutDate; d.setDate(d.getDate() + 1)) {
-        bookingDays.push(new Date(d)); // push day to array
+    // 4. Validate guests
+    const totalGuests = guests.adults + (guests.children || 0);
+    const maxAllowedGuests = existRoom.maxGuests * quantity;
+
+    if (guests.adults <= 0 || (guests.children !== undefined && guests.children < 0)) {
+        throw new ApiError('Invalid number of guests', 400);
     }
 
-    for (const day of bookingDays) {
-        let bookedQuantityForDay = 0;
-        for (const booking of existingBookings) {
-            const existingCheckIn = new Date(booking.checkIn);
-            const existingCheckOut = new Date(booking.checkOut);
-            // If day in range of existed booking day => plus quantity for that day
-            if (day >= existingCheckIn && day < existingCheckOut) {
-                bookedQuantityForDay += booking.quantity;
+    if (totalGuests > maxAllowedGuests) {
+        throw new ApiError(
+            `Total guests (${totalGuests}) exceeds maximum capacity (${maxAllowedGuests}) for ${quantity} room(s)`,
+            400
+        );
+    }
+
+    // 5. Validate quantity
+    if (isNaN(quantity) || quantity <= 0) {
+        throw new ApiError('Invalid room quantity', 400);
+    }
+
+    // 6. Validate contact info
+    if (!firstName || !lastName || !email || !phoneNumber) {
+        throw new ApiError('Contact information is required', 400);
+    }
+
+    // 7. Check availability
+    const availabilityCheck = await checkAvailability(roomId, checkInDate, checkOutDate, quantity);
+    if (!availabilityCheck.available) {
+        throw new ApiError(availabilityCheck.message || 'Room not available for selected dates', 400);
+    }
+
+    // 8. Calculate pricing with celebrate items
+    const pricing = await calculateBookingPrice(
+        roomId,
+        checkInDate,
+        checkOutDate,
+        quantity,
+        celebrateItems
+    );
+
+    // 9. Validate celebrate items if provided
+    const celebrateItemsData: Array<{ item: any; quantity: number; price: number }> = [];
+    if (celebrateItems && celebrateItems.length > 0) {
+        for (const celebrateItemInput of celebrateItems) {
+            const celebrateItem = await CelebrateItem.findById(celebrateItemInput.celebrateItemId);
+            if (!celebrateItem) {
+                throw new ApiError(`Celebrate item ${celebrateItemInput.celebrateItemId} not found`, 404);
             }
-        }
-        console.log(`So luong phong da dat cho ngay ${day}: ${bookedQuantityForDay}`);
-
-        if (bookedQuantityForDay + quantity > existRoom.quantity) {
-            throw new ApiError(`Not enough rooms available for the day ${day} and quantity.`, 400);
+            if (celebrateItemInput.quantity <= 0) {
+                throw new ApiError(`Invalid quantity for celebrate item ${celebrateItem.name}`, 400);
+            }
+            celebrateItemsData.push({
+                item: celebrateItem,
+                quantity: celebrateItemInput.quantity,
+                price: celebrateItem.price
+            });
         }
     }
 
-    const bookingDay = Math.floor((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
-    const totalPrice = existRoom.price * bookingDay * quantity;
+    // 10. Create booking snapshot
+    const snapshot = await createBookingSnapshot(
+        existRoom,
+        pricing.dailyRates,
+        pricing.celebrateItemsDetails,
+        {
+            roomSubtotal: pricing.roomSubtotal,
+            celebrateItemsSubtotal: pricing.celebrateItemsSubtotal,
+            totalPrice: pricing.totalPrice
+        }
+    );
 
-    const newBooking = new Booking({
-        userId: existUser.id,
-        roomId: existRoom.id,
-        checkIn: checkInDate,
-        checkOut: checkOutDate,
-        guests: guests,
-        quantity: quantity,
-        totalPrice: totalPrice,
-        status: BookingStatus.PENDING
-    });
+    // 11. Determine booking status and payment status
+    let bookingStatus = BookingStatus.PENDING;
+    let paymentStatus = PaymentStatus.UNPAID;
 
-    const booking = await newBooking.save();
+    // 12. Start MongoDB transaction
+    const session = await mongoose.startSession();
+    session.startTransaction();
 
-    if (!booking) {
-        throw new ApiError('Failed to create booking', 500);
+    try {
+        // Create booking
+        const newBooking = new Booking({
+            userId: existUser._id,
+            roomId: existRoom._id,
+            checkIn: checkInDate,
+            checkOut: checkOutDate,
+            guests: guests,
+            quantity: quantity,
+            totalPrice: pricing.totalPrice,
+            status: bookingStatus,
+            firstName,
+            lastName,
+            email,
+            phoneNumber,
+            paymentMethod,
+            paymentStatus,
+            snapshot
+        });
+
+        const savedBooking = await newBooking.save({ session });
+
+        // Create booking items for celebrate items
+        if (celebrateItemsData.length > 0) {
+            const bookingItemsToCreate = celebrateItemsData.map(celebrateData => ({
+                bookingId: savedBooking._id,
+                celebrateItemId: celebrateData.item._id,
+                quantity: celebrateData.quantity,
+                priceSnapshot: celebrateData.price
+            }));
+
+            await BookingItem.insertMany(bookingItemsToCreate, { session });
+        }
+
+        // Decrease inventory (lock rooms immediately when booking is PENDING)
+        await updateInventory(
+            roomId,
+            checkInDate,
+            checkOutDate,
+            quantity,
+            'decrease',
+            session
+        );
+
+        // Commit transaction
+        await session.commitTransaction();
+
+        return mapId(savedBooking);
+    } catch (error: any) {
+        // Rollback transaction on error
+        await session.abortTransaction();
+        throw new ApiError(error.message || 'Failed to create booking', error.statusCode || 500);
+    } finally {
+        session.endSession();
     }
+}
 
-    return mapId(booking);
-};
-
+/**
+ * Get booking by ID with populated data
+ */
 export async function getBookingById(arg: BookingIdInput) {
     const { bookingId } = arg;
 
-    const booking = await Booking.findById(bookingId);
+    const booking = await Booking.findById(bookingId)
+        .populate({ path: 'userId', select: 'name email' })
+        .populate({ path: 'roomId', select: 'name roomType price' });
 
     if (!booking) {
         throw new ApiError('Booking not found', 404);
-
     }
-    return mapId(booking);
-};
 
+    // Get celebrate items if any
+    const bookingItems = await BookingItem.find({ bookingId: booking._id })
+        .populate({ path: 'celebrateItemId', select: 'name description imagePath' });
+
+    const bookingData = mapId(booking);
+
+    return {
+        ...bookingData,
+        celebrateItems: bookingItems.map(item => ({
+            id: (item._id as mongoose.Types.ObjectId).toString(),
+            celebrateItem: mapId(item.celebrateItemId),
+            quantity: item.quantity,
+            priceSnapshot: item.priceSnapshot
+        }))
+    };
+}
+
+/**
+ * Get all bookings for a specific user
+ */
 export async function getBookingsByUserId(arg: UserIdInput) {
     const { userId } = arg;
 
-    const bookings = await Booking.find({ userId: userId });
+    const bookings = await Booking.find({ userId: userId })
+        .populate({ path: 'roomId', select: 'name roomType price' })
+        .sort({ createdAt: -1 });
 
     if (!bookings) {
-        throw new ApiError('Booking not found', 404);
+        throw new ApiError('No bookings found', 404);
     }
 
     return mapIds(bookings);
-};
+}
 
+/**
+ * Cancel booking by user with cancellation policy
+ */
 export async function cancelBooking(arg: BookingIdInput) {
     const { bookingId } = arg;
 
@@ -141,43 +272,81 @@ export async function cancelBooking(arg: BookingIdInput) {
         throw new ApiError('Booking not found', 404);
     }
 
+    // Check if already cancelled
     if (booking.status === BookingStatus.CANCELLED) {
-        throw new ApiError('Booking already cancelled', 400);
+        throw new ApiError('Booking is already cancelled', 400);
     }
 
-    if (booking.status === BookingStatus.CONFIRMED) {
-        throw new ApiError('Booking already confirmed', 400);
+    // Check if already rejected
+    if (booking.status === BookingStatus.REJECTED) {
+        throw new ApiError('Rejected bookings cannot be cancelled', 400);
     }
 
-    const checkInDate = new Date(booking.checkIn);
-    const currentDate = new Date(Date.UTC(
-        new Date().getUTCFullYear(),
-        new Date().getUTCMonth(),
-        new Date().getUTCDate()
-    ));
+    // Calculate cancellation fee
+    const cancellationInfo = calculateCancellationFee(booking);
 
-    if (currentDate > checkInDate) {
-        throw new ApiError('Booking can not be cancelled after check-in date', 400);
+    if (!cancellationInfo.canCancel) {
+        throw new ApiError(cancellationInfo.reason || 'Cannot cancel this booking', 400);
     }
 
-    const oneDay = 24 * 60 * 60 * 1000;
-    if (checkInDate.getTime() - currentDate.getTime() < oneDay) {
-        throw new ApiError('Booking can not be cancelled within 24 hours of check-in', 400);
+    // Start transaction
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+        // Update booking status
+        booking.status = BookingStatus.CANCELLED;
+        booking.cancelledAt = new Date();
+        booking.cancellationReason = `Cancelled by user. Fee: ${cancellationInfo.feePercentage}% (${cancellationInfo.fee} VND). Refund: ${cancellationInfo.refundAmount} VND.`;
+
+        await booking.save({ session });
+
+        // Restore inventory if applicable
+        if (cancellationInfo.restoreInventory) {
+            await updateInventory(
+                booking.roomId.toString(),
+                booking.checkIn,
+                booking.checkOut,
+                booking.quantity,
+                'increase',
+                session
+            );
+        }
+
+        // If payment was made, process refund
+        if (booking.paymentStatus === PaymentStatus.PAID) {
+            // In real implementation, trigger refund via payment gateway
+            // For now, just update status
+            if (cancellationInfo.refundAmount > 0) {
+                booking.paymentStatus = PaymentStatus.REFUNDED;
+                booking.refundedAt = new Date();
+            }
+        }
+
+        await booking.save({ session });
+
+        await session.commitTransaction();
+
+        return {
+            ...mapId(booking),
+            cancellationInfo: {
+                fee: cancellationInfo.fee,
+                feePercentage: cancellationInfo.feePercentage,
+                refundAmount: cancellationInfo.refundAmount,
+                inventoryRestored: cancellationInfo.restoreInventory
+            }
+        };
+    } catch (error: any) {
+        await session.abortTransaction();
+        throw new ApiError(error.message || 'Failed to cancel booking', error.statusCode || 500);
+    } finally {
+        session.endSession();
     }
+}
 
-    const cancelBooking = await Booking.findByIdAndUpdate(
-        { _id: bookingId },
-        { status: BookingStatus.CANCELLED },
-        { new: true, runValidators: true } // new:true to return updated doc, runValidators to validate status enum
-    );
-
-    if (!cancelBooking) {
-        throw new ApiError('Failed to cancel booking', 500);
-    }
-
-    return mapId(cancelBooking);
-};
-
+/**
+ * Get all bookings (admin)
+ */
 export async function getAllBookings(args: GetAllBookingsInput) {
     const { filter = {}, page = 1, pageSize = 10 } = args;
 
@@ -200,8 +369,9 @@ export async function getAllBookings(args: GetAllBookingsInput) {
 
     const [bookings, totalBookings] = await Promise.all([
         Booking.find(queryConditions)
-            .populate({ path: 'userId', select: 'name' })
-            .populate({ path: 'roomId', select: 'name' })
+            .populate({ path: 'userId', select: 'name email' })
+            .populate({ path: 'roomId', select: 'name roomType price' })
+            .sort({ createdAt: -1 })
             .skip(skip)
             .limit(pageSize),
         Booking.countDocuments(queryConditions)
@@ -217,25 +387,169 @@ export async function getAllBookings(args: GetAllBookingsInput) {
         currentPage: page,
         pageSize: pageSize
     };
-};
+}
 
+/**
+ * Update booking status (admin)
+ */
 export async function updateBooking(args: UpdateBookingInput) {
     const { bookingId, status } = args;
 
     if (!status || !Object.values(BookingStatus).includes(status)) {
-        throw new ApiError('Invalid booking status provided.', 400);
+        throw new ApiError('Invalid booking status provided', 400);
     }
 
-    const updatedBooking = await Booking.findByIdAndUpdate(
-        bookingId,
-        { status: status },
-        { new: true, runValidators: true }
-    ).populate({ path: 'userId', select: 'name email' })
-     .populate({ path: 'roomId', select: 'name price' });
-
-    if (!updatedBooking) {
-        throw new ApiError('Booking not found for update', 404);
+    const booking = await Booking.findById(bookingId);
+    if (!booking) {
+        throw new ApiError('Booking not found', 404);
     }
 
-    return mapId(updatedBooking);
-};
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+        const oldStatus = booking.status;
+
+        // Update status
+        booking.status = status;
+
+        // Set timestamps based on status
+        if (status === BookingStatus.CONFIRMED && !booking.confirmedAt) {
+            booking.confirmedAt = new Date();
+        } else if (status === BookingStatus.REJECTED && !booking.rejectedAt) {
+            booking.rejectedAt = new Date();
+            
+            // Restore inventory when rejected
+            await updateInventory(
+                booking.roomId.toString(),
+                booking.checkIn,
+                booking.checkOut,
+                booking.quantity,
+                'increase',
+                session
+            );
+        } else if (status === BookingStatus.CHECKED_IN) {
+            // Validate can check in (must be confirmed first)
+            if (oldStatus !== BookingStatus.CONFIRMED) {
+                throw new ApiError('Can only check in confirmed bookings', 400);
+            }
+            // Check if payment is completed for ONSITE payment
+            if (booking.paymentMethod === PaymentMethod.ONSITE && booking.paymentStatus !== PaymentStatus.PAID) {
+                throw new ApiError('Payment must be completed before check-in for onsite payment', 400);
+            }
+        } else if (status === BookingStatus.CHECKED_OUT) {
+            // Validate can check out (must be checked in first)
+            if (oldStatus !== BookingStatus.CHECKED_IN) {
+                throw new ApiError('Can only check out checked-in bookings', 400);
+            }
+        }
+
+        await booking.save({ session });
+
+        await session.commitTransaction();
+
+        const updatedBooking = await Booking.findById(bookingId)
+            .populate({ path: 'userId', select: 'name email' })
+            .populate({ path: 'roomId', select: 'name roomType price' });
+
+        if (!updatedBooking) {
+            throw new ApiError('Booking not found after update', 404);
+        }
+
+        return mapId(updatedBooking);
+    } catch (error: any) {
+        await session.abortTransaction();
+        throw new ApiError(error.message || 'Failed to update booking', error.statusCode || 500);
+    } finally {
+        session.endSession();
+    }
+}
+
+/**
+ * Update payment status (for payment gateway callback)
+ */
+export async function updatePaymentStatus(
+    bookingId: string,
+    paymentStatus: PaymentStatus,
+    paymentIntentId?: string
+): Promise<any> {
+    const booking = await Booking.findById(bookingId);
+    if (!booking) {
+        throw new ApiError('Booking not found', 404);
+    }
+
+    booking.paymentStatus = paymentStatus;
+    
+    if (paymentStatus === PaymentStatus.PAID) {
+        booking.paidAt = new Date();
+        if (paymentIntentId) {
+            booking.paymentIntentId = paymentIntentId;
+        }
+        
+        // Auto-confirm if payment is ONLINE and paid
+        if (booking.paymentMethod === PaymentMethod.ONLINE && booking.status === BookingStatus.PENDING) {
+            booking.status = BookingStatus.CONFIRMED;
+            booking.confirmedAt = new Date();
+        }
+    }
+
+    await booking.save();
+
+    return mapId(booking);
+}
+
+/**
+ * Preview booking price without creating booking (for frontend)
+ */
+export async function previewBookingPrice(args: {
+    roomId: string;
+    checkIn: string;
+    checkOut: string;
+    quantity: number;
+    celebrateItems?: Array<{ celebrateItemId: string; quantity: number }>;
+}): Promise<any> {
+    const { roomId, checkIn, checkOut, quantity, celebrateItems = [] } = args;
+
+    // Validate dates
+    if (!checkIn || isNaN(new Date(checkIn).getTime())) {
+        throw new ApiError('Invalid check-in date', 400);
+    }
+
+    if (!checkOut || isNaN(new Date(checkOut).getTime())) {
+        throw new ApiError('Invalid check-out date', 400);
+    }
+
+    const checkInDate = normalizeDate(new Date(checkIn));
+    const checkOutDate = normalizeDate(new Date(checkOut));
+
+    if (checkInDate >= checkOutDate) {
+        throw new ApiError('Check-out date must be after check-in date', 400);
+    }
+
+    // Check availability
+    const availabilityCheck = await checkAvailability(roomId, checkInDate, checkOutDate, quantity);
+    if (!availabilityCheck.available) {
+        throw new ApiError(availabilityCheck.message || 'Room not available for selected dates', 400);
+    }
+
+    // Calculate pricing
+    const pricing = await calculateBookingPrice(
+        roomId,
+        checkInDate,
+        checkOutDate,
+        quantity,
+        celebrateItems
+    );
+
+    return {
+        available: true,
+        roomSubtotal: pricing.roomSubtotal,
+        celebrateItemsSubtotal: pricing.celebrateItemsSubtotal,
+        totalPrice: pricing.totalPrice,
+        dailyBreakdown: pricing.dailyRates.map(rate => ({
+            date: rate.date.toISOString().split('T')[0],
+            price: rate.price
+        })),
+        celebrateItemsDetails: pricing.celebrateItemsDetails
+    };
+}

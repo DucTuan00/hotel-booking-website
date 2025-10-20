@@ -2,10 +2,9 @@ import mongoose, { Schema, Document, Types } from 'mongoose';
 
 interface BookingItemInterface extends Document {
     bookingId: Types.ObjectId;
-    name: string;
-    description?: string;
-    price: number;
-    imagePath?: string;
+    celebrateItemId: Types.ObjectId;
+    quantity: number;
+    priceSnapshot: number;
 }
 
 const bookingItemSchema: Schema = new mongoose.Schema({
@@ -14,19 +13,20 @@ const bookingItemSchema: Schema = new mongoose.Schema({
         ref: 'Booking',
         required: true
     },
-    name: {
-        type: String,
+    celebrateItemId: {
+        type: mongoose.Types.ObjectId,
+        ref: 'CelebrateItem',
         required: true
     },
-    description: {
-        type: String
+    quantity: {
+        type: Number,
+        required: true,
+        min: 1,
+        default: 1
     },
-    price: {
+    priceSnapshot: {
         type: Number,
         required: true
-    },
-    imagePath: {
-        type: String
     }
 }, { 
     timestamps: true,

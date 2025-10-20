@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Tag, Button, Space } from 'antd';
-import { EditOutlined } from '@ant-design/icons';
+import { Tag, Button, Space, Tooltip } from 'antd';
+import { EditOutlined, EyeOutlined } from '@ant-design/icons';
 import BookingForm from '@/pages/admin/Booking/Form';
 import Notification from '@/components/Notification';
 import AdminTable from '@/components/AdminTable';
 import SearchTableAdmin, { SearchFilters } from '@/components/SearchTableAdmin';
 import bookingService from '@/services/bookings/bookingService';
 import moment from 'moment';
-import { Booking, BookingStatus } from '@/types/booking';
+import { Booking, BookingStatus, PaymentStatus, PaymentMethod } from '@/types/booking';
 import type { TableColumnsType } from 'antd';
 import { Message } from '@/types/message';
 
@@ -114,8 +114,10 @@ const BookingList: React.FC = () => {
                 return 'error';
             case BookingStatus.CANCELLED:
                 return 'default';
-            case BookingStatus.COMPLETED:
+            case BookingStatus.CHECKED_IN:
                 return 'processing';
+            case BookingStatus.CHECKED_OUT:
+                return 'blue';
             default:
                 return 'default';
         }
@@ -131,10 +133,49 @@ const BookingList: React.FC = () => {
                 return 'Đã từ chối';
             case BookingStatus.CANCELLED:
                 return 'Đã hủy';
-            case BookingStatus.COMPLETED:
-                return 'Hoàn thành';
+            case BookingStatus.CHECKED_IN:
+                return 'Đã check-in';
+            case BookingStatus.CHECKED_OUT:
+                return 'Đã check-out';
             default:
                 return status;
+        }
+    };
+
+    const getPaymentStatusColor = (status: PaymentStatus) => {
+        switch (status) {
+            case PaymentStatus.PAID:
+                return 'success';
+            case PaymentStatus.UNPAID:
+                return 'warning';
+            case PaymentStatus.REFUNDED:
+                return 'default';
+            default:
+                return 'default';
+        }
+    };
+
+    const getPaymentStatusText = (status: PaymentStatus) => {
+        switch (status) {
+            case PaymentStatus.PAID:
+                return 'Đã thanh toán';
+            case PaymentStatus.UNPAID:
+                return 'Chưa thanh toán';
+            case PaymentStatus.REFUNDED:
+                return 'Đã hoàn tiền';
+            default:
+                return status;
+        }
+    };
+
+    const getPaymentMethodText = (method: PaymentMethod) => {
+        switch (method) {
+            case PaymentMethod.ONLINE:
+                return 'Online';
+            case PaymentMethod.ONSITE:
+                return 'Tại quầy';
+            default:
+                return method;
         }
     };
 
@@ -143,61 +184,97 @@ const BookingList: React.FC = () => {
             title: 'Mã đơn',
             dataIndex: 'id',
             key: 'id',
-            width: 80,
+            width: 100,
+            fixed: 'left',
+            render: (id) => (
+                <Tooltip title={id}>
+                    <span>{id.substring(0, 8)}...</span>
+                </Tooltip>
+            ),
         },
         {
-            title: 'Tên người đặt',
-            dataIndex: 'userId',
-            key: 'userId',
-            render: (userId) => getName(userId),
+            title: 'Khách hàng',
+            key: 'customer',
+            width: 150,
+            render: (_, booking) => (
+                <div>
+                    <div style={{ fontWeight: 500 }}>
+                        {booking.firstName} {booking.lastName}
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#888' }}>
+                        {booking.email}
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#888' }}>
+                        {booking.phoneNumber}
+                    </div>
+                </div>
+            ),
         },
         {
             title: 'Tên phòng',
             dataIndex: 'roomId',
             key: 'roomId',
+            width: 150,
             render: (roomId) => getName(roomId),
-        },
-        {
-            title: 'Số lượng',
-            dataIndex: 'quantity',
-            key: 'quantity',
-            align: 'center',
-            width: 100,
         },
         {
             title: 'Check-in',
             dataIndex: 'checkIn',
             key: 'checkIn',
             render: (date) => moment(date).format('DD/MM/YYYY'),
-            width: 120,
+            width: 110,
         },
         {
             title: 'Check-out',
             dataIndex: 'checkOut',
             key: 'checkOut',
             render: (date) => moment(date).format('DD/MM/YYYY'),
-            width: 120,
+            width: 110,
         },
         {
-            title: 'Người lớn',
-            dataIndex: ['guests', 'adults'],
-            key: 'adults',
+            title: 'SL phòng',
+            dataIndex: 'quantity',
+            key: 'quantity',
             align: 'center',
-            width: 100,
+            width: 90,
         },
         {
-            title: 'Trẻ em',
-            dataIndex: ['guests', 'children'],
-            key: 'children',
+            title: 'Khách',
+            key: 'guests',
             align: 'center',
-            width: 100,
+            width: 90,
+            render: (_, booking) => (
+                <span>
+                    {booking.guests.adults}N
+                    {booking.guests.children ? ` / ${booking.guests.children}T` : ''}
+                </span>
+            ),
         },
         {
             title: 'Tổng tiền',
             dataIndex: 'totalPrice',
             key: 'totalPrice',
-            render: (price) => `${price.toLocaleString('vi-VN')}đ`,
-            width: 120,
+            render: (price) => (
+                <span style={{ fontWeight: 500 }}>
+                    {price.toLocaleString('vi-VN')}đ
+                </span>
+            ),
+            width: 130,
+        },
+        {
+            title: 'Thanh toán',
+            key: 'payment',
+            width: 140,
+            render: (_, booking) => (
+                <div>
+                    <Tag color={getPaymentStatusColor(booking.paymentStatus)}>
+                        {getPaymentStatusText(booking.paymentStatus)}
+                    </Tag>
+                    <div style={{ fontSize: '12px', color: '#888', marginTop: 4 }}>
+                        {getPaymentMethodText(booking.paymentMethod)}
+                    </div>
+                </div>
+            ),
         },
         {
             title: 'Trạng thái',
@@ -208,23 +285,40 @@ const BookingList: React.FC = () => {
                     {getStatusText(status)}
                 </Tag>
             ),
-            width: 120,
+            width: 130,
+        },
+        {
+            title: 'Ngày tạo',
+            dataIndex: 'createdAt',
+            key: 'createdAt',
+            render: (date) => date ? moment(date).format('DD/MM/YYYY HH:mm') : '-',
+            width: 140,
         },
         {
             title: 'Hành động',
             key: 'actions',
+            fixed: 'right',
+            width: 120,
             render: (_, booking) => (
                 <Space>
-                    <Button
-                        type="link"
-                        icon={<EditOutlined />}
-                        onClick={() => handleEdit(booking)}
-                    >
-                        Sửa
-                    </Button>
+                    <Tooltip title="Xem chi tiết">
+                        <Button
+                            type="link"
+                            size="small"
+                            icon={<EyeOutlined />}
+                            onClick={() => handleEdit(booking)}
+                        />
+                    </Tooltip>
+                    <Tooltip title="Cập nhật">
+                        <Button
+                            type="link"
+                            size="small"
+                            icon={<EditOutlined />}
+                            onClick={() => handleEdit(booking)}
+                        />
+                    </Tooltip>
                 </Space>
             ),
-            width: 100,
         },
     ];
 
@@ -263,7 +357,7 @@ const BookingList: React.FC = () => {
                     },
                 }}
                 rowKey="id"
-                scroll={{ x: 1200 }}
+                scroll={{ x: 1600 }}
             />
 
             <BookingForm

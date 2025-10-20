@@ -2,7 +2,8 @@ export enum BookingStatus {
     PENDING = 'Pending',
     CONFIRMED = 'Confirmed',
     CANCELLED = 'Cancelled',
-    COMPLETED = 'Completed',
+    CHECKED_IN = 'CheckedIn',
+    CHECKED_OUT = 'CheckedOut',
     REJECTED = 'Rejected'
 }
 
@@ -17,6 +18,11 @@ export enum PaymentStatus {
     REFUNDED = 'Refunded'
 }
 
+export interface CelebrateItemInput {
+    celebrateItemId: string;
+    quantity: number;
+}
+
 export interface CreateBookingInput {
     userId: string;
     roomId: string;
@@ -27,6 +33,12 @@ export interface CreateBookingInput {
         children?: number 
     };
     quantity: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phoneNumber: string;
+    paymentMethod: PaymentMethod;
+    celebrateItems?: CelebrateItemInput[];
 }
 
 export interface BookingIdInput {

@@ -5,7 +5,19 @@ import { Request, Response, NextFunction } from 'express';
 export async function createBooking(req: Request, res: Response, next: NextFunction) {
     try {
         const userId = req.user?.id;
-        const { roomId, checkIn, checkOut, guests, quantity } = req.body;
+        const { 
+            roomId, 
+            checkIn, 
+            checkOut, 
+            guests, 
+            quantity,
+            firstName,
+            lastName,
+            email,
+            phoneNumber,
+            paymentMethod,
+            celebrateItems
+        } = req.body;
 
         if (!userId) {
             throw new ApiError('Unauthorized: missing user ID', 401);
@@ -19,6 +31,12 @@ export async function createBooking(req: Request, res: Response, next: NextFunct
                 checkOut, 
                 guests,
                 quantity,
+                firstName,
+                lastName,
+                email,
+                phoneNumber,
+                paymentMethod,
+                celebrateItems
             });
             
             res.status(201).json(booking);
@@ -28,7 +46,7 @@ export async function createBooking(req: Request, res: Response, next: NextFunct
     } catch (error: any) {
         next(new ApiError(error.message, error.statusCode || 500));
     }
-};
+}
 
 export async function getBookingById(req: Request, res: Response, next: NextFunction) {
     try {
@@ -87,4 +105,36 @@ export async function updateBooking(req: Request, res: Response, next: NextFunct
     } catch (error: any) {
         next(new ApiError(error.message, error.statusCode || 500));
     }
-};
+}
+
+export async function previewBookingPrice(req: Request, res: Response, next: NextFunction) {
+    try {
+        const { roomId, checkIn, checkOut, quantity, celebrateItems } = req.query;
+
+        if (!roomId || !checkIn || !checkOut || !quantity) {
+            throw new ApiError('Missing required parameters: roomId, checkIn, checkOut, quantity', 400);
+        }
+
+        // Parse celebrateItems from JSON string if provided
+        let parsedCelebrateItems;
+        if (celebrateItems) {
+            try {
+                parsedCelebrateItems = JSON.parse(celebrateItems as string);
+            } catch {
+                throw new ApiError('Invalid celebrateItems format', 400);
+            }
+        }
+
+        const pricePreview = await bookingService.previewBookingPrice({
+            roomId: roomId as string,
+            checkIn: checkIn as string,
+            checkOut: checkOut as string,
+            quantity: parseInt(quantity as string),
+            celebrateItems: parsedCelebrateItems
+        });
+
+        res.json(pricePreview);
+    } catch (error: any) {
+        next(new ApiError(error.message, error.statusCode || 500));
+    }
+}
