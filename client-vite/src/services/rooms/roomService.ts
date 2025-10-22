@@ -17,6 +17,16 @@ const getAllRooms = async (params: GetAllRoomsInput): Promise<GetAllRoomsRespons
     }
 };
 
+const getAllRoomsWithoutPagination = async (): Promise<Room[]> => {
+    try {
+        const response = await api.get('/room/all-rooms');
+        return response.data;
+    } catch (error) {
+        console.error('Error getting all rooms without pagination:', error);
+        throw error;
+    }
+};
+
 const getActiveRooms = async (params: GetAllRoomsInput): Promise<GetAllRoomsResponse> => {
     try {
         const response = await api.get('/room/active', { params });
@@ -89,6 +99,7 @@ const toggleRoomActive = async (roomId: string): Promise<{ message: string; acti
 
 export default {
     getAllRooms,
+    getAllRoomsWithoutPagination,
     getActiveRooms,
     getRoomById,
     createRoom,

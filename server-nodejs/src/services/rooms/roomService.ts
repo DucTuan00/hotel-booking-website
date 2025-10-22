@@ -220,6 +220,18 @@ export async function getAllRooms(args: GetAllRoomsInput): Promise<GetAllRoomsRe
     };
 };
 
+export async function getAllRoomsWithoutPagination() {
+    const rooms = await Room.find({ deletedAt: null });
+        
+    if (!rooms) {
+        throw new ApiError('Failed to get rooms', 500);
+    }
+
+    const roomsMapId = mapIds(rooms);
+
+    return roomsMapId;
+};
+
 export async function getActiveRooms(args: GetAllRoomsInput): Promise<GetAllRoomsResponse> {
     const { filter = {}, page = 1, pageSize = 10 } = args;
 

@@ -6,6 +6,7 @@ import { UserRole } from "@/types/user";
 
 const router = Router();
 
+router.get('/all-rooms', authMiddleware([UserRole.ADMIN]), roomController.getAllRoomsWithoutPagination);
 router.get('/active', roomController.getActiveRooms);
 router.get('/:id', roomController.getRoomById);
 

@@ -45,6 +45,15 @@ export async function getAllRooms(req: Request, res: Response, next: NextFunctio
     }
 };
 
+export async function getAllRoomsWithoutPagination(req: Request, res: Response, next: NextFunction) {
+    try {
+        const rooms = await roomService.getAllRoomsWithoutPagination();
+        res.json(rooms);
+    } catch (error: any) {
+        next(new ApiError(error.message, error.statusCode || 500));
+    }
+};
+
 export async function getActiveRooms(req: Request, res: Response, next: NextFunction) {
     try {
         const { page = 1, pageSize = 10, ...filter } = req.query;

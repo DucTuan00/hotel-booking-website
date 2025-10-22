@@ -61,11 +61,7 @@ const RoomPricing: React.FC = () => {
     const loadData = useCallback(async () => {
         setLoading(true);
         try {
-            // Get all rooms
-            const roomsResponse = await roomService.getAllRooms({
-                page: 1,
-                pageSize: 100
-            });
+            const allRooms = await roomService.getAllRoomsWithoutPagination();
 
             const startDate = dayjs().startOf('day').toDate();
             const endDate = dayjs().add(1, 'month').endOf('day').toDate();
@@ -79,7 +75,7 @@ const RoomPricing: React.FC = () => {
             const dates = generateDates();
 
             // Transform data for display
-            const transformedData: RoomPricingData[] = roomsResponse.rooms.map(room => {
+            const transformedData: RoomPricingData[] = allRooms.map(room => {
                 const roomAvailability = availabilityData.find(av => av.id === room.id);
 
                 const days: DayPricingData[] = dates.map(({ date, displayDate }) => {
@@ -90,8 +86,8 @@ const RoomPricing: React.FC = () => {
                     return {
                         date,
                         displayDate,
-                        price: existingAvailability?.price || room.price,
-                        inventory: existingAvailability?.inventory || room.quantity,
+                        price: existingAvailability?.price ?? room.price,
+                        inventory: existingAvailability?.inventory ?? room.quantity,
                         isModified: false,
                         isNew: !existingAvailability
                     };
