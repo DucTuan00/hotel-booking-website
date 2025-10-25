@@ -83,12 +83,18 @@ export async function cancelBooking(req: Request, res: Response, next: NextFunct
 
 export async function getAllBookings(req: Request, res: Response, next: NextFunction) {
     try {
-        const { page = 1, pageSize = 10, ...filter } = req.query;
+        const { search, status, paymentStatus, sortBy, sortOrder, page, pageSize } = req.query;
+        
         const bookings = await bookingService.getAllBookings({
-            filter, 
-            page: parseInt(page as string), 
+            search: search as any,
+            status: status as any,
+            paymentStatus: paymentStatus as any,
+            sortBy: sortBy as any,
+            sortOrder: sortOrder as any,
+            page: parseInt(page as string),
             pageSize: parseInt(pageSize as string)
         });
+        
         res.json(bookings);
     } catch (error: any) {
         next(new ApiError(error.message, error.statusCode || 500));

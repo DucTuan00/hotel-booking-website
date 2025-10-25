@@ -18,6 +18,10 @@ export enum PaymentStatus {
     REFUNDED = 'Refunded'
 }
 
+// Sort & Filter Types
+export type BookingSortField = 'createdAt' | 'checkIn' | 'checkOut' | 'totalPrice';
+export type SortOrder = 'asc' | 'desc';
+
 export interface CelebrateItemInput {
     celebrateItemId: string;
     quantity: number;
@@ -55,7 +59,11 @@ export interface UpdateBookingInput {
 }
 
 export interface GetAllBookingsInput {
-    filter?: Record<string, unknown>;
+    search?: string;
+    status?: BookingStatus;
+    paymentStatus?: PaymentStatus;
+    sortBy?: BookingSortField;
+    sortOrder?: SortOrder;
     page?: number;
     pageSize?: number;
 }

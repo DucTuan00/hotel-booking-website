@@ -348,30 +348,56 @@ export async function cancelBooking(arg: BookingIdInput) {
  * Get all bookings (admin)
  */
 export async function getAllBookings(args: GetAllBookingsInput) {
-    const { filter = {}, page = 1, pageSize = 10 } = args;
+    const { search, status, paymentStatus, sortBy, sortOrder, page = 1, pageSize = 10 } = args;
 
     const buildQuery = () => {
         let query: any = {};
 
-        if (filter.search) {
-            const searchText = filter.search.trim();
+        if (search) {
+            const searchText = search.trim();
             
             if (mongoose.Types.ObjectId.isValid(searchText) && searchText.length === 24) {
                 query._id = searchText;
+            } else {
+                query.$or = [
+                    { firstName: new RegExp(searchText, 'i') },
+                    { lastName: new RegExp(searchText, 'i') },
+                    { email: new RegExp(searchText, 'i') },
+                    { phoneNumber: new RegExp(searchText, 'i') }
+                ];
             }
+        }
+
+        if (status) {
+            query.status = status;
+        }
+
+        if (paymentStatus) {
+            query.paymentStatus = paymentStatus;
         }
 
         return query;
     };
 
+    // Build sort object
+    const buildSort = (): Record<string, 1 | -1> => {
+        if (!sortBy || !sortOrder) {
+            return { createdAt: -1 }; 
+        }
+
+        const order = sortOrder === 'asc' ? 1 : -1;
+        return { [sortBy]: order };
+    };
+
     const queryConditions = buildQuery();
+    const sortConditions = buildSort();
     const skip = (page - 1) * pageSize;
 
     const [bookings, totalBookings] = await Promise.all([
         Booking.find(queryConditions)
             .populate({ path: 'userId', select: 'name email' })
             .populate({ path: 'roomId', select: 'name roomType price' })
-            .sort({ createdAt: -1 })
+            .sort(sortConditions)
             .skip(skip)
             .limit(pageSize),
         Booking.countDocuments(queryConditions)

@@ -54,10 +54,15 @@ export interface UpdateBookingInput {
     status: BookingStatus;
 }
 
+export type BookingSortField = 'createdAt' | 'checkIn' | 'checkOut' | 'totalPrice';
+export type SortOrder = 'asc' | 'desc';
+
 export interface GetAllBookingsInput {
-    filter?: {
-        search?: string; 
-    };
+    search?: string;
+    status?: BookingStatus;
+    paymentStatus?: PaymentStatus;
+    sortBy?: BookingSortField;
+    sortOrder?: SortOrder;
     page?: number;
     pageSize?: number;
 }
