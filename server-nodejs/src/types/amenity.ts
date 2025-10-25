@@ -1,3 +1,6 @@
+export type AmenitySortField = 'name' | 'createdAt';
+export type SortOrder = 'asc' | 'desc';
+
 export interface CreateAmenityInput {
     name: string;
 }
@@ -8,9 +11,9 @@ export interface UpdateAmenityInput {
 }
 
 export interface GetAllAmenitiesInput {
-    filter?: {
-        search?: string; 
-    };
+    search?: string;
+    sortBy?: AmenitySortField;
+    sortOrder?: SortOrder;
     page?: number;
     pageSize?: number;
 }

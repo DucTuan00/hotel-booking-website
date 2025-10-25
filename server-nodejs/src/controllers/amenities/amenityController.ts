@@ -14,9 +14,12 @@ export async function createAmenity(req: Request, res: Response, next: NextFunct
 
 export async function getAllAmenities(req: Request, res: Response, next: NextFunction) {
     try {
-        const { page = 1, pageSize = 10, ...filter } = req.query;
+        const { page = 1, pageSize = 10, search, sortBy, sortOrder } = req.query;
+        
         const amenities = await amenityService.getAllAmenities({
-            filter,
+            search: search as string,
+            sortBy: sortBy as any,
+            sortOrder: sortOrder as any,
             page: parseInt(page as string),
             pageSize: parseInt(pageSize as string)
         });

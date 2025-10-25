@@ -3,10 +3,15 @@ export interface Amenity {
     name: string;
 }
 
+export type AmenitySortField = 'name' | 'createdAt';
+export type SortOrder = 'asc' | 'desc';
+
 export interface GetAllAmenitiesInput {
+    search?: string;
+    sortBy?: AmenitySortField;
+    sortOrder?: SortOrder;
     page?: number;
     pageSize?: number;
-    filter?: Record<string, unknown>;
 }
 
 export interface GetAllAmenitiesResponse {

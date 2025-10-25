@@ -22,24 +22,35 @@ export async function createAmenity(arg: CreateAmenityInput) {
 };
 
 export async function getAllAmenities(args: GetAllAmenitiesInput) {
-    const { filter = {}, page = 1, pageSize = 10 } = args;
+    const { search, sortBy, sortOrder, page = 1, pageSize = 10 } = args;
 
     const buildQuery = () => {
-        let query = Amenity.find();
+        let query: any = {};
 
-        if (filter.search) {
-            query = query.or([
-                { name: new RegExp(filter.search, 'i') } // 'i' for case-insensitive
-            ]);
+        if (search) {
+            query.name = new RegExp(search, 'i'); // 'i' for case-insensitive
         }
 
         return query;
     };
 
+    // Build sort object
+    const buildSort = (): Record<string, 1 | -1> => {
+        if (!sortBy || !sortOrder) {
+            return { createdAt: -1 }; // Default: newest first
+        }
+
+        const order = sortOrder === 'asc' ? 1 : -1;
+        return { [sortBy]: order };
+    };
+
+    const queryConditions = buildQuery();
+    const sortConditions = buildSort();
     const skip = (page - 1) * pageSize;
+
     const [amenities, totalAmenities] = await Promise.all([
-        buildQuery().skip(skip).limit(pageSize),
-        buildQuery().countDocuments()
+        Amenity.find(queryConditions).sort(sortConditions).skip(skip).limit(pageSize),
+        Amenity.countDocuments(queryConditions)
     ]);
 
     if (!amenities) {
