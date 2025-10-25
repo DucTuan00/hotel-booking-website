@@ -24,26 +24,43 @@ export async function getUserById(arg: UserIdInput) {
 };
 
 export async function getAllUsers(args: GetAllUsersInput) {
-    const { filter = {}, page = 1, pageSize = 10 } = args;
+    const { search, role, sortBy, sortOrder, page = 1, pageSize = 10 } = args;
 
     const buildQuery = () => {
-        let query = User.find({ active: true });
+        let query: any = { active: true };
 
-        if (filter.search) {
-            query = query.or([
-                { name: new RegExp(filter.search, 'i') }, // 'i' for case-insensitive
-                { email: new RegExp(filter.search, 'i') },
-                { phone: new RegExp(filter.search, 'i') }
-            ]);
+        if (search) {
+            query.$or = [
+                { name: new RegExp(search, 'i') },
+                { email: new RegExp(search, 'i') },
+                { phone: new RegExp(search, 'i') }
+            ];
+        }
+
+        if (role) {
+            query.role = role;
         }
 
         return query;
     };
 
+    // Build sort object
+    const buildSort = (): Record<string, 1 | -1> => {
+        if (!sortBy || !sortOrder) {
+            return { createdAt: -1 };
+        }
+
+        const order = sortOrder === 'asc' ? 1 : -1;
+        return { [sortBy]: order };
+    };
+
+    const queryConditions = buildQuery();
+    const sortConditions = buildSort();
     const skip = (page - 1) * pageSize;
+
     const [users, totalUsers] = await Promise.all([
-        buildQuery().select('-password').skip(skip).limit(pageSize),
-        buildQuery().countDocuments()
+        User.find(queryConditions).select('-password').sort(sortConditions).skip(skip).limit(pageSize),
+        User.countDocuments(queryConditions)
     ]);
     
     if (!users) {

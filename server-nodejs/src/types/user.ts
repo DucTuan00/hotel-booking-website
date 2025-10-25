@@ -3,6 +3,9 @@ export enum UserRole {
     ADMIN = 'admin',
 }
 
+export type UserSortField = 'name' | 'email' | 'createdAt';
+export type SortOrder = 'asc' | 'desc';
+
 export interface InputCreateUser {
     email: string;
     password: string;
@@ -30,9 +33,10 @@ export interface UserIdInput {
 }
 
 export interface GetAllUsersInput {
-    filter?: {
-        search?: string; 
-    };
+    search?: string;
+    role?: UserRole;
+    sortBy?: UserSortField;
+    sortOrder?: SortOrder;
     page?: number;
     pageSize?: number;
 }
