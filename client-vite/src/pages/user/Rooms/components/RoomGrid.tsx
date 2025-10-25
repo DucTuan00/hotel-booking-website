@@ -1,12 +1,11 @@
 import React from 'react';
-import { Room } from '@/pages/user/Rooms';
+import { Room } from "@/types/room";
 import RoomCard from '@/pages/user/Rooms/components/RoomCard';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
 interface RoomGridProps {
   rooms: Room[];
   isLoading?: boolean;
-  onToggleFavorite: (roomId: number) => void;
   onShowDetails: (room: Room) => void;
   onBookRoom: (room: Room) => void;
 }
@@ -14,7 +13,6 @@ interface RoomGridProps {
 const RoomGrid: React.FC<RoomGridProps> = ({
   rooms,
   isLoading = false,
-  onToggleFavorite,
   onShowDetails,
   onBookRoom,
 }) => {
@@ -49,7 +47,6 @@ const RoomGrid: React.FC<RoomGridProps> = ({
             key={room.id}
             room={room}
             index={index}
-            onToggleFavorite={onToggleFavorite}
             onShowDetails={onShowDetails}
             onBookRoom={onBookRoom}
           />

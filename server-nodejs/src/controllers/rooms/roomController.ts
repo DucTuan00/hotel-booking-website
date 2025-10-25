@@ -33,9 +33,13 @@ export async function createRoom(req: Request, res: Response, next: NextFunction
 
 export async function getAllRooms(req: Request, res: Response, next: NextFunction) {
     try {
-        const { page = 1, pageSize = 10, ...filter } = req.query;
+        const { page = 1, pageSize = 10, search, roomType, sortBy, sortOrder } = req.query;
+
         const result = await roomService.getAllRooms({
-            filter,
+            search: search as string,
+            roomType: roomType as any,
+            sortBy: sortBy as any,
+            sortOrder: sortOrder as any,
             page: parseInt(page as string),
             pageSize: parseInt(pageSize as string)
         });
@@ -56,9 +60,13 @@ export async function getAllRoomsWithoutPagination(req: Request, res: Response, 
 
 export async function getActiveRooms(req: Request, res: Response, next: NextFunction) {
     try {
-        const { page = 1, pageSize = 10, ...filter } = req.query;
+        const { page = 1, pageSize = 10, search, roomType, sortBy, sortOrder } = req.query;
+
         const result = await roomService.getActiveRooms({
-            filter,
+            search: search as string,
+            roomType: roomType as any,
+            sortBy: sortBy as any,
+            sortOrder: sortOrder as any,
             page: parseInt(page as string),
             pageSize: parseInt(pageSize as string)
         });

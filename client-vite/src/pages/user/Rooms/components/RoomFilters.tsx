@@ -1,15 +1,16 @@
 import React from 'react';
 import { Select } from 'antd';
-import { RoomType, SortOption } from '@/pages/user/Rooms';
+import { RoomTypeFilter, SortOption } from '@/pages/user/Rooms';
+import { RoomType } from '@/types/room';
 import { TYPOGRAPHY } from '@/config/constants';
 
 const { Option } = Select;
 
 interface RoomFiltersProps {
-  filterType: RoomType;
+  filterType: RoomTypeFilter;
   sortBy: SortOption;
   totalRooms: number;
-  onFilterChange: (value: RoomType) => void;
+  onFilterChange: (value: RoomTypeFilter) => void;
   onSortChange: (value: SortOption) => void;
 }
 
@@ -51,13 +52,10 @@ const RoomFilters: React.FC<RoomFiltersProps> = ({
                 onChange={onFilterChange}
                 className="w-48"
               >
-                <Option value="all">Tất cả phòng</Option>
-                <Option value="standard">Standard</Option>
-                <Option value="superior">Superior</Option>
-                <Option value="deluxe">Deluxe</Option>
-                <Option value="suite">Suite</Option>
-                <Option value="junior suite">Junior Suite</Option>
-                <Option value="executive">Executive</Option>
+                <Option value="ALL">Tất cả phòng</Option>
+                <Option value={RoomType.SINGLE}>Phòng đơn (Single)</Option>
+                <Option value={RoomType.DOUBLE}>Phòng đôi (Double)</Option>
+                <Option value={RoomType.SUITE}>Phòng Suite</Option>
               </Select>
             </div>
             
@@ -71,9 +69,9 @@ const RoomFilters: React.FC<RoomFiltersProps> = ({
                 onChange={onSortChange}
                 className="w-48"
               >
+                <Option value="newest">Mới nhất</Option>
                 <Option value="price-asc">Giá: Thấp đến cao</Option>
                 <Option value="price-desc">Giá: Cao đến thấp</Option>
-                <Option value="rating">Đánh giá cao nhất</Option>
                 <Option value="name">Tên A-Z</Option>
               </Select>
             </div>

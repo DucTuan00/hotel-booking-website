@@ -1,14 +1,13 @@
 import React from 'react';
-import { Button, Card, Rate, Tag } from 'antd';
-import { HeartOutlined, HeartFilled, EyeOutlined, CalendarOutlined, UserOutlined } from '@ant-design/icons';
-import { Room } from '@/pages/user/Rooms';
+import { Button, Card, Tag } from 'antd';
+import { EyeOutlined, CalendarOutlined, UserOutlined, HomeOutlined } from '@ant-design/icons';
+import { Room } from "@/types/room";
 import { COLORS, TYPOGRAPHY } from '@/config/constants';
-import { formatPrice, getAvailabilityColor, getAvailabilityText } from '@/pages/user/Rooms';
+import { formatPrice } from '@/pages/user/Rooms';
 
 interface RoomCardProps {
   room: Room;
   index: number;
-  onToggleFavorite: (roomId: number) => void;
   onShowDetails: (room: Room) => void;
   onBookRoom: (room: Room) => void;
 }
@@ -16,10 +15,22 @@ interface RoomCardProps {
 const RoomCard: React.FC<RoomCardProps> = ({
   room,
   index,
-  onToggleFavorite,
   onShowDetails,
   onBookRoom,
 }) => {
+  // Get first image or placeholder
+  const firstImage = room.images && room.images.length > 0 
+    ? room.images[0].path 
+    : '/images/default-image.jpg';
+
+  // Get availability status based on quantity
+  const getAvailabilityStatus = () => {
+    if (room.quantity === 0) return { text: 'Hết phòng', color: '#ff4d4f' };
+    if (room.quantity <= 3) return { text: 'Sắp hết', color: '#faad14' };
+    return { text: 'Còn phòng', color: '#52c41a' };
+  };
+
+  const availability = getAvailabilityStatus();
   return (
     <Card
       className="room-card hover:shadow-xl transition-all duration-300 overflow-hidden"
@@ -31,35 +42,16 @@ const RoomCard: React.FC<RoomCardProps> = ({
       cover={
         <div className="relative h-64 overflow-hidden">
           <img
-            src={room.images[0]}
+            src={firstImage}
             alt={room.name}
-            className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+            className="w-full h-full object-cover transition-transform duration-300"
           />
-          {room.discount && (
-            <div 
-              className="absolute top-4 left-4 px-3 py-1 rounded-full text-white text-sm font-medium"
-              style={{ backgroundColor: COLORS.secondary }}
-            >
-              -{room.discount}%
-            </div>
-          )}
-          <div className="absolute top-4 right-4">
-            <Button
-              type="text"
-              icon={room.isFavorite ? <HeartFilled /> : <HeartOutlined />}
-              onClick={() => onToggleFavorite(room.id)}
-              className="bg-white bg-opacity-80 hover:bg-opacity-100 rounded-full"
-              style={{
-                color: room.isFavorite ? COLORS.secondary : COLORS.gray[600]
-              }}
-            />
-          </div>
           <div className="absolute bottom-4 right-4">
             <Tag 
-              color={getAvailabilityColor(room.availability)}
+              color={availability.color}
               className="font-medium"
             >
-              {getAvailabilityText(room.availability)}
+              {availability.text}
             </Tag>
           </div>
         </div>
@@ -78,36 +70,39 @@ const RoomCard: React.FC<RoomCardProps> = ({
               >
                 {room.name}
               </h3>
-              <p className="text-gray-600 text-sm">{room.type}</p>
+              <p className="text-gray-600 text-sm">{room.roomType}</p>
             </div>
-          </div>
-          
-          <div className="flex items-center gap-1 mb-3">
-            <Rate disabled defaultValue={room.rating} allowHalf className="text-sm" />
-            <span className="text-sm text-gray-600">({room.reviews} đánh giá)</span>
           </div>
         </div>
 
-        <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-          {room.description}
-        </p>
+        {room.description && (
+          <p className="text-gray-600 text-sm mb-4 line-clamp-2 whitespace-pre-line">
+            {room.description}
+          </p>
+        )}
 
         <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
+          {room.roomArea && (
+            <span className="flex items-center gap-1">
+              <img 
+              src="/images/area.png" 
+              alt=""
+              className="w-4 h-4"
+              /> {room.roomArea}m²
+            </span>
+          )}
           <span className="flex items-center gap-1">
-            📐 {room.size}m²
+            <UserOutlined /> {room.maxGuests} người
           </span>
           <span className="flex items-center gap-1">
-            🛏️ {room.bedType}
-          </span>
-          <span className="flex items-center gap-1">
-            <UserOutlined /> {room.maxGuests}
+            <HomeOutlined /> {room.quantity} phòng
           </span>
         </div>
 
         <div className="flex flex-wrap gap-1 mb-4">
           {room.amenities.slice(0, 3).map(amenity => (
-            <Tag key={amenity} className="text-xs">
-              {amenity}
+            <Tag key={amenity.id} className="text-xs">
+              {amenity.name}
             </Tag>
           ))}
           {room.amenities.length > 3 && (
@@ -119,11 +114,6 @@ const RoomCard: React.FC<RoomCardProps> = ({
 
         <div className="flex items-end justify-between">
           <div>
-            {room.originalPrice && (
-              <span className="text-sm text-gray-400 line-through block">
-                {formatPrice(room.originalPrice)}
-              </span>
-            )}
             <div className="flex items-baseline gap-2">
               <span 
                 className="text-xl font-bold"
@@ -148,10 +138,10 @@ const RoomCard: React.FC<RoomCardProps> = ({
               type="primary"
               icon={<CalendarOutlined />}
               onClick={() => onBookRoom(room)}
-              disabled={room.availability === 'unavailable'}
+              disabled={room.quantity === 0}
               style={{
-                backgroundColor: room.availability === 'unavailable' ? '#d9d9d9' : COLORS.primary,
-                borderColor: room.availability === 'unavailable' ? '#d9d9d9' : COLORS.primary,
+                backgroundColor: room.quantity === 0 ? '#d9d9d9' : COLORS.primary,
+                borderColor: room.quantity === 0 ? '#d9d9d9' : COLORS.primary,
               }}
             >
               Đặt ngay

@@ -156,23 +156,38 @@ export async function createRoom(roomData: RoomData) {
 };
 
 export async function getAllRooms(args: GetAllRoomsInput): Promise<GetAllRoomsResponse> {
-    const { filter = {}, page = 1, pageSize = 10 } = args;
+    const { search, roomType, sortBy, sortOrder, page = 1, pageSize = 10 } = args;
 
     const buildQuery = () => {
         let query: any = { deletedAt: null }; 
 
-        if (filter.search) {
-            query.name = new RegExp(filter.search, 'i'); // 'i' for case-insensitive
+        if (search) {
+            query.name = new RegExp(search, 'i'); // 'i' for case-insensitive
+        }
+
+        if (roomType) {
+            query.roomType = roomType;
         }
 
         return query;
     };
 
+    // Build sort object
+    const buildSort = (): Record<string, 1 | -1> => {
+        if (!sortBy || !sortOrder) {
+            return { createdAt: -1 }; // Default: newest first
+        }
+
+        const order = sortOrder === 'asc' ? 1 : -1;
+        return { [sortBy]: order };
+    };
+
     const queryConditions = buildQuery();
+    const sortConditions = buildSort();
     const skip = (page - 1) * pageSize;
 
     const [rooms, totalRooms] = await Promise.all([
-        Room.find(queryConditions).skip(skip).limit(pageSize),
+        Room.find(queryConditions).sort(sortConditions).skip(skip).limit(pageSize),
         Room.countDocuments(queryConditions)
     ]);
         
@@ -233,7 +248,7 @@ export async function getAllRoomsWithoutPagination() {
 };
 
 export async function getActiveRooms(args: GetAllRoomsInput): Promise<GetAllRoomsResponse> {
-    const { filter = {}, page = 1, pageSize = 10 } = args;
+    const { search, roomType, sortBy, sortOrder, page = 1, pageSize = 10 } = args;
 
     const buildQuery = () => {
         let query: any = { 
@@ -241,18 +256,33 @@ export async function getActiveRooms(args: GetAllRoomsInput): Promise<GetAllRoom
             active: true 
         };
 
-        if (filter.search) {
-            query.name = new RegExp(filter.search, 'i');
+        if (search) {
+            query.name = new RegExp(search, 'i');
+        }
+
+        if (roomType) {
+            query.roomType = roomType;
         }
 
         return query;
     };
 
+    // Build sort object
+    const buildSort = (): Record<string, 1 | -1> => {
+        if (!sortBy || !sortOrder) {
+            return { createdAt: -1 }; // Default: newest first
+        }
+
+        const order = sortOrder === 'asc' ? 1 : -1;
+        return { [sortBy]: order };
+    };
+
     const queryConditions = buildQuery();
+    const sortConditions = buildSort();
     const skip = (page - 1) * pageSize;
 
     const [rooms, totalRooms] = await Promise.all([
-        Room.find(queryConditions).skip(skip).limit(pageSize),
+        Room.find(queryConditions).sort(sortConditions).skip(skip).limit(pageSize),
         Room.countDocuments(queryConditions)
     ]);
         

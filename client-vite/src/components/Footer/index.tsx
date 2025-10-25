@@ -46,11 +46,16 @@ const Footer: React.FC = () => {
           <div className="md:col-span-2 lg:col-span-1">
             <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Vị trí</h3>
             <div className="bg-gray-800 rounded-lg overflow-hidden">
-              <img 
-                src="https://via.placeholder.com/300x120/374151/9CA3AF?text=Google+Maps"
-                alt="Map location"
-                className="w-full h-24 sm:h-32 object-cover"
-              />
+              <iframe 
+                src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d14896.08017375022!2d105.846336!3d21.031884!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ab47c98c2919%3A0xa0d1de04eb7d5313!2sHanoi%20Lion%20Boutique%20Hotel%20%26%20Spa!5e0!3m2!1svi!2sus!4v1761245560624!5m2!1svi!2sus" 
+                width="600" 
+                height="450" 
+                allowfullscreen="" 
+                loading="lazy"
+                title="Lion Hotel Boutique"
+                className="w-full h-50 sm:h-50 object-cover" 
+                referrerpolicy="no-referrer-when-downgrade">
+              </iframe>
             </div>
           </div>
         </div>

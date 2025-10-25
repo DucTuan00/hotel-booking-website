@@ -1,195 +1,18 @@
-import React, { useState, useMemo, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect } from "react";
+import { Pagination } from "antd";
 import RoomFilters from "@/pages/user/Rooms/components/RoomFilters";
 import RoomGrid from "@/pages/user/Rooms/components/RoomGrid";
-import RoomModal from "@/pages/user/Rooms/components/RoomModal";
-import { DEMO_IMAGES } from "@/config/constants";
+// import RoomModal from "@/pages/user/Rooms/components/RoomModal";
+import Notification from "@/components/Notification";
+import roomService from "@/services/rooms/roomService";
+import { Message } from "@/types/message";
 import "@/pages/user/Rooms/Rooms.css";
+import { Room, RoomType, RoomSortField, SortOrder } from "@/types/room";
 
-export interface Room {
-    id: number;
-    name: string;
-    type: string;
-    price: number;
-    originalPrice?: number;
-    rating: number;
-    reviews: number;
-    images: string[];
-    amenities: string[];
-    description: string;
-    size: number;
-    bedType: string;
-    maxGuests: number;
-    discount?: number;
-    isFavorite?: boolean;
-    availability: "available" | "limited" | "unavailable";
-}
+export type RoomTypeFilter = 'ALL' | RoomType;
+export type SortOption = "newest" | "price-asc" | "price-desc" | "name";
 
-export type RoomType =
-    | "all"
-    | "standard"
-    | "superior"
-    | "deluxe"
-    | "suite"
-    | "junior suite"
-    | "executive";
-export type SortOption = "price-asc" | "price-desc" | "rating" | "name";
-
-const mockRooms: Room[] = [
-    {
-        id: 1,
-        name: "Superior Double Ocean View",
-        type: "Superior",
-        price: 2500000,
-        originalPrice: 3000000,
-        rating: 4.8,
-        reviews: 124,
-        images: [
-            DEMO_IMAGES.hero,
-            DEMO_IMAGES.lionBoutique,
-            DEMO_IMAGES.lionWestlake,
-        ],
-        amenities: [
-            "WiFi miễn phí",
-            "Điều hòa",
-            "TV màn hình phẳng",
-            "Mini Bar",
-            "View biển",
-            "Ban công riêng",
-        ],
-        description:
-            "Phòng Superior với view biển tuyệt đẹp, thiết kế sang trọng và đầy đủ tiện nghi hiện đại.",
-        size: 35,
-        bedType: "Giường đôi King",
-        maxGuests: 2,
-        discount: 17,
-        isFavorite: false,
-        availability: "available",
-    },
-    {
-        id: 2,
-        name: "Deluxe Family Suite",
-        type: "Deluxe",
-        price: 4200000,
-        rating: 4.9,
-        reviews: 89,
-        images: [DEMO_IMAGES.familySuite, DEMO_IMAGES.spa, DEMO_IMAGES.hero],
-        amenities: [
-            "WiFi miễn phí",
-            "Điều hòa",
-            "TV màn hình phẳng",
-            "Bếp nhỏ",
-            "Phòng tắm riêng",
-            "Phòng khách riêng",
-        ],
-        description:
-            "Suite rộng rãi dành cho gia đình với không gian sống thoải mái và đầy đủ tiện nghi.",
-        size: 55,
-        bedType: "2 giường đôi",
-        maxGuests: 4,
-        isFavorite: true,
-        availability: "limited",
-    },
-    {
-        id: 3,
-        name: "Standard Twin Room",
-        type: "Standard",
-        price: 1800000,
-        originalPrice: 2200000,
-        rating: 4.6,
-        reviews: 201,
-        images: [DEMO_IMAGES.lionBoutique, DEMO_IMAGES.hero, DEMO_IMAGES.spa],
-        amenities: [
-            "WiFi miễn phí",
-            "Điều hòa",
-            "TV màn hình phẳng",
-            "Minibar",
-            "Két an toàn",
-        ],
-        description:
-            "Phòng Standard với 2 giường đơn, phù hợp cho bạn bè hoặc đồng nghiệp đi công tác.",
-        size: 28,
-        bedType: "2 giường đơn",
-        maxGuests: 2,
-        discount: 18,
-        isFavorite: false,
-        availability: "available",
-    },
-    {
-        id: 4,
-        name: "Royal Suite Premium",
-        type: "Suite",
-        price: 6500000,
-        rating: 5.0,
-        reviews: 45,
-        images: [DEMO_IMAGES.lionWestlake, DEMO_IMAGES.spa, DEMO_IMAGES.hero],
-        amenities: [
-            "WiFi miễn phí",
-            "Điều hòa",
-            "TV màn hình phẳng",
-            "Jacuzzi",
-            "Butler service",
-            "View toàn cảnh",
-            "Phòng khách riêng",
-        ],
-        description:
-            "Suite cao cấp nhất với dịch vụ butler 24/7 và view toàn cảnh thành phố tuyệt đẹp.",
-        size: 85,
-        bedType: "Giường King",
-        maxGuests: 2,
-        isFavorite: false,
-        availability: "available",
-    },
-    {
-        id: 5,
-        name: "Junior Suite Garden View",
-        type: "Junior Suite",
-        price: 3200000,
-        originalPrice: 3800000,
-        rating: 4.7,
-        reviews: 67,
-        images: [DEMO_IMAGES.spa, DEMO_IMAGES.lionBoutique, DEMO_IMAGES.hero],
-        amenities: [
-            "WiFi miễn phí",
-            "Điều hòa",
-            "TV màn hình phẳng",
-            "Mini Bar",
-            "View vườn",
-            "Bồn tắm",
-        ],
-        description:
-            "Junior Suite với view vườn xanh mát, không gian yên tĩnh và thư thái.",
-        size: 42,
-        bedType: "Giường đôi Queen",
-        maxGuests: 2,
-        discount: 16,
-        isFavorite: false,
-        availability: "limited",
-    },
-    {
-        id: 6,
-        name: "Executive Room City View",
-        type: "Executive",
-        price: 2800000,
-        rating: 4.8,
-        reviews: 156,
-        images: [DEMO_IMAGES.hero, DEMO_IMAGES.lionWestlake, DEMO_IMAGES.spa],
-        amenities: [
-            "WiFi miễn phí",
-            "Điều hòa",
-            "TV màn hình phẳng",
-            "Máy pha cà phê",
-            "View thành phố",
-            "Bàn làm việc",
-        ],
-        description:
-            "Phòng Executive dành cho khách doanh nhân với không gian làm việc riêng và view thành phố.",
-        size: 38,
-        bedType: "Giường đôi King",
-        maxGuests: 2,
-        isFavorite: false,
-        availability: "available",
-    },
-];
+const PAGE_SIZE = 6;
 
 export const formatPrice = (price: number): string => {
     return new Intl.NumberFormat("vi-VN", {
@@ -198,178 +21,175 @@ export const formatPrice = (price: number): string => {
     }).format(price);
 };
 
-export const getAvailabilityColor = (availability: string): string => {
-    switch (availability) {
-        case "available":
-            return "#52c41a";
-        case "limited":
-            return "#faad14";
-        case "unavailable":
-            return "#ff4d4f";
-        default:
-            return "#d9d9d9";
-    }
-};
-
-export const getAvailabilityText = (availability: string): string => {
-    switch (availability) {
-        case "available":
-            return "Còn phòng";
-        case "limited":
-            return "Sắp hết";
-        case "unavailable":
-            return "Hết phòng";
-        default:
-            return "Không rõ";
-    }
-};
-
-// Custom hook moved from hooks/useRooms.ts
-const useRooms = (initialRooms: Room[]) => {
+// Custom hook to fetch and manage rooms from API
+const useRooms = (onError: (message: Message) => void) => {
     const [rooms, setRooms] = useState<Room[]>([]);
-    const [filterType, setFilterType] = useState<RoomType>("all");
-    const [sortBy, setSortBy] = useState<SortOption>("price-asc");
+    const [total, setTotal] = useState(0);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [filterType, setFilterType] = useState<RoomTypeFilter>("ALL");
+    const [sortBy, setSortBy] = useState<SortOption>("newest");
     const [isLoading, setIsLoading] = useState(false);
 
-    // Simulate loading rooms data
     useEffect(() => {
         const loadRooms = async () => {
             setIsLoading(true);
-            // Simulate API call
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            setRooms(initialRooms);
-            setIsLoading(false);
+            try {
+                let sortByField: RoomSortField | undefined;
+                let sortOrderValue: SortOrder | undefined;
+
+                switch (sortBy) {
+                    case "newest":
+                        sortByField = 'createdAt';
+                        sortOrderValue = 'desc';
+                        break;
+                    case "price-asc":
+                        sortByField = 'price';
+                        sortOrderValue = 'asc';
+                        break;
+                    case "price-desc":
+                        sortByField = 'price';
+                        sortOrderValue = 'desc';
+                        break;
+                    case "name":
+                        sortByField = 'name';
+                        sortOrderValue = 'asc';
+                        break;
+                }
+
+                const response = await roomService.getActiveRooms({
+                    roomType: filterType !== 'ALL' ? filterType : undefined,
+                    sortBy: sortByField,
+                    sortOrder: sortOrderValue,
+                    page: currentPage,
+                    pageSize: PAGE_SIZE,
+                });
+                
+                setRooms(response.rooms);
+                setTotal(response.total);
+            } catch (error) {
+                console.error("Error loading rooms:", error);
+                onError({
+                    type: "error",
+                    text: "Không thể tải danh sách phòng. Vui lòng thử lại sau.",
+                });
+            } finally {
+                setIsLoading(false);
+            }
         };
 
         loadRooms();
-    }, [initialRooms]);
+    }, [currentPage, filterType, sortBy, onError]);
 
-    const toggleFavorite = useCallback((roomId: number) => {
-        setRooms((prevRooms) =>
-            prevRooms.map((room) =>
-                room.id === roomId
-                    ? { ...room, isFavorite: !room.isFavorite }
-                    : room
-            )
-        );
-    }, []);
-
-    const filterRooms = useCallback(
-        (rooms: Room[]): Room[] => {
-            return rooms.filter((room) => {
-                if (filterType === "all") return true;
-                return room.type.toLowerCase() === filterType.toLowerCase();
-            });
-        },
-        [filterType]
-    );
-
-    const sortRooms = useCallback(
-        (rooms: Room[]): Room[] => {
-            const sorted = [...rooms];
-            switch (sortBy) {
-                case "price-asc":
-                    return sorted.sort((a, b) => a.price - b.price);
-                case "price-desc":
-                    return sorted.sort((a, b) => b.price - a.price);
-                case "rating":
-                    return sorted.sort((a, b) => b.rating - a.rating);
-                case "name":
-                    return sorted.sort((a, b) => a.name.localeCompare(b.name));
-                default:
-                    return sorted;
-            }
-        },
-        [sortBy]
-    );
-
-    const filteredAndSortedRooms = useMemo(() => {
-        return sortRooms(filterRooms(rooms));
-    }, [rooms, filterRooms, sortRooms]);
-
-    // Handle filter/sort changes with loading
-    const handleFilterChange = useCallback(async (newFilterType: RoomType) => {
-        setIsLoading(true);
-        // Simulate API call delay
-        await new Promise((resolve) => setTimeout(resolve, 500));
+    // Handle filter/sort changes
+    const handleFilterChange = useCallback((newFilterType: RoomTypeFilter) => {
         setFilterType(newFilterType);
-        setIsLoading(false);
+        setCurrentPage(1); // Reset to first page when filter changes
     }, []);
 
-    const handleSortChange = useCallback(async (newSortBy: SortOption) => {
-        setIsLoading(true);
-        // Simulate API call delay
-        await new Promise((resolve) => setTimeout(resolve, 500));
+    const handleSortChange = useCallback((newSortBy: SortOption) => {
         setSortBy(newSortBy);
-        setIsLoading(false);
+        setCurrentPage(1); // Reset to first page when sort changes
+    }, []);
+
+    const handlePageChange = useCallback((page: number) => {
+        setCurrentPage(page);
+        // Scroll to top when page changes
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }, []);
 
     return {
         rooms,
-        filteredAndSortedRooms,
         filterType,
         sortBy,
         isLoading,
+        total,
+        currentPage,
+        pageSize: PAGE_SIZE,
         setFilterType: handleFilterChange,
         setSortBy: handleSortChange,
-        toggleFavorite,
+        onPageChange: handlePageChange,
     };
 };
 
 const Rooms: React.FC = () => {
-    const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
-    const [isModalVisible, setIsModalVisible] = useState(false);
+    // const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
+    // const [isModalVisible, setIsModalVisible] = useState(false);
+    const [message, setMessage] = useState<Message | null>(null);
 
     const {
-        filteredAndSortedRooms,
+        rooms,
         filterType,
         sortBy,
         isLoading,
+        total,
+        currentPage,
+        pageSize,
         setFilterType,
         setSortBy,
-        toggleFavorite,
-    } = useRooms(mockRooms);
+        onPageChange,
+    } = useRooms(setMessage);
 
     const showRoomDetails = (room: Room) => {
-        setSelectedRoom(room);
-        setIsModalVisible(true);
+        // setSelectedRoom(room);
+        // setIsModalVisible(true);
+        // TODO: Implement room details modal
+        console.log("Show room details:", room.name);
     };
 
     const handleBookRoom = (room: Room) => {
         // TODO: Implement booking logic
         console.log("Booking room:", room.name);
-        setIsModalVisible(false);
     };
 
-    const handleCloseModal = () => {
-        setIsModalVisible(false);
-        setSelectedRoom(null);
-    };
+    // const handleCloseModal = () => {
+    //     setIsModalVisible(false);
+    //     setSelectedRoom(null);
+    // };
 
     return (
         <div className="rooms-page min-h-screen bg-gray-50">
+            <Notification 
+                message={message} 
+                onClose={() => setMessage(null)} 
+            />
+            
             <RoomFilters
                 filterType={filterType}
                 sortBy={sortBy}
-                totalRooms={filteredAndSortedRooms.length}
+                totalRooms={total}
                 onFilterChange={setFilterType}
                 onSortChange={setSortBy}
             />
 
             <RoomGrid
-                rooms={filteredAndSortedRooms}
+                rooms={rooms}
                 isLoading={isLoading}
-                onToggleFavorite={toggleFavorite}
                 onShowDetails={showRoomDetails}
                 onBookRoom={handleBookRoom}
             />
 
-            <RoomModal
+            {/* Pagination */}
+            {!isLoading && total > 0 && (
+                <div className="flex justify-center py-8 pb-12">
+                    <Pagination
+                        current={currentPage}
+                        total={total}
+                        pageSize={pageSize}
+                        onChange={onPageChange}
+                        showSizeChanger={false}
+                        showTotal={(total, range) => 
+                            `${range[0]}-${range[1]} của ${total} phòng`
+                        }
+                    />
+                </div>
+            )}
+
+            {/* <RoomModal
                 room={selectedRoom}
                 isVisible={isModalVisible}
                 onClose={handleCloseModal}
                 onBookRoom={handleBookRoom}
-            />
+            /> */}
         </div>
     );
 };

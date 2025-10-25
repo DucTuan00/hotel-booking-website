@@ -4,6 +4,9 @@ export enum RoomType {
     SUITE = 'Suite',
 }
 
+export type RoomSortField = 'price' | 'name' | 'createdAt';
+export type SortOrder = 'asc' | 'desc';
+
 export interface CreateRoomInput {
     name: string;
     roomType: RoomType;
@@ -25,7 +28,10 @@ export interface UpdateRoomInput extends CreateRoomInput {
 }
 
 export interface GetAllRoomsInput {
-    filter?: Record<string, unknown>;
+    search?: string;
+    roomType?: RoomType;
+    sortBy?: RoomSortField;
+    sortOrder?: SortOrder;
     page?: number;
     pageSize?: number;
 }
