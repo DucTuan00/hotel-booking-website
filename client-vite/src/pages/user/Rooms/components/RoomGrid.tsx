@@ -6,15 +6,11 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 interface RoomGridProps {
   rooms: Room[];
   isLoading?: boolean;
-  onShowDetails: (room: Room) => void;
-  onBookRoom: (room: Room) => void;
 }
 
 const RoomGrid: React.FC<RoomGridProps> = ({
   rooms,
   isLoading = false,
-  onShowDetails,
-  onBookRoom,
 }) => {
   if (isLoading) {
     return (
@@ -47,8 +43,6 @@ const RoomGrid: React.FC<RoomGridProps> = ({
             key={room.id}
             room={room}
             index={index}
-            onShowDetails={onShowDetails}
-            onBookRoom={onBookRoom}
           />
         ))}
       </div>

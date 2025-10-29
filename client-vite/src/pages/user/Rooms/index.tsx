@@ -2,7 +2,6 @@ import React, { useState, useCallback, useEffect } from "react";
 import { Pagination } from "antd";
 import RoomFilters from "@/pages/user/Rooms/components/RoomFilters";
 import RoomGrid from "@/pages/user/Rooms/components/RoomGrid";
-// import RoomModal from "@/pages/user/Rooms/components/RoomModal";
 import Notification from "@/components/Notification";
 import roomService from "@/services/rooms/roomService";
 import { Message } from "@/types/message";
@@ -112,8 +111,6 @@ const useRooms = (onError: (message: Message) => void) => {
 };
 
 const Rooms: React.FC = () => {
-    // const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
-    // const [isModalVisible, setIsModalVisible] = useState(false);
     const [message, setMessage] = useState<Message | null>(null);
 
     const {
@@ -128,23 +125,6 @@ const Rooms: React.FC = () => {
         setSortBy,
         onPageChange,
     } = useRooms(setMessage);
-
-    const showRoomDetails = (room: Room) => {
-        // setSelectedRoom(room);
-        // setIsModalVisible(true);
-        // TODO: Implement room details modal
-        console.log("Show room details:", room.name);
-    };
-
-    const handleBookRoom = (room: Room) => {
-        // TODO: Implement booking logic
-        console.log("Booking room:", room.name);
-    };
-
-    // const handleCloseModal = () => {
-    //     setIsModalVisible(false);
-    //     setSelectedRoom(null);
-    // };
 
     return (
         <div className="rooms-page min-h-screen bg-gray-50">
@@ -164,8 +144,6 @@ const Rooms: React.FC = () => {
             <RoomGrid
                 rooms={rooms}
                 isLoading={isLoading}
-                onShowDetails={showRoomDetails}
-                onBookRoom={handleBookRoom}
             />
 
             {/* Pagination */}
@@ -183,13 +161,6 @@ const Rooms: React.FC = () => {
                     />
                 </div>
             )}
-
-            {/* <RoomModal
-                room={selectedRoom}
-                isVisible={isModalVisible}
-                onClose={handleCloseModal}
-                onBookRoom={handleBookRoom}
-            /> */}
         </div>
     );
 };

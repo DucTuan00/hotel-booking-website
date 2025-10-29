@@ -1,6 +1,7 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button, Card, Tag } from 'antd';
-import { EyeOutlined, CalendarOutlined, UserOutlined, HomeOutlined } from '@ant-design/icons';
+import { EyeOutlined, UserOutlined, HomeOutlined } from '@ant-design/icons';
 import { Room } from "@/types/room";
 import { COLORS, TYPOGRAPHY } from '@/config/constants';
 import { formatPrice } from '@/pages/user/Rooms';
@@ -8,16 +9,14 @@ import { formatPrice } from '@/pages/user/Rooms';
 interface RoomCardProps {
   room: Room;
   index: number;
-  onShowDetails: (room: Room) => void;
-  onBookRoom: (room: Room) => void;
 }
 
 const RoomCard: React.FC<RoomCardProps> = ({
   room,
   index,
-  onShowDetails,
-  onBookRoom,
 }) => {
+  const navigate = useNavigate();
+
   // Get first image or placeholder
   const firstImage = room.images && room.images.length > 0 
     ? room.images[0].path 
@@ -125,28 +124,18 @@ const RoomCard: React.FC<RoomCardProps> = ({
             </div>
           </div>
           
-          <div className="flex gap-2">
-            <Button
-              type="default"
-              icon={<EyeOutlined />}
-              onClick={() => onShowDetails(room)}
-              className="flex items-center"
-            >
-              Chi tiết
-            </Button>
-            <Button
-              type="primary"
-              icon={<CalendarOutlined />}
-              onClick={() => onBookRoom(room)}
-              disabled={room.quantity === 0}
-              style={{
-                backgroundColor: room.quantity === 0 ? '#d9d9d9' : COLORS.primary,
-                borderColor: room.quantity === 0 ? '#d9d9d9' : COLORS.primary,
-              }}
-            >
-              Đặt ngay
-            </Button>
-          </div>
+          <Button
+            type="primary"
+            icon={<EyeOutlined />}
+            onClick={() => navigate(`/rooms/${room.id}`)}
+            className="flex items-center"
+            style={{
+              backgroundColor: COLORS.primary,
+              borderColor: COLORS.primary,
+            }}
+          >
+            Chi tiết
+          </Button>
         </div>
       </div>
     </Card>
