@@ -30,7 +30,7 @@ const RoomGallery: React.FC<RoomGalleryProps> = ({ images, roomName }) => {
                 <img
                     src={images[selectedImageIndex].path}
                     alt={`${roomName} ${selectedImageIndex + 1}`}
-                    className="w-full h-96 object-cover rounded-lg shadow-md"
+                    className="w-full h-full object-cover rounded-lg shadow-md"
                 />
             </div>
 
