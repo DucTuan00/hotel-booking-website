@@ -26,6 +26,7 @@ export interface UpdateUserInput {
 }
 
 export interface UpdatePasswordInput {
+    id?: string;
     oldPassword: string;
     newPassword: string;
 }
@@ -52,6 +53,7 @@ export interface User {
     email: string;
     phone: string;
     role: UserRole;
+    googleId?: string;
     notifications?: {
         type: string;
         message: string;

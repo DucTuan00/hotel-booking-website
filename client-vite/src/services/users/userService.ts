@@ -2,10 +2,21 @@ import api from '@/services/api';
 import { 
     User, 
     CreateUserInput, 
-    UpdateUserInput, 
+    UpdateUserInput,
+    UpdatePasswordInput, 
     GetAllUsersInput, 
     GetAllUsersResponse 
 } from '@/types/user';
+
+const getUserInfo = async (): Promise<User> => {
+    try {
+        const response = await api.get('/user/info');
+        return response.data;
+    } catch (error) {
+        console.error('Error getting user info:', error);
+        throw error;
+    }
+};
 
 const getAllUsers = async (params: GetAllUsersInput): Promise<GetAllUsersResponse> => {
     try {
@@ -47,6 +58,29 @@ const updateUser = async (userId: string, userData: UpdateUserInput): Promise<{ 
     }
 };
 
+const updateUserProfile = async (userData: UpdateUserInput): Promise<{ message: string; user: User }> => {
+    try {
+        const response = await api.put('/user', userData);
+        return response.data;
+    } catch (error) {
+        console.error('Error updating user profile:', error);
+        throw error;
+    }
+};
+
+const updatePassword = async (data: UpdatePasswordInput): Promise<{ message: string }> => {
+    try {
+        const response = await api.put('/user/password', {
+            oldPassword: data.oldPassword,
+            newPassword: data.newPassword
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error updating password:', error);
+        throw error;
+    }
+};
+
 const deleteUser = async (userId: string): Promise<{ message: string }> => {
     try {
         const response = await api.delete(`/user/${userId}`); 
@@ -58,9 +92,12 @@ const deleteUser = async (userId: string): Promise<{ message: string }> => {
 };
 
 export default {
+    getUserInfo,
     getAllUsers,
     getUserById,
     createUser,
     updateUser,
+    updateUserProfile,
+    updatePassword,
     deleteUser,
 };

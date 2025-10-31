@@ -5,6 +5,7 @@ import authService from "@/services/auth/authService";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Notification from "@/components/Notification";
 import { Message } from "@/types/message";
+import { dispatchLoginSuccess } from "@/utils/authEvents";
 
 interface FormData {
     name: string;
@@ -37,6 +38,9 @@ const Login: React.FC = () => {
         const errorParam = searchParams.get('error');
 
         if (authParam === 'success') {
+            // Notify Header component to fetch user info
+            dispatchLoginSuccess();
+            
             // Check user role and redirect
             authService.verifyToken()
                 .then((userData) => {
@@ -101,6 +105,9 @@ const Login: React.FC = () => {
                     });
 
                     setMessage({ type: 'success', text: 'Đăng nhập thành công!' });
+
+                    // Notify Header component to fetch user info
+                    dispatchLoginSuccess();
 
                     setTimeout(() => {
                         if (userData.role === "admin") {
