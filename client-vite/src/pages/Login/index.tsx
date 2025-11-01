@@ -5,7 +5,6 @@ import authService from "@/services/auth/authService";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Notification from "@/components/Notification";
 import { Message } from "@/types/message";
-import { dispatchLoginSuccess } from "@/utils/authEvents";
 
 interface FormData {
     name: string;
@@ -34,27 +33,9 @@ const Login: React.FC = () => {
     }, [isRegister]);
 
     useEffect(() => {
-        const authParam = searchParams.get('auth');
         const errorParam = searchParams.get('error');
 
-        if (authParam === 'success') {
-            // Notify Header component to fetch user info
-            dispatchLoginSuccess();
-            
-            // Check user role and redirect
-            authService.verifyToken()
-                .then((userData) => {
-                    if (userData.role === 'admin') {
-                        navigate('/dashboard');
-                    } else {
-                        navigate('/');
-                    }
-                })
-                .catch(() => {
-                    navigate('/');
-                });
-            setMessage({ type: 'success', text: 'Đăng nhập thành công!' });
-        } else if (errorParam) {
+        if (errorParam) {
             switch (errorParam) {
                 case 'oauth_error':
                     setMessage({ type: 'error', text: 'Lỗi xác thực Google. Vui lòng thử lại.' });
@@ -104,18 +85,11 @@ const Login: React.FC = () => {
                         password: formData.password,
                     });
 
-                    setMessage({ type: 'success', text: 'Đăng nhập thành công!' });
-
-                    // Notify Header component to fetch user info
-                    dispatchLoginSuccess();
-
-                    setTimeout(() => {
-                        if (userData.role === "admin") {
-                            navigate("/dashboard");
-                        } else {
-                            navigate("/");
-                        }
-                    }, 1500);
+                    if (userData.role === "admin") {
+                        navigate("/dashboard?auth=success");
+                    } else {
+                        navigate("/?auth=success");
+                    }
                 }
             } catch (err: any) {
                 const errorObj = err as { error?: string; message?: string };

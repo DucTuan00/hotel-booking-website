@@ -2,13 +2,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Button, Drawer, Layout, Dropdown, Space } from 'antd';
 import { MenuOutlined, CloseOutlined, UserOutlined, LogoutOutlined, DownOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { COLORS, TYPOGRAPHY } from '@/config/constants';
 import userService from '@/services/users/userService';
 import authService from '@/services/auth/authService';
 import { User } from '@/types/user';
 import Notification from '@/components/Notification';
-import { onLoginSuccess } from '@/utils/authEvents';
 
 const { Header: AntHeader } = Layout;
 
@@ -22,6 +21,7 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
     const navigate = useNavigate();
+    const location = useLocation();
 
     const menuItems = [
         { name: 'GIỚI THIỆU', path: '/#about' },
@@ -32,12 +32,13 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
         { name: 'LIÊN HỆ', path: '/#contact' },
     ];
 
-    // Fetch user info on component mount
     const fetchUserInfo = useCallback(async () => {
         try {
+            // This will work for both web (cookies sent automatically) and mobile (Authorization header)
             const user = await userService.getUserInfo();
             setCurrentUser(user);
         } catch {
+            // Token invalid, expired, or no token at all
             setCurrentUser(null);
         } finally {
             setLoading(false);
@@ -45,36 +46,24 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
     }, []);
 
     useEffect(() => {
-        // Check if user just logged out (flag in sessionStorage)
-        const justLoggedOut = sessionStorage.getItem('justLoggedOut');
-        if (justLoggedOut) {
-            sessionStorage.removeItem('justLoggedOut');
-            setCurrentUser(null);
-            setLoading(false);
-            return;
-        }
-
-        // Only fetch if not on login page to avoid unnecessary API calls
-        if (window.location.pathname !== '/login') {
-            fetchUserInfo();
-        } else {
-            setLoading(false);
-        }
+        // Fetch user info on mount
+        fetchUserInfo();
     }, [fetchUserInfo]);
 
-    // Listen for login success event
+    // Handle login success (both Google OAuth and regular login)
     useEffect(() => {
-        const handleLoginSuccess = () => {
-            console.log('Login success event received, fetching user info...');
+        const searchParams = new URLSearchParams(location.search);
+        const authParam = searchParams.get('auth');
+
+        if (authParam === 'success') {
+            setMessage({ type: 'success', text: 'Đăng nhập thành công!' });
+            
+            setLoading(true);
             fetchUserInfo();
-        };
-
-        // Subscribe to login success event
-        const unsubscribe = onLoginSuccess(handleLoginSuccess);
-
-        // Cleanup on unmount
-        return unsubscribe;
-    }, [fetchUserInfo]);
+            
+            window.history.replaceState({}, '', location.pathname);
+        }
+    }, [location.search, location.pathname, fetchUserInfo]);
 
     // User dropdown menu
     const userMenuItems: MenuProps['items'] = [
@@ -100,13 +89,9 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
         try {
             await authService.logout();
             setCurrentUser(null);
-            
-            // Set flag to prevent fetching user info after logout
-            sessionStorage.setItem('justLoggedOut', 'true');
-            
             setMessage({ type: 'success', text: 'Đăng xuất thành công!' });
             
-            // Navigate to home page
+            // Navigate to home - useEffect will handle fetching user info
             setTimeout(() => {
                 navigate('/');
             }, 500);
@@ -144,11 +129,12 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
                     borderBottom: "1px solid #f0f0f0",
                 }}
             >
-                <div className="max-w-7xl mx-auto px-3 sm:px-4 h-full flex items-center justify-between">
+                <div className="max-w-7xl mx-auto px-3 sm:px-4 h-full flex items-center justify-start">
                     {/* Logo */}
-                    <div className="flex items-center">
+                    <div className="flex items-center mr-8 lg:mr-12">
                         <div
-                            className="text-lg sm:text-xl lg:text-2xl font-bold"
+                            className="text-lg sm:text-xl lg:text-2xl font-bold cursor-pointer"
+                            onClick={() => navigate('/')}
                             style={{
                                 fontFamily: TYPOGRAPHY.fontFamily.primary,
                                 color: transparent
@@ -161,7 +147,7 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
                     </div>
 
                     {/* Desktop Navigation - Hidden on mobile */}
-                    <nav className="hidden lg:flex items-center space-x-6 xl:space-x-8">
+                    <nav className="hidden lg:flex items-center space-x-6 xl:space-x-8 flex-1">
                         {menuItems.map((item) => (
                             <button
                                 key={item.name}
@@ -186,7 +172,7 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
                     </nav>
 
                     {/* Right Side - User Menu or Login Button, Mobile Menu */}
-                    <div className="flex items-center space-x-2 sm:space-x-3">
+                    <div className="flex items-center space-x-2 sm:space-x-3 ml-auto">
                         {/* Desktop - User Menu or Login Button */}
                         {!loading && (
                             currentUser ? (
@@ -298,9 +284,68 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
 
                     {/* Bottom Actions */}
                     <div className="p-6 border-t border-gray-200 bg-gray-50">
-                        
+                        {currentUser ? (
+                            <div className="space-y-3">
+                                <div className="text-center mb-4">
+                                    <div className="text-sm text-gray-500 mb-1">Xin chào,</div>
+                                    <div className="font-semibold text-base" style={{ color: COLORS.primary }}>
+                                        {currentUser.name}
+                                    </div>
+                                </div>
+                                <Button
+                                    block
+                                    size="large"
+                                    icon={<UserOutlined />}
+                                    onClick={() => {
+                                        navigate('/user/profile');
+                                        setMobileMenuOpen(false);
+                                    }}
+                                    style={{
+                                        fontFamily: TYPOGRAPHY.fontFamily.secondary,
+                                        height: '48px',
+                                    }}
+                                >
+                                    Hồ sơ
+                                </Button>
+                                <Button
+                                    block
+                                    size="large"
+                                    danger
+                                    icon={<LogoutOutlined />}
+                                    onClick={() => {
+                                        setMobileMenuOpen(false);
+                                        handleLogout();
+                                    }}
+                                    style={{
+                                        fontFamily: TYPOGRAPHY.fontFamily.secondary,
+                                        height: '48px',
+                                    }}
+                                >
+                                    Đăng xuất
+                                </Button>
+                            </div>
+                        ) : (
+                            <Button
+                                type="primary"
+                                size="large"
+                                block
+                                onClick={() => {
+                                    navigate('/login');
+                                    setMobileMenuOpen(false);
+                                }}
+                                style={{
+                                    backgroundColor: COLORS.primary,
+                                    borderColor: COLORS.primary,
+                                    fontFamily: TYPOGRAPHY.fontFamily.secondary,
+                                    fontWeight: TYPOGRAPHY.fontWeight.semibold,
+                                    height: '48px',
+                                }}
+                            >
+                                ĐĂNG NHẬP
+                            </Button>
+                        )}
 
-                        <div className="flex justify-center space-x-4 text-sm text-gray-500">
+                        <div className="flex justify-center space-x-4 text-sm text-gray-500 mt-4">
                             <span>Hotline: 0258.3834.666</span>
                         </div>
                     </div>

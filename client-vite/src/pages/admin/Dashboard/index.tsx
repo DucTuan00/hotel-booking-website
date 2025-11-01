@@ -15,6 +15,7 @@ import {
   DollarCircleOutlined,
 } from '@ant-design/icons';
 import { LineChart, Line, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, ResponsiveContainer, Legend } from 'recharts';
+import { useLocation } from 'react-router-dom';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import userService from '@/services/users/userService';
 import roomService from '@/services/rooms/roomService';
@@ -48,6 +49,7 @@ function getRoomName(roomId: ApiBooking['roomId']): string {
 }
 
 const DashboardPage: React.FC = () => {
+  const location = useLocation();
   const [totalUsers, setTotalUsers] = useState<number>(0);
   const [totalRooms, setTotalRooms] = useState<number>(0);
   const [totalBookings, setTotalBookings] = useState<number>(0);
@@ -58,6 +60,16 @@ const DashboardPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+
+  // Clean up URL after successful login
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const authParam = searchParams.get('auth');
+
+    if (authParam === 'success') {
+      window.history.replaceState({}, '', location.pathname);
+    }
+  }, [location.search, location.pathname]);
 
   const fetchData = async () => {
     setLoading(true);
