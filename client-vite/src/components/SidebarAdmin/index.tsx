@@ -9,7 +9,8 @@ import {
   TagOutlined,
   LogoutOutlined,
   CoffeeOutlined,
-  MoonOutlined
+  MoonOutlined,
+  GiftOutlined
 } from '@ant-design/icons';
 import authService from '@/services/auth/authService';
 
@@ -114,6 +115,11 @@ const Sidebar: React.FC<SidebarProps> = ({
           label: 'Hình ảnh Spa'
         }
       ]
+    },
+    { 
+      key: '/dashboard/celebration-items', 
+      icon: <GiftOutlined />, 
+      label: 'Quà kỷ niệm'
     },
   ];
 

@@ -10,6 +10,7 @@ import RestaurantImages from '@/pages/admin/Restaurant/Images';
 import SpaEdit from '@/pages/admin/Spa/Edit';
 import SpaServices from '@/pages/admin/Spa/Services';
 import SpaImages from '@/pages/admin/Spa/Images';
+import CelebrationItemList from '@/pages/admin/CelebrationItem';
 
 export {
     DashboardPage,
@@ -23,5 +24,6 @@ export {
     RestaurantImages,
     SpaEdit,
     SpaServices,
-    SpaImages
+    SpaImages,
+    CelebrationItemList
 }
