@@ -3,6 +3,7 @@ import { Tag } from "antd";
 import { UserOutlined, HomeOutlined } from "@ant-design/icons";
 import { Room } from "@/types/room";
 import { COLORS, TYPOGRAPHY } from "@/config/constants";
+import { formatPrice } from "@/utils/formatPrice";
 
 interface RoomInfoProps {
     room: Room;
@@ -12,13 +13,6 @@ const getAvailabilityStatus = (quantity: number) => {
     if (quantity === 0) return { text: "Hết phòng", color: "#ff4d4f" };
     if (quantity <= 3) return { text: "Sắp hết", color: "#faad14" };
     return { text: "Còn phòng", color: "#52c41a" };
-};
-
-export const formatPrice = (price: number): string => {
-    return new Intl.NumberFormat("vi-VN", {
-        style: "currency",
-        currency: "VND",
-    }).format(price);
 };
 
 const RoomInfo: React.FC<RoomInfoProps> = ({ room }) => {

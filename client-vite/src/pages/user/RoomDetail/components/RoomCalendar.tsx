@@ -3,7 +3,7 @@ import { Spin } from 'antd';
 import dayjs from 'dayjs';
 import 'dayjs/locale/vi';
 import roomAvailableService from '@/services/rooms/roomAvailableService';
-import { formatPrice } from '@/pages/user/RoomDetail/components/RoomInfo';
+import { formatPrice } from '@/utils/formatPrice';
 import CalendarModal from '@/pages/user/RoomDetail/components/CalendarModal';
 
 dayjs.locale('vi');
@@ -11,7 +11,9 @@ dayjs.locale('vi');
 interface RoomCalendarProps {
     roomId: string;
     defaultPrice: number;
-    onDateSelect?: (checkIn: Date, checkOut: Date) => void;
+    maxRooms: number;
+    maxGuests: number;
+    onDateSelect?: (checkIn: Date, checkOut: Date, quantity: number, adults: number, children: number) => void;
 }
 
 interface DayData {
@@ -24,7 +26,7 @@ interface DayData {
     isPast: boolean;
 }
 
-const RoomCalendar: React.FC<RoomCalendarProps> = ({ roomId, defaultPrice, onDateSelect }) => {
+const RoomCalendar: React.FC<RoomCalendarProps> = ({ roomId, defaultPrice, maxRooms, maxGuests, onDateSelect }) => {
     const [loading, setLoading] = useState(false);
     const [daysData, setDaysData] = useState<DayData[]>([]);
     const [modalOpen, setModalOpen] = useState(false);
@@ -101,9 +103,9 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({ roomId, defaultPrice, onDat
     };
 
     // Handle date selection from modal
-    const handleDateConfirm = (checkIn: Date, checkOut: Date) => {
+    const handleDateConfirm = (checkIn: Date, checkOut: Date, quantity: number, adults: number, children: number) => {
         if (onDateSelect) {
-            onDateSelect(checkIn, checkOut);
+            onDateSelect(checkIn, checkOut, quantity, adults, children);
         }
     };
 
@@ -271,6 +273,8 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({ roomId, defaultPrice, onDat
                 onConfirm={handleDateConfirm}
                 roomId={roomId}
                 defaultPrice={defaultPrice}
+                maxRooms={maxRooms}
+                maxGuests={maxGuests}
                 initialDate={selectedDate}
             />
         </div>

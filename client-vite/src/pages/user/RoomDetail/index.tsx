@@ -46,23 +46,30 @@ const RoomDetail: React.FC = () => {
   }, [roomId]);
 
   const handleBookRoom = () => {
-    // TODO: Implement booking logic
-    console.log("Booking room:", room?.name);
-    setMessage({
-      type: "success",
-      text: "Chức năng đặt phòng đang được phát triển",
-    });
+    if (!room) return;
+    
+    // Navigate to booking page with default dates (today + 1 night)
+    const checkIn = new Date();
+    checkIn.setHours(0, 0, 0, 0);
+    const checkOut = new Date(checkIn);
+    checkOut.setDate(checkOut.getDate() + 1);
+    
+    navigate(`/booking?roomId=${room.id}&checkIn=${checkIn.toISOString()}&checkOut=${checkOut.toISOString()}`);
   };
 
-  const handleDateSelect = (checkIn: Date, checkOut: Date) => {
-    // TODO: Navigate to booking page with selected dates
-    console.log("Selected dates:", checkIn, checkOut);
-    setMessage({
-      type: "success",
-      text: `Đã chọn: ${new Date(checkIn).toLocaleDateString('vi-VN')} - ${new Date(checkOut).toLocaleDateString('vi-VN')}`,
+  const handleDateSelect = (checkIn: Date, checkOut: Date, quantity: number, adults: number, children: number) => {
+    if (!room) return;
+    
+    // Navigate to booking page with selected dates and guest info
+    const params = new URLSearchParams({
+      roomId: room.id,
+      checkIn: checkIn.toISOString(),
+      checkOut: checkOut.toISOString(),
+      quantity: quantity.toString(),
+      adults: adults.toString(),
+      children: children.toString()
     });
-    // Future: navigate to booking page
-    // navigate(`/booking?roomId=${room?.id}&checkIn=${checkIn.toISOString()}&checkOut=${checkOut.toISOString()}`);
+    navigate(`/booking?${params.toString()}`);
   };
 
   if (isLoading) {
@@ -116,7 +123,9 @@ const RoomDetail: React.FC = () => {
             <RoomInfo room={room} />
             <RoomCalendar 
               roomId={room.id} 
-              defaultPrice={room.price} 
+              defaultPrice={room.price}
+              maxRooms={room.quantity}
+              maxGuests={room.maxGuests}
               onDateSelect={handleDateSelect}
             />
           </div>

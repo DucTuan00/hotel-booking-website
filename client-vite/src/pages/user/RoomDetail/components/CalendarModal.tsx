@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Modal, Button, Spin } from 'antd';
+import { Modal, Button, Spin, InputNumber } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
 import 'dayjs/locale/vi';
 import roomAvailableService from '@/services/rooms/roomAvailableService';
-import { formatPrice } from '@/pages/user/RoomDetail/components/RoomInfo';
+import { formatPrice } from '@/utils/formatPrice';
 import Notification from '@/components/Notification';
 import { Message } from '@/types/message';
 import { COLORS } from '@/config/constants';
@@ -15,10 +15,12 @@ dayjs.locale('vi');
 interface CalendarModalProps {
     open: boolean;
     onClose: () => void;
-    onConfirm: (checkIn: Date, checkOut: Date) => void;
+    onConfirm: (checkIn: Date, checkOut: Date, quantity: number, adults: number, children: number) => void;
     roomId: string;
     defaultPrice: number;
     initialDate?: string;
+    maxRooms: number;
+    maxGuests: number;
 }
 
 interface DayAvailability {
@@ -34,7 +36,9 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
     onConfirm,
     roomId,
     defaultPrice,
-    initialDate
+    initialDate,
+    maxRooms,
+    maxGuests
 }) => {
     const [loading, setLoading] = useState(false);
     const [checkInDate, setCheckInDate] = useState<Dayjs | null>(null);
@@ -43,6 +47,12 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
     const [currentMonth, setCurrentMonth] = useState<Dayjs>(dayjs());
     const [availabilityMap, setAvailabilityMap] = useState<Map<string, DayAvailability>>(new Map());
     const [message, setMessage] = useState<Message | null>(null);
+    
+    // Booking details state
+    const [quantity, setQuantity] = useState<number>(1);
+    const [adults, setAdults] = useState<number>(Math.min(2, maxGuests));
+    const [children, setChildren] = useState<number>(0);
+    const [isInitialLoad, setIsInitialLoad] = useState<boolean>(false);
 
     // Load availability data
     const loadAvailability = useCallback(async () => {
@@ -91,27 +101,38 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
     useEffect(() => {
         if (open && initialDate) {
             const checkIn = dayjs(initialDate);
-            const checkOut = checkIn.add(1, 'day');
             
             if (checkIn.isAfter(dayjs().subtract(1, 'day'))) {
                 setCheckInDate(checkIn);
-                // Only set checkout to 1 night by default if that day is available
-                // Otherwise let user select checkout manually
-                if (isDateAvailable(checkOut) && isDateWithin30Days(checkOut)) {
-                    setCheckOutDate(checkOut);
-                } else {
-                    setCheckOutDate(null);
-                }
                 setCurrentMonth(checkIn);
+                setIsInitialLoad(true); // Mark as initial load
             }
         } else if (!open) {
             // Reset when modal closes
             setCheckInDate(null);
             setCheckOutDate(null);
             setHoveredDate(null);
+            setIsInitialLoad(false);
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open, initialDate]);
+
+    // Set checkout date after availability is loaded (only on initial load)
+    useEffect(() => {
+        if (open && checkInDate && !checkOutDate && availabilityMap.size > 0 && isInitialLoad) {
+            const checkOut = checkInDate.add(1, 'day');
+            const maxDate = dayjs().add(30, 'day');
+            const isWithin30Days = checkOut.isBefore(maxDate, 'day') || checkOut.isSame(maxDate, 'day');
+            const checkOutStr = checkOut.format('YYYY-MM-DD');
+            const availability = availabilityMap.get(checkOutStr);
+            const isAvailable = availability?.isAvailable ?? false;
+            
+            // Set checkout to 1 night by default if that day is available
+            if (isAvailable && isWithin30Days) {
+                setCheckOutDate(checkOut);
+                setIsInitialLoad(false); // Only auto-set once
+            }
+        }
+    }, [open, checkInDate, checkOutDate, availabilityMap, isInitialLoad]);
 
     // Check if a date is within 30 days limit
     const isDateWithin30Days = (date: Dayjs): boolean => {
@@ -385,7 +406,7 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
             return;
         }
 
-        onConfirm(checkInDate.toDate(), checkOutDate.toDate());
+        onConfirm(checkInDate.toDate(), checkOutDate.toDate(), quantity, adults, children);
         onClose();
     };
 
@@ -408,6 +429,76 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
         >
             <Spin spinning={loading}>
                 <div className="py-4">
+                    {/* Booking Details Form */}
+                    <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                        <h3 className="font-semibold text-base mb-4">Chi tiết đặt phòng</h3>
+                        
+                        <div className="grid grid-cols-3 gap-4">
+                            {/* Quantity */}
+                            <div>
+                                <label className="block text-sm font-medium mb-2">
+                                    Số lượng phòng
+                                </label>
+                                <InputNumber
+                                    min={1}
+                                    max={maxRooms}
+                                    value={quantity}
+                                    onChange={(value) => setQuantity(value || 1)}
+                                    className="w-full"
+                                    size="large"
+                                />
+                            </div>
+
+                            {/* Adults */}
+                            <div>
+                                <label className="block text-sm font-medium mb-2">
+                                    Người lớn (tối đa {maxGuests})
+                                </label>
+                                <InputNumber
+                                    min={1}
+                                    max={maxGuests}
+                                    value={adults}
+                                    onChange={(value) => {
+                                        const newAdults = value || 1;
+                                        setAdults(newAdults);
+                                        // Max children = (maxGuests + 2) - adults
+                                        const maxChildrenAllowed = maxGuests + 2 - newAdults;
+                                        if (children > maxChildrenAllowed) {
+                                            setChildren(maxChildrenAllowed);
+                                        }
+                                    }}
+                                    className="w-full"
+                                    size="large"
+                                />
+                            </div>
+
+                            {/* Children */}
+                            <div>
+                                <label className="block text-sm font-medium mb-2">
+                                    Trẻ em (tối đa {maxGuests + 2 - adults})
+                                </label>
+                                <InputNumber
+                                    min={0}
+                                    max={maxGuests + 2 - adults}
+                                    value={children}
+                                    onChange={(value) => setChildren(value || 0)}
+                                    className="w-full"
+                                    size="large"
+                                />
+                            </div>
+                        </div>
+
+                        <p 
+                            className="text-xs text-gray-500"
+                            style={{
+                                marginBottom: 0,
+                                marginTop: '10px'
+                            }}
+                        >
+                            * Trẻ em trên 12 tuổi được tính là người lớn. Vui lòng điều chỉnh số lượng người lớn và trẻ em phù hợp với quy định của khách sạn.
+                        </p>
+                    </div>
+
                     {/* Month navigation */}
                     <div className="flex items-center justify-between mb-4">
                         <Button

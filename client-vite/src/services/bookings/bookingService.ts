@@ -1,5 +1,6 @@
 import api from '@/services/api';
 import {
+    CreateBookingInput,
     UpdateBookingInput,
     GetAllBookingsInput,
     GetAllBookingsResponse,
@@ -67,9 +68,20 @@ const previewBookingPrice = async (params: {
     }
 };
 
+const createBooking = async (bookingData: CreateBookingInput): Promise<Booking> => {
+    try {
+        const response = await api.post<Booking>('/booking', bookingData);
+        return response.data;
+    } catch (error) {
+        console.error('Error creating booking:', error);
+        throw error;
+    }
+};
+
 export default {
     getAllBookings,
     getBookingById,
+    createBooking,
     updateBooking,
     previewBookingPrice,
 };
