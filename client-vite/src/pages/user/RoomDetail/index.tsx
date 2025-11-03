@@ -54,6 +54,17 @@ const RoomDetail: React.FC = () => {
     });
   };
 
+  const handleDateSelect = (checkIn: Date, checkOut: Date) => {
+    // TODO: Navigate to booking page with selected dates
+    console.log("Selected dates:", checkIn, checkOut);
+    setMessage({
+      type: "success",
+      text: `Đã chọn: ${new Date(checkIn).toLocaleDateString('vi-VN')} - ${new Date(checkOut).toLocaleDateString('vi-VN')}`,
+    });
+    // Future: navigate to booking page
+    // navigate(`/booking?roomId=${room?.id}&checkIn=${checkIn.toISOString()}&checkOut=${checkOut.toISOString()}`);
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -103,7 +114,11 @@ const RoomDetail: React.FC = () => {
           <div className="lg:col-span-2">
             <RoomGallery images={room.images} roomName={room.name} />
             <RoomInfo room={room} />
-            <RoomCalendar roomId={room.id} defaultPrice={room.price} />
+            <RoomCalendar 
+              roomId={room.id} 
+              defaultPrice={room.price} 
+              onDateSelect={handleDateSelect}
+            />
           </div>
 
           {/* Right column - Booking card */}

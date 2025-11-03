@@ -129,7 +129,7 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
                     borderBottom: "1px solid #f0f0f0",
                 }}
             >
-                <div className="max-w-7xl mx-auto px-3 sm:px-4 h-full flex items-center justify-start">
+                <div className="max-w-7xl mx-auto px-3 sm:px-4 h-full flex items-center justify-between">
                     {/* Logo */}
                     <div className="flex items-center mr-8 lg:mr-12">
                         <div
@@ -147,7 +147,7 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
                     </div>
 
                     {/* Desktop Navigation - Hidden on mobile */}
-                    <nav className="hidden lg:flex items-center space-x-6 xl:space-x-8 flex-1">
+                    <nav className="hidden lg:flex items-center space-x-6 xl:space-x-8">
                         {menuItems.map((item) => (
                             <button
                                 key={item.name}
@@ -172,7 +172,7 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
                     </nav>
 
                     {/* Right Side - User Menu or Login Button, Mobile Menu */}
-                    <div className="flex items-center space-x-2 sm:space-x-3 ml-auto">
+                    <div className="flex items-center space-x-2 sm:space-x-3">
                         {/* Desktop - User Menu or Login Button */}
                         {!loading && (
                             currentUser ? (

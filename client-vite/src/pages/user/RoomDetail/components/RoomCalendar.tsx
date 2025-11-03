@@ -4,12 +4,14 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/vi';
 import roomAvailableService from '@/services/rooms/roomAvailableService';
 import { formatPrice } from '@/pages/user/RoomDetail/components/RoomInfo';
+import CalendarModal from '@/pages/user/RoomDetail/components/CalendarModal';
 
 dayjs.locale('vi');
 
 interface RoomCalendarProps {
     roomId: string;
     defaultPrice: number;
+    onDateSelect?: (checkIn: Date, checkOut: Date) => void;
 }
 
 interface DayData {
@@ -22,11 +24,12 @@ interface DayData {
     isPast: boolean;
 }
 
-const RoomCalendar: React.FC<RoomCalendarProps> = ({ roomId, defaultPrice }) => {
+const RoomCalendar: React.FC<RoomCalendarProps> = ({ roomId, defaultPrice, onDateSelect }) => {
     const [loading, setLoading] = useState(false);
     const [daysData, setDaysData] = useState<DayData[]>([]);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [selectedDate, setSelectedDate] = useState<string | undefined>(undefined);
 
-    // Load dữ liệu
     const loadData = useCallback(async () => {
         setLoading(true);
         try {
@@ -89,6 +92,21 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({ roomId, defaultPrice }) => 
         return minHeight + ratio * (maxHeight - minHeight);
     };
 
+    // Handle click on price column
+    const handlePriceClick = (date: string, hasInventory: boolean) => {
+        if (hasInventory) {
+            setSelectedDate(date);
+            setModalOpen(true);
+        }
+    };
+
+    // Handle date selection from modal
+    const handleDateConfirm = (checkIn: Date, checkOut: Date) => {
+        if (onDateSelect) {
+            onDateSelect(checkIn, checkOut);
+        }
+    };
+
     return (
         <div className="mb-6">
             <div className="flex items-center gap-2">
@@ -140,7 +158,8 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({ roomId, defaultPrice }) => 
                                     {/* Price label or X marker */}
                                     {hasInventory ? (
                                         <div
-                                            className="text-center font-semibold text-xs px-2 py-1 rounded mb-2"
+                                            onClick={() => handlePriceClick(day.date, hasInventory)}
+                                            className="text-center font-semibold text-xs px-2 py-1 rounded mb-2 cursor-pointer hover:opacity-80 transition-opacity"
                                             style={{
                                                 backgroundColor: isToday ? '#D4902A' : '#D4902A',
                                                 color: 'white',
@@ -244,6 +263,16 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({ roomId, defaultPrice }) => 
                     opacity: 0.8;
                 }
             `}</style>
+
+            {/* Calendar Modal */}
+            <CalendarModal
+                open={modalOpen}
+                onClose={() => setModalOpen(false)}
+                onConfirm={handleDateConfirm}
+                roomId={roomId}
+                defaultPrice={defaultPrice}
+                initialDate={selectedDate}
+            />
         </div>
     );
 };
