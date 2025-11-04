@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button, Spin } from "antd";
+import dayjs from "dayjs";
 import { Room } from "@/types/room";
 import { Message } from "@/types/message";
 import roomService from "@/services/rooms/roomService";
@@ -9,6 +10,7 @@ import RoomGallery from "@/pages/user/RoomDetail/components/RoomGallery";
 import RoomInfo from "@/pages/user/RoomDetail/components/RoomInfo";
 import RoomCalendar from "@/pages/user/RoomDetail/components/RoomCalendar";
 import BookingCard from "@/pages/user/RoomDetail/components/BookingCard";
+import CalendarModal from "@/pages/user/RoomDetail/components/CalendarModal";
 
 const RoomDetail: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>();
@@ -16,6 +18,7 @@ const RoomDetail: React.FC = () => {
   const [room, setRoom] = useState<Room | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<Message | null>(null);
+  const [quickBookModalOpen, setQuickBookModalOpen] = useState(false);
 
   useEffect(() => {
     const loadRoomDetail = async () => {
@@ -46,15 +49,8 @@ const RoomDetail: React.FC = () => {
   }, [roomId]);
 
   const handleBookRoom = () => {
-    if (!room) return;
-    
-    // Navigate to booking page with default dates (today + 1 night)
-    const checkIn = new Date();
-    checkIn.setHours(0, 0, 0, 0);
-    const checkOut = new Date(checkIn);
-    checkOut.setDate(checkOut.getDate() + 1);
-    
-    navigate(`/booking?roomId=${room.id}&checkIn=${checkIn.toISOString()}&checkOut=${checkOut.toISOString()}`);
+    // Open quick book modal instead of navigating directly
+    setQuickBookModalOpen(true);
   };
 
   const handleDateSelect = (checkIn: Date, checkOut: Date, quantity: number, adults: number, children: number) => {
@@ -136,6 +132,19 @@ const RoomDetail: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Quick Book Calendar Modal */}
+      {room && (
+        <CalendarModal
+          open={quickBookModalOpen}
+          onClose={() => setQuickBookModalOpen(false)}
+          onConfirm={handleDateSelect}
+          roomId={room.id}
+          maxRooms={room.quantity}
+          maxGuests={room.maxGuests}
+          initialDate={dayjs().format('YYYY-MM-DD')}
+        />
+      )}
     </div>
   );
 };

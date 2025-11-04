@@ -272,7 +272,6 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({ roomId, defaultPrice, maxRo
                 onClose={() => setModalOpen(false)}
                 onConfirm={handleDateConfirm}
                 roomId={roomId}
-                defaultPrice={defaultPrice}
                 maxRooms={maxRooms}
                 maxGuests={maxGuests}
                 initialDate={selectedDate}

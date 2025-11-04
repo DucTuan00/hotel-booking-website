@@ -4,7 +4,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
 import 'dayjs/locale/vi';
 import roomAvailableService from '@/services/rooms/roomAvailableService';
-import { formatPrice } from '@/utils/formatPrice';
+import bookingService from '@/services/bookings/bookingService';
 import Notification from '@/components/Notification';
 import { Message } from '@/types/message';
 import { COLORS } from '@/config/constants';
@@ -17,7 +17,6 @@ interface CalendarModalProps {
     onClose: () => void;
     onConfirm: (checkIn: Date, checkOut: Date, quantity: number, adults: number, children: number) => void;
     roomId: string;
-    defaultPrice: number;
     initialDate?: string;
     maxRooms: number;
     maxGuests: number;
@@ -35,7 +34,6 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
     onClose,
     onConfirm,
     roomId,
-    defaultPrice,
     initialDate,
     maxRooms,
     maxGuests
@@ -351,9 +349,7 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
                                         <span className="text-red-500 font-bold">✕</span>
                                     ) : (
                                         <span className="text-gray-500">
-                                            {formatPrice(
-                                                availabilityMap.get(day.format('YYYY-MM-DD'))?.price ?? defaultPrice
-                                            )}
+                                            {availabilityMap.get(day.format('YYYY-MM-DD'))?.inventory ?? ''} phòng trống
                                         </span>
                                     )}
                                 </div>
@@ -379,7 +375,7 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
         return false;
     };
 
-    const handleConfirm = () => {
+    const handleConfirm = async () => {
         if (!checkInDate || !checkOutDate) {
             setMessage({
                 type: 'error',
@@ -406,8 +402,29 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
             return;
         }
 
-        onConfirm(checkInDate.toDate(), checkOutDate.toDate(), quantity, adults, children);
-        onClose();
+        // Check if quantity is available for all dates in the range
+        try {
+            setLoading(true);
+            const formattedCheckIn = checkInDate.format('YYYY-MM-DD');
+            const formattedCheckOut = checkOutDate.format('YYYY-MM-DD');
+            
+            await bookingService.previewBookingPrice({
+                roomId,
+                checkIn: formattedCheckIn,
+                checkOut: formattedCheckOut,
+                quantity
+            });
+            
+            // If preview succeeds, proceed with confirmation
+            onConfirm(checkInDate.toDate(), checkOutDate.toDate(), quantity, adults, children);
+            onClose();
+        } catch {
+            setLoading(false);
+            setMessage({
+                type: 'error',
+                text: 'Có ngày trong khoảng thời gian bạn chọn không đủ số lượng phòng. Vui lòng điều chỉnh lại.'
+            });
+        }
     };
 
     const handleReset = () => {

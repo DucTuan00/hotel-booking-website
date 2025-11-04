@@ -61,27 +61,27 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
 
             {/* Booking Details */}
             <div className="space-y-3 mb-4">
-                <div className="flex justify-between">
+                <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Nhận phòng:</span>
                     <span className="font-medium">
                         {dayjs(checkIn).format('DD/MM/YYYY')} (lúc 14:00)
                     </span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Trả phòng:</span>
                     <span className="font-medium">
                         {dayjs(checkOut).format('DD/MM/YYYY')} (đến 12:00)
                     </span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Số đêm:</span>
                     <span className="font-medium">{nights} đêm</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Số lượng phòng:</span>
                     <span className="font-medium">{quantity} phòng</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Số khách:</span>
                     <span className="font-medium">
                         {adults} người lớn{children > 0 && `, ${children} trẻ em`}
@@ -175,7 +175,7 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
                     fontWeight: 600
                 }}
             >
-                XÁC NHẬN ĐẶT PHÒNG
+                ĐẶT PHÒNG
             </Button>
         </div>
     );

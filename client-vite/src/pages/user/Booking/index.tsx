@@ -216,8 +216,6 @@ const Booking: React.FC = () => {
                     {/* Left column - Booking Form */}
                     <div className="lg:col-span-2">
                         <div className="bg-white rounded-lg shadow-md p-6">
-                            <h2 className="text-xl font-semibold mb-6">Thông tin đặt phòng</h2>
-
                             <Form
                                 form={form}
                                 layout="vertical"
