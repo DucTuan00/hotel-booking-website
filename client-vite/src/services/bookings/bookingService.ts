@@ -40,6 +40,17 @@ const updateBooking = async (args: UpdateBookingInput): Promise<Booking> => {
     }
 };
 
+const updatePaymentStatus = async (args: { bookingId: string; paymentStatus: string }): Promise<Booking> => {
+    const { bookingId, paymentStatus } = args;
+    try {
+        const response = await api.patch<Booking>(`/booking/${bookingId}/payment-status`, { paymentStatus });
+        return response.data;
+    } catch (error) {
+        console.error(`Error updating payment status for ID ${bookingId}:`, error);
+        throw error;
+    }
+};
+
 const previewBookingPrice = async (params: {
     roomId: string;
     checkIn: string;
@@ -83,5 +94,6 @@ export default {
     getBookingById,
     createBooking,
     updateBooking,
+    updatePaymentStatus,
     previewBookingPrice,
 };

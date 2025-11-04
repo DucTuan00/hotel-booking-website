@@ -11,6 +11,7 @@ router.get('/user', authMiddleware([UserRole.USER]), bookingController.getBookin
 router.get('/:id', authMiddleware([UserRole.USER, UserRole.ADMIN]), bookingController.getBookingById);
 router.get('/', authMiddleware([UserRole.ADMIN]), bookingController.getAllBookings);
 router.delete('/:id', authMiddleware([UserRole.USER, UserRole.ADMIN]), bookingController.cancelBooking);
+router.patch('/:id/payment-status', authMiddleware([UserRole.ADMIN]), bookingController.updatePaymentStatus);
 router.patch('/:id', authMiddleware([UserRole.ADMIN]), bookingController.updateBooking);
 
 export default router;

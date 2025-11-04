@@ -44,19 +44,19 @@ export async function createBooking(args: CreateBookingInput) {
         celebrateItems = []
     } = args;
 
-    // 1. Validate user
+    // Validate user
     const existUser = await User.findById(userId);
     if (!existUser || !existUser.active) {
         throw new ApiError('User not found or inactive', 404);
     }
 
-    // 2. Validate room
+    // Validate room
     const existRoom = await Room.findById(roomId);
     if (!existRoom || !existRoom.active || existRoom.deletedAt) {
         throw new ApiError('Room not found or inactive', 404);
     }
 
-    // 3. Validate dates
+    // Validate dates
     if (!checkIn || isNaN(new Date(checkIn).getTime())) {
         throw new ApiError('Invalid check-in date', 400);
     }
@@ -77,7 +77,7 @@ export async function createBooking(args: CreateBookingInput) {
         throw new ApiError('Check-out date must be after check-in date', 400);
     }
 
-    // 4. Validate guests
+    // Validate guests
     const totalGuests = guests.adults + (guests.children || 0);
     const maxAllowedGuests = existRoom.maxGuests * quantity;
 
@@ -92,23 +92,23 @@ export async function createBooking(args: CreateBookingInput) {
         );
     }
 
-    // 5. Validate quantity
+    // Validate quantity
     if (isNaN(quantity) || quantity <= 0) {
         throw new ApiError('Invalid room quantity', 400);
     }
 
-    // 6. Validate contact info
+    // Validate contact info
     if (!firstName || !lastName || !email || !phoneNumber) {
         throw new ApiError('Contact information is required', 400);
     }
 
-    // 7. Check availability
+    // Check availability
     const availabilityCheck = await checkAvailability(roomId, checkInDate, checkOutDate, quantity);
     if (!availabilityCheck.available) {
         throw new ApiError(availabilityCheck.message || 'Room not available for selected dates', 400);
     }
 
-    // 8. Calculate pricing with celebrate items
+    // Calculate pricing with celebrate items
     const pricing = await calculateBookingPrice(
         roomId,
         checkInDate,
@@ -117,7 +117,7 @@ export async function createBooking(args: CreateBookingInput) {
         celebrateItems
     );
 
-    // 9. Validate celebrate items if provided
+    // Validate celebrate items if provided
     const celebrateItemsData: Array<{ item: any; quantity: number; price: number }> = [];
     if (celebrateItems && celebrateItems.length > 0) {
         for (const celebrateItemInput of celebrateItems) {
@@ -136,7 +136,7 @@ export async function createBooking(args: CreateBookingInput) {
         }
     }
 
-    // 10. Create booking snapshot
+    // Create booking snapshot
     const snapshot = await createBookingSnapshot(
         existRoom,
         pricing.dailyRates,
@@ -148,16 +148,15 @@ export async function createBooking(args: CreateBookingInput) {
         }
     );
 
-    // 11. Determine booking status and payment status
+    // Determine booking status and payment status
     let bookingStatus = BookingStatus.PENDING;
     let paymentStatus = PaymentStatus.UNPAID;
 
-    // 12. Start MongoDB transaction
+    // Start MongoDB transaction
     const session = await mongoose.startSession();
     session.startTransaction();
 
     try {
-        // Create booking
         const newBooking = new Booking({
             userId: existUser._id,
             roomId: existRoom._id,
@@ -200,7 +199,6 @@ export async function createBooking(args: CreateBookingInput) {
             session
         );
 
-        // Commit transaction
         await session.commitTransaction();
 
         return mapId(savedBooking);

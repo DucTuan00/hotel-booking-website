@@ -113,6 +113,26 @@ export async function updateBooking(req: Request, res: Response, next: NextFunct
     }
 }
 
+export async function updatePaymentStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+        const bookingId = req.params.id;
+        const { paymentStatus, paymentIntentId } = req.body;
+
+        if (!paymentStatus) {
+            throw new ApiError('Missing required parameter: paymentStatus', 400);
+        }
+
+        const updatedBooking = await bookingService.updatePaymentStatus(
+            bookingId, 
+            paymentStatus,
+            paymentIntentId
+        );
+        res.json(updatedBooking);
+    } catch (error: any) {
+        next(new ApiError(error.message, error.statusCode || 500));
+    }
+}
+
 export async function previewBookingPrice(req: Request, res: Response, next: NextFunction) {
     try {
         const { roomId, checkIn, checkOut, quantity, celebrateItems } = req.query;

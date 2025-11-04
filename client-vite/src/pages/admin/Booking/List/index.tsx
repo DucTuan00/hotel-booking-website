@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Tag, Button, Space, Tooltip } from 'antd';
-import { EditOutlined, EyeOutlined } from '@ant-design/icons';
-import BookingForm from '@/pages/admin/Booking/Form';
+import { useNavigate } from 'react-router-dom';
+import { Tag, Tooltip } from 'antd';
 import Notification from '@/components/Notification';
 import AdminTable from '@/components/AdminTable';
 import SearchTableAdmin, { SearchFilters } from '@/components/SearchTableAdmin';
@@ -23,10 +22,9 @@ const getName = (val: string | { name?: string } | null | undefined): string => 
 };
 
 const BookingList: React.FC = () => {
+    const navigate = useNavigate();
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
-    const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
-    const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
     const [message, setMessage] = useState<Message | null>(null);
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [pageSize, setPageSize] = useState<number>(5);
@@ -77,31 +75,7 @@ const BookingList: React.FC = () => {
     };
 
     const handleEdit = (booking: Booking) => {
-        setIsModalVisible(true);
-        setEditingBooking(booking);
-    };
-
-    const handleCancel = () => {
-        setIsModalVisible(false);
-        setEditingBooking(null);
-    };
-
-    const handleFormSubmit = async (
-        isLoadingFromChild: boolean,
-        data: Booking | null,
-        error?: unknown
-    ) => {
-        setLoading(isLoadingFromChild);
-        if (error) {
-            setMessage({ type: 'error', text: editingBooking ? 'Cập nhật đặt phòng thất bại.' : 'Thêm đặt phòng thất bại.' });
-            return;
-        }
-        if (!isLoadingFromChild && data) {
-            setMessage({ type: 'success', text: editingBooking ? 'Cập nhật đơn đặt phòng thành công!' : 'Đặt phòng đã được thêm thành công!' });
-            setEditingBooking(null);
-            setIsModalVisible(false);
-            fetchBookings();
-        }
+        navigate(`/dashboard/bookings/${booking.id}`);
     };
 
     const getStatusColor = (status: BookingStatus) => {
@@ -184,11 +158,16 @@ const BookingList: React.FC = () => {
             title: 'Mã đơn',
             dataIndex: 'id',
             key: 'id',
-            width: 100,
+            width: 150,
             fixed: 'left',
-            render: (id) => (
+            render: (id, booking) => (
                 <Tooltip title={id}>
-                    <span>{id.substring(0, 8)}...</span>
+                    <span 
+                        onClick={() => handleEdit(booking)}
+                        className="text-blue-600 cursor-pointer hover:underline"
+                    >
+                        {id}
+                    </span>
                 </Tooltip>
             ),
         },
@@ -222,49 +201,19 @@ const BookingList: React.FC = () => {
             dataIndex: 'checkIn',
             key: 'checkIn',
             render: (date) => moment(date).format('DD/MM/YYYY'),
-            width: 110,
+            width: 80,
         },
         {
             title: 'Check-out',
             dataIndex: 'checkOut',
             key: 'checkOut',
             render: (date) => moment(date).format('DD/MM/YYYY'),
-            width: 110,
-        },
-        {
-            title: 'SL phòng',
-            dataIndex: 'quantity',
-            key: 'quantity',
-            align: 'center',
-            width: 90,
-        },
-        {
-            title: 'Khách',
-            key: 'guests',
-            align: 'center',
-            width: 90,
-            render: (_, booking) => (
-                <span>
-                    {booking.guests.adults}N
-                    {booking.guests.children ? ` / ${booking.guests.children}T` : ''}
-                </span>
-            ),
-        },
-        {
-            title: 'Tổng tiền',
-            dataIndex: 'totalPrice',
-            key: 'totalPrice',
-            render: (price) => (
-                <span style={{ fontWeight: 500 }}>
-                    {price.toLocaleString('vi-VN')}đ
-                </span>
-            ),
-            width: 130,
+            width: 80,
         },
         {
             title: 'Thanh toán',
             key: 'payment',
-            width: 140,
+            width: 120,
             render: (_, booking) => (
                 <div>
                     <Tag color={getPaymentStatusColor(booking.paymentStatus)}>
@@ -285,40 +234,14 @@ const BookingList: React.FC = () => {
                     {getStatusText(status)}
                 </Tag>
             ),
-            width: 130,
+            width: 100,
         },
         {
             title: 'Ngày tạo',
             dataIndex: 'createdAt',
             key: 'createdAt',
             render: (date) => date ? moment(date).format('DD/MM/YYYY HH:mm') : '-',
-            width: 140,
-        },
-        {
-            title: 'Hành động',
-            key: 'actions',
-            fixed: 'right',
             width: 120,
-            render: (_, booking) => (
-                <Space>
-                    <Tooltip title="Xem chi tiết">
-                        <Button
-                            type="link"
-                            size="small"
-                            icon={<EyeOutlined />}
-                            onClick={() => handleEdit(booking)}
-                        />
-                    </Tooltip>
-                    <Tooltip title="Cập nhật">
-                        <Button
-                            type="link"
-                            size="small"
-                            icon={<EditOutlined />}
-                            onClick={() => handleEdit(booking)}
-                        />
-                    </Tooltip>
-                </Space>
-            ),
         },
     ];
 
@@ -345,7 +268,7 @@ const BookingList: React.FC = () => {
                     pageSize: pageSize,
                     total: totalBookings,
                     showSizeChanger: true,
-                    showQuickJumper: true,
+                    showQuickJumper: false,
                     showTotal: (total, range) =>
                         `${range[0]}-${range[1]} của ${total} booking`,
                     onChange: (page, size) => {
@@ -358,14 +281,6 @@ const BookingList: React.FC = () => {
                 }}
                 rowKey="id"
                 scroll={{ x: 1600 }}
-            />
-
-            <BookingForm
-                visible={isModalVisible}
-                onCancel={handleCancel}
-                onSubmit={handleFormSubmit}
-                initialValues={editingBooking ?? undefined}
-                loading={loading}
             />
         </>
     );

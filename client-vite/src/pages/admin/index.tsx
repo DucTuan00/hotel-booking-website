@@ -1,6 +1,7 @@
 import DashboardPage from '@/pages/admin/Dashboard';
 import AmenityList from '@/pages/admin/Amenity/List';
 import BookingList from '@/pages/admin/Booking/List';
+import BookingDetail from '@/pages/admin/Booking/Detail';
 import RoomList from '@/pages/admin/Room/List';
 import UserList from '@/pages/admin/User/List';
 import RoomPricing from '@/pages/admin/Room/Pricing';
@@ -16,6 +17,7 @@ export {
     DashboardPage,
     AmenityList,
     BookingList,
+    BookingDetail,
     RoomList,
     UserList,
     RoomPricing,
