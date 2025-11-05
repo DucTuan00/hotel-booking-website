@@ -7,6 +7,8 @@ import {
     Booking,
     PreviewPriceResponse,
     CelebrateItemInput,
+    BookingIdInput,
+    CancelBookingResponse
 } from '@/types/booking';
 
 const getAllBookings = async (params: GetAllBookingsInput): Promise<GetAllBookingsResponse> => {
@@ -89,6 +91,17 @@ const createBooking = async (bookingData: CreateBookingInput): Promise<Booking> 
     }
 };
 
+const cancelBooking = async (args: BookingIdInput): Promise<CancelBookingResponse> => {
+    const { bookingId, cancellationReason } = args;
+    try {
+        const response = await api.post(`/booking/${bookingId}/cancel`, { cancellationReason });
+        return response.data;
+    } catch (error) {
+        console.error(`Error cancelling booking ${bookingId}:`, error);
+        throw error;
+    }
+};
+
 export default {
     getAllBookings,
     getBookingById,
@@ -96,4 +109,5 @@ export default {
     updateBooking,
     updatePaymentStatus,
     previewBookingPrice,
+    cancelBooking,
 };

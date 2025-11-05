@@ -43,6 +43,7 @@ export interface CreateBookingInput {
 
 export interface BookingIdInput {
     bookingId: string;
+    cancellationReason?: string;
 }
 
 export interface UserIdInput {

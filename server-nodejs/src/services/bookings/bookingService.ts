@@ -260,10 +260,10 @@ export async function getBookingsByUserId(arg: UserIdInput) {
 }
 
 /**
- * Cancel booking by user with cancellation policy
+ * Cancel booking with cancellation policy (for both user and admin)
  */
 export async function cancelBooking(arg: BookingIdInput) {
-    const { bookingId } = arg;
+    const { bookingId, cancellationReason } = arg;
 
     const booking = await Booking.findById(bookingId);
     if (!booking) {
@@ -295,7 +295,9 @@ export async function cancelBooking(arg: BookingIdInput) {
         // Update booking status
         booking.status = BookingStatus.CANCELLED;
         booking.cancelledAt = new Date();
-        booking.cancellationReason = `Cancelled by user. Fee: ${cancellationInfo.feePercentage}% (${cancellationInfo.fee} VND). Refund: ${cancellationInfo.refundAmount} VND.`;
+        
+        booking.cancellationReason = cancellationReason || 
+            `Cancelled. Fee: ${cancellationInfo.feePercentage}% (${cancellationInfo.fee} VND). Refund: ${cancellationInfo.refundAmount} VND.`;
 
         await booking.save({ session });
 
@@ -325,8 +327,19 @@ export async function cancelBooking(arg: BookingIdInput) {
 
         await session.commitTransaction();
 
+        // Fetch the updated booking with populated references
+        const updatedBooking = await Booking.findById(bookingId)
+            .populate({ path: 'userId', select: 'name email' })
+            .populate({ path: 'roomId', select: 'name roomType price' });
+
+        if (!updatedBooking) {
+            throw new ApiError('Booking not found after cancellation', 404);
+        }
+
         return {
-            ...mapId(booking),
+            booking: { 
+                ...mapId(updatedBooking) 
+            },
             cancellationInfo: {
                 fee: cancellationInfo.fee,
                 feePercentage: cancellationInfo.feePercentage,
@@ -461,10 +474,18 @@ export async function updateBooking(args: UpdateBookingInput) {
             if (booking.paymentMethod === PaymentMethod.ONSITE && booking.paymentStatus !== PaymentStatus.PAID) {
                 throw new ApiError('Payment must be completed before check-in for onsite payment', 400);
             }
+            // Log check-in time
+            if (!booking.checkedInAt) {
+                booking.checkedInAt = new Date();
+            }
         } else if (status === BookingStatus.CHECKED_OUT) {
             // Validate can check out (must be checked in first)
             if (oldStatus !== BookingStatus.CHECKED_IN) {
                 throw new ApiError('Can only check out checked-in bookings', 400);
+            }
+            // Log check-out time
+            if (!booking.checkedOutAt) {
+                booking.checkedOutAt = new Date();
             }
         }
 

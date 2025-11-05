@@ -1,14 +1,20 @@
-import React from 'react';
-import { Alert, Select } from 'antd';
+import React, { useState } from 'react';
+import { Alert, Select, Button, Modal, Input, Space } from 'antd';
+import { ExclamationCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import BaseDetailRow from '@/pages/admin/Booking/Detail/components/BaseDetailRow';
 import DetailSection from '@/pages/admin/Booking/Detail/components/DetailSection';
 import { Booking, BookingStatus } from '@/types/booking';
+import { calculateCancellationFee } from '@/utils/cancellationHelper';
+import { formatPrice } from '@/utils/formatPrice';
+
+const { TextArea } = Input;
 
 interface BookingStatusInfoProps {
     booking: Booking;
     status?: BookingStatus;
     onStatusChange?: (status: BookingStatus) => void;
+    onCancel?: (cancellationReason: string) => Promise<void>;
 }
 
 const getStatusText = (status: BookingStatus) => {
@@ -30,16 +36,19 @@ const getStatusText = (status: BookingStatus) => {
     }
 };
 
-const BookingStatusInfo: React.FC<BookingStatusInfoProps> = ({ booking, status, onStatusChange }) => {
+const BookingStatusInfo: React.FC<BookingStatusInfoProps> = ({ booking, status, onStatusChange, onCancel }) => {
     const displayStatus = status || booking.status;
+    const [isCancelModalVisible, setIsCancelModalVisible] = useState(false);
+    const [cancellationReason, setCancellationReason] = useState('');
+    const [submitting, setSubmitting] = useState(false);
 
     // Lấy các trạng thái có thể chuyển đến từ trạng thái hiện tại
     const getAvailableStatusTransitions = (): BookingStatus[] => {
         switch (booking.status) {
             case BookingStatus.PENDING:
-                return [BookingStatus.PENDING, BookingStatus.CONFIRMED, BookingStatus.REJECTED, BookingStatus.CANCELLED];
+                return [BookingStatus.PENDING, BookingStatus.CONFIRMED, BookingStatus.REJECTED];
             case BookingStatus.CONFIRMED:
-                return [BookingStatus.CONFIRMED, BookingStatus.CHECKED_IN, BookingStatus.REJECTED, BookingStatus.CANCELLED];
+                return [BookingStatus.CONFIRMED, BookingStatus.CHECKED_IN, BookingStatus.REJECTED];
             case BookingStatus.CHECKED_IN:
                 return [BookingStatus.CHECKED_IN, BookingStatus.CHECKED_OUT];
             case BookingStatus.CHECKED_OUT:
@@ -58,33 +67,102 @@ const BookingStatusInfo: React.FC<BookingStatusInfoProps> = ({ booking, status, 
         }
     };
 
+    const handleCancelClick = () => {
+        const cancellationInfo = calculateCancellationFee(booking);
+        
+        if (!cancellationInfo.canCancel) {
+            Modal.warning({
+                title: 'Không thể hủy',
+                content: cancellationInfo.reason,
+                icon: <ExclamationCircleOutlined />,
+            });
+            return;
+        }
+
+        setIsCancelModalVisible(true);
+    };
+
+    const handleConfirmCancel = async () => {
+        if (!onCancel) return;
+
+        setSubmitting(true);
+        try {
+            await onCancel(cancellationReason);
+            setIsCancelModalVisible(false);
+            setCancellationReason('');
+        } catch (error) {
+            console.error('Error cancelling booking:', error);
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const cancellationInfo = calculateCancellationFee(booking);
+    
+    // Check if current date is before check-in date
+    const today = new Date();
+    const checkInDate = new Date(booking.checkIn);
+    const isBeforeCheckIn = today < checkInDate;
+    
+    const canShowCancelButton = booking.status !== BookingStatus.CANCELLED && 
+                                booking.status !== BookingStatus.REJECTED &&
+                                booking.status !== BookingStatus.CHECKED_OUT &&
+                                isBeforeCheckIn &&
+                                onCancel;
+
     return (
-        <DetailSection title="Trạng thái đặt phòng">
-            <BaseDetailRow
-                label="Trạng thái hiện tại"
-                value={
-                    onStatusChange ? (
-                        <Select
-                            value={displayStatus}
-                            onChange={handleStatusChange}
-                            style={{ minWidth: '200px' }}
-                            disabled={getAvailableStatusTransitions().length === 1}
-                            options={getAvailableStatusTransitions().map((s) => ({
-                                value: s,
-                                label: getStatusText(s)
-                            }))}
-                        />
-                    ) : (
-                        <>
-                            {getStatusText(displayStatus)}
-                        </>
-                    )
-                }
-            />
+        <>
+            <DetailSection title="Trạng thái đặt phòng">
+                <BaseDetailRow
+                    label="Trạng thái hiện tại"
+                    value={
+                        <Space>
+                            {onStatusChange ? (
+                                <Select
+                                    value={displayStatus}
+                                    onChange={handleStatusChange}
+                                    style={{ minWidth: '200px' }}
+                                    disabled={getAvailableStatusTransitions().length === 1}
+                                    options={getAvailableStatusTransitions().map((s) => ({
+                                        value: s,
+                                        label: getStatusText(s)
+                                    }))}
+                                />
+                            ) : (
+                                <>
+                                    {getStatusText(displayStatus)}
+                                </>
+                            )}
+                            {canShowCancelButton && (
+                                <Button
+                                    type="primary"
+                                    danger
+                                    size="small"
+                                    icon={<CloseCircleOutlined />}
+                                    onClick={handleCancelClick}
+                                >
+                                    Hủy đơn
+                                </Button>
+                            )}
+                        </Space>
+                    }
+                />
             {booking.confirmedAt && (
                 <BaseDetailRow
                     label="Ngày xác nhận"
                     value={moment(booking.confirmedAt).format('DD/MM/YYYY HH:mm')}
+                />
+            )}
+            {booking.checkedInAt && (
+                <BaseDetailRow
+                    label="Ngày check-in"
+                    value={moment(booking.checkedInAt).format('DD/MM/YYYY HH:mm')}
+                />
+            )}
+            {booking.checkedOutAt && (
+                <BaseDetailRow
+                    label="Ngày check-out"
+                    value={moment(booking.checkedOutAt).format('DD/MM/YYYY HH:mm')}
                 />
             )}
             {booking.rejectedAt && (
@@ -102,8 +180,7 @@ const BookingStatusInfo: React.FC<BookingStatusInfoProps> = ({ booking, status, 
             {booking.cancellationReason && (
                 <BaseDetailRow
                     label="Lý do hủy"
-                    value={<Alert message={booking.cancellationReason} type="info" showIcon />}
-                    fullWidth
+                    value={booking.cancellationReason}
                 />
             )}
             <BaseDetailRow
@@ -123,6 +200,51 @@ const BookingStatusInfo: React.FC<BookingStatusInfoProps> = ({ booking, status, 
                 }
             />
         </DetailSection>
+
+        {/* Cancel Modal */}
+        <Modal
+            title="Xác nhận hủy đơn đặt phòng"
+            open={isCancelModalVisible}
+            onOk={handleConfirmCancel}
+            onCancel={() => {
+                setIsCancelModalVisible(false);
+                setCancellationReason('');
+            }}
+            confirmLoading={submitting}
+            okText="Xác nhận hủy"
+            cancelText="Đóng"
+            okButtonProps={{ danger: true }}
+            width={600}
+        >
+            <div style={{ marginBottom: '20px' }}>
+                <Alert
+                    message="Thông tin phí hủy"
+                    description={
+                        <div>
+                            <p><strong>Thời gian hủy:</strong> {cancellationInfo.daysBeforeCheckIn} ngày trước check-in</p>
+                            <p><strong>Phí hủy:</strong> {cancellationInfo.feePercentage}% = {formatPrice(cancellationInfo.fee)}</p>
+                            <p><strong>Số tiền hoàn lại:</strong> {formatPrice(cancellationInfo.refundAmount)}</p>
+                            <p><strong>Khôi phục phòng:</strong> {cancellationInfo.restoreInventory ? 'Có' : 'Không'}</p>
+                        </div>
+                    }
+                    type="warning"
+                    showIcon
+                    icon={<ExclamationCircleOutlined />}
+                />
+            </div>
+            <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
+                    Lý do hủy (tùy chọn):
+                </label>
+                <TextArea
+                    rows={4}
+                    value={cancellationReason}
+                    onChange={(e) => setCancellationReason(e.target.value)}
+                    placeholder="Nhập lý do hủy đơn đặt phòng..."
+                />
+            </div>
+        </Modal>
+    </>
     );
 };
 

@@ -19,9 +19,12 @@ interface BookingInterface extends Document {
     lastName: string;
     email: string;
     phoneNumber: string;
+    note: string;
     paymentMethod: PaymentMethod;
     paymentStatus: PaymentStatus;
     confirmedAt?: Date;
+    checkedInAt?: Date;
+    checkedOutAt?: Date;
     rejectedAt?: Date;
     cancelledAt?: Date;
     cancellationReason?: string;
@@ -92,6 +95,9 @@ const bookingSchema: Schema = new mongoose.Schema({
         type: String, 
         required: true 
     },
+    note: { 
+        type: String 
+    },
     paymentMethod: { 
         type: String, 
         enum: Object.values(PaymentMethod), 
@@ -103,6 +109,12 @@ const bookingSchema: Schema = new mongoose.Schema({
         default: PaymentStatus.UNPAID 
     },
     confirmedAt: { 
+        type: Date 
+    },
+    checkedInAt: { 
+        type: Date 
+    },
+    checkedOutAt: { 
         type: Date 
     },
     rejectedAt: { 

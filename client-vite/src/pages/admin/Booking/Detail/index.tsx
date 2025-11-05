@@ -112,6 +112,38 @@ const BookingDetail: React.FC = () => {
         }
     };
 
+    const handleCancelBooking = async (cancellationReason: string) => {
+        if (!bookingId) return;
+
+        try {
+            const { booking: cancelledBooking, cancellationInfo } = await bookingService.cancelBooking({
+                bookingId,
+                cancellationReason,
+            });
+
+            console.log('Cancelled Booking:', cancelledBooking);
+
+            setBooking(cancelledBooking);
+            setNewBookingStatus(cancelledBooking.status);
+            setHasChanges(false);
+            
+            const refundText = cancellationInfo.refundAmount > 0 
+                ? ` Hoàn tiền: ${cancellationInfo.refundAmount.toLocaleString('vi-VN')} VND.`
+                : '';
+            
+            setMessage({
+                type: 'success',
+                text: `Đã hủy đơn đặt phòng thành công! Phí hủy: ${cancellationInfo.feePercentage}%.${refundText}`,
+            });
+        } catch (error) {
+            console.error('Error cancelling booking:', error);
+            setMessage({
+                type: 'error',
+                text: 'Hủy đơn thất bại. Vui lòng kiểm tra lại.',
+            });
+        }
+    };
+
     const handleGoBack = () => {
         navigate('/dashboard/bookings');
     };
@@ -165,6 +197,7 @@ const BookingDetail: React.FC = () => {
                     booking={booking}
                     status={newBookingStatus || undefined}
                     onStatusChange={handleStatusChange}
+                    onCancel={handleCancelBooking}
                 />
 
                 {hasChanges && (

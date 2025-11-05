@@ -74,7 +74,12 @@ export async function getBookingsByUserId(req: Request, res: Response, next: Nex
 export async function cancelBooking(req: Request, res: Response, next: NextFunction) {
     try {
         const bookingId = req.params.id;
-        const booking = await bookingService.cancelBooking({ bookingId });
+        const { cancellationReason } = req.body;
+        
+        const booking = await bookingService.cancelBooking({ 
+            bookingId, 
+            cancellationReason 
+        });
         res.status(200).json(booking);
     } catch (error: any) {
         next(new ApiError(error.message, error.statusCode || 500));

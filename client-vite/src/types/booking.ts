@@ -47,6 +47,7 @@ export interface CreateBookingInput {
 
 export interface BookingIdInput {
     bookingId: string;
+    cancellationReason?: string;
 }
 
 export interface UserIdInput {
@@ -110,6 +111,8 @@ export interface Booking {
     paymentMethod: PaymentMethod;
     paymentStatus: PaymentStatus;
     confirmedAt?: string;
+    checkedInAt?: string;
+    checkedOutAt?: string;
     rejectedAt?: string;
     cancelledAt?: string;
     cancellationReason?: string;
@@ -165,4 +168,14 @@ export interface PreviewPriceResponse {
         quantity: number;
         subtotal: number;
     }>;
+}
+
+export interface CancelBookingResponse {
+    booking: Booking;
+    cancellationInfo: {
+        fee: number;
+        feePercentage: number;
+        refundAmount: number;
+        inventoryRestored: boolean;
+    };
 }
