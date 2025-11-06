@@ -8,6 +8,7 @@ import bookingService from '@/services/bookings/bookingService';
 import userService from '@/services/users/userService';
 import celebrateItemService from '@/services/celebrations/celebrateItemService';
 import Notification from '@/components/Notification';
+import LoadingSpinner from '@/components/LoadingSpinner';
 import { Message } from '@/types/message';
 import { Room } from '@/types/room';
 import { PaymentMethod, PreviewPriceResponse } from '@/types/booking';
@@ -25,6 +26,7 @@ const Booking: React.FC = () => {
     
     const [loading, setLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
     const [room, setRoom] = useState<Room | null>(null);
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [pricePreview, setPricePreview] = useState<PreviewPriceResponse | null>(null);
@@ -156,14 +158,12 @@ const Booking: React.FC = () => {
 
             await bookingService.createBooking(bookingData);
 
-            setMessage({
-                type: 'success',
-                text: 'Đặt phòng thành công! Chúng tôi sẽ liên hệ với bạn sớm nhất.'
-            });
+            setIsProcessing(true);
 
-            setTimeout(() => {
-                navigate('/');
-            }, 2000);
+            // Timeout to simulate processing delay
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            navigate('/booking/complete');
         } catch (error: any) {
             console.error('Error creating booking:', error);
             const errorMessage = error?.response?.data?.message || 'Có lỗi xảy ra khi đặt phòng. Vui lòng thử lại.';
@@ -173,6 +173,7 @@ const Booking: React.FC = () => {
             });
         } finally {
             setSubmitting(false);
+            setIsProcessing(false);
         }
     };
 
@@ -181,6 +182,19 @@ const Booking: React.FC = () => {
             <div className="flex justify-center items-center min-h-screen">
                 <Spin size="large" />
             </div>
+        );
+    }
+
+    if (isProcessing) {
+        return (
+            <LoadingSpinner 
+                message="Đang xử lý đơn đặt phòng của bạn..." 
+                size="large"
+                style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.98)',
+                    backdropFilter: 'blur(10px)'
+                }}
+            />
         );
     }
 
