@@ -56,45 +56,49 @@ const RoomCard: React.FC<RoomCardProps> = ({
         </div>
       }
     >
-      <div className="p-6">
+      <div className="p-3 md:p-6">
         <div className="mb-3">
           <div className="flex items-start justify-between mb-2">
             <div>
-              <h3 
-                className="text-xl font-semibold mb-1 line-clamp-2"
+              <p className="text-xl font-semibold mb-1 line-clamp-2"
                 style={{ 
                   fontFamily: TYPOGRAPHY.fontFamily.primary,
-                  color: COLORS.gray[900]
+                  color: COLORS.gray[900],
                 }}
               >
                 {room.name}
-              </h3>
-              <p className="text-gray-600 text-sm">{room.roomType}</p>
+              </p>
+              <p className="text-gray-600 text-sm md:text-sm">{room.roomType}</p>
             </div>
           </div>
         </div>
 
         {room.description && (
-          <p className="text-gray-600 text-sm mb-4 line-clamp-2 whitespace-pre-line">
+          <p className="text-gray-600 text-sm md:text-sm mb-4 line-clamp-2 whitespace-pre-line">
             {room.description}
           </p>
         )}
 
-        <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
+        <div className="flex flex-wrap gap-2 md:gap-4 text-sm md:text-sm text-gray-600 mb-4">
           {room.roomArea && (
             <span className="flex items-center gap-1">
               <img 
               src="/images/area.png" 
-              alt=""
-              className="w-4 h-4"
+              alt="area"
+              style={{
+                width: '20px',
+                height: '20px',
+                objectFit: 'contain',
+                flexShrink: 0
+              }}
               /> {room.roomArea}m²
             </span>
           )}
           <span className="flex items-center gap-1">
-            <UserOutlined /> {room.maxGuests} người
+            <UserOutlined className="text-base md:text-sm flex-shrink-0" /> {room.maxGuests} người
           </span>
           <span className="flex items-center gap-1">
-            <HomeOutlined /> {room.quantity} phòng
+            <HomeOutlined className="text-base md:text-sm flex-shrink-0" /> {room.quantity} phòng
           </span>
         </div>
 
@@ -105,7 +109,7 @@ const RoomCard: React.FC<RoomCardProps> = ({
             </Tag>
           ))}
           {room.amenities.length > 3 && (
-            <Tag className="text-xs">
+            <Tag className="text-xs md:text-xs">
               +{room.amenities.length - 3}
             </Tag>
           )}
@@ -120,7 +124,7 @@ const RoomCard: React.FC<RoomCardProps> = ({
               >
                 {formatPrice(room.price)}
               </span>
-              <span className="text-gray-600 text-sm">/đêm</span>
+              <span className="text-gray-600 text-sm md:text-sm">/đêm</span>
             </div>
           </div>
           
