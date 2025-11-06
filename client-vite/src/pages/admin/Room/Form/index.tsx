@@ -226,7 +226,6 @@ const RoomForm: React.FC<RoomFormProps> = ({ visible, onCancel, onSubmit, initia
                         >
                             <InputNumber
                                 min={1}
-                                max={10000000}
                                 formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                                 style={{ width: '100%' }}
                                 placeholder="Nhập giá"
@@ -238,11 +237,14 @@ const RoomForm: React.FC<RoomFormProps> = ({ visible, onCancel, onSubmit, initia
                             label="Số người tối đa"
                             name="maxGuests"
                             rules={[
-                                { required: true, message: 'Vui lòng nhập số người!' },
-                                { type: 'number', min: 1, max: 10, message: 'Số người từ 1-10!' }
+                                { required: true, message: 'Vui lòng chọn số người!' }
                             ]}
                         >
-                            <InputNumber min={1} max={10} style={{ width: '100%' }} />
+                            <Select placeholder="Chọn số người">
+                                {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
+                                    <Option key={num} value={num}>{num} người</Option>
+                                ))}
+                            </Select>
                         </Form.Item>
                     </Col>
                     <Col span={8}>
@@ -250,11 +252,14 @@ const RoomForm: React.FC<RoomFormProps> = ({ visible, onCancel, onSubmit, initia
                             label="Số lượng phòng"
                             name="quantity"
                             rules={[
-                                { required: true, message: 'Vui lòng nhập số lượng!' },
-                                { type: 'number', min: 1, message: 'Số lượng phải lớn hơn 0!' }
+                                { required: true, message: 'Vui lòng chọn số lượng!' }
                             ]}
                         >
-                            <InputNumber min={1} max={100} style={{ width: '100%' }} />
+                            <Select placeholder="Chọn số lượng">
+                                {Array.from({ length: 20 }, (_, i) => i + 1).map((num) => (
+                                    <Option key={num} value={num}>{num} phòng</Option>
+                                ))}
+                            </Select>
                         </Form.Item>
                     </Col>
                 </Row>
@@ -265,6 +270,7 @@ const RoomForm: React.FC<RoomFormProps> = ({ visible, onCancel, onSubmit, initia
                             label="Diện tích phòng (m²)"
                             name="roomArea"
                             rules={[
+                                { required: true, message: 'Vui lòng nhập diện tích!' },
                                 { type: 'number', min: 1, message: 'Diện tích phải lớn hơn 0!' }
                             ]}
                         >
