@@ -42,7 +42,7 @@ const HeroSection: React.FC = () => {
                         textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
                     }}
                 >
-                    Trải nghiệm sang trọng giữa lòng Nha Trang
+                    Trải nghiệm sang trọng giữa lòng Hà Nội
                 </p>
 
                 {/* Booking Form */}

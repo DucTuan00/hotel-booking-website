@@ -21,12 +21,12 @@ const Footer: React.FC = () => {
               LION
             </div>
             <p className="text-gray-300 mb-3 sm:mb-4 text-sm leading-relaxed">
-              Nằm trong khu đô thị cao cấp của thành phố Nha Trang, bạn sẽ có không gian nghỉ dưỡng lý tưởng với khung cảnh thơ mộng và dịch vụ chăm sóc chu đáo.
+              Nằm trong khu du lịch nổi tiếng của thủ đô Hà Nội, bạn sẽ có không gian nghỉ dưỡng lý tưởng với khung cảnh thành phố nhộn nhịp và dịch vụ chăm sóc chu đáo.
             </p>
             <div className="text-xs sm:text-sm text-gray-300 space-y-1">
-              <p>📧 admin@lionhotel.com</p>
-              <p>📞 +84 0258.3834.666</p>
-              <p>📍 Số 22/2A Trần Phú - P.Lộc Thọ - TP.Nha Trang</p>
+              <p>Địa chỉ: 105 P. Nguyễn Văn Tố, Hoàn Kiếm, Hà Nội, Việt Nam</p>
+              <p>Email: admin@lionhotel.com</p>
+              <p>Điện thoại: (+84) 987654321</p>
             </div>
           </div>
 
