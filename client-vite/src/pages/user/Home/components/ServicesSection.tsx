@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from 'antd';
-import { COLORS, TYPOGRAPHY, DEMO_IMAGES } from '@/config/constants';
+import { COLORS, TYPOGRAPHY } from '@/config/constants';
 import useIntersectionObserver from '@/hooks/useIntersectionObserver';
 
 const ServicesSection: React.FC = () => {
@@ -9,7 +9,7 @@ const ServicesSection: React.FC = () => {
     });
 
     return (
-        <section ref={sectionRef} className="py-12 sm:py-16 lg:py-20 bg-gray-50">
+        <section ref={sectionRef} className="py-12 sm:py-16 lg:py-20 bg-white">
             <div className="max-w-7xl mx-auto px-3 sm:px-4">
                 {/* Section Title */}
                 <div className="text-center mb-8 sm:mb-12 lg:mb-16">
@@ -33,7 +33,7 @@ const ServicesSection: React.FC = () => {
                         style={{ transitionDelay: '400ms' }}
                     >
                         <img
-                            src={DEMO_IMAGES.spa}
+                            src="/images/home9.jpg"
                             alt="Lion Westlake Studio & Spa"
                             className="w-full h-64 sm:h-80 lg:h-96 object-cover rounded-lg shadow-lg"
                         />
@@ -94,7 +94,7 @@ const ServicesSection: React.FC = () => {
                                 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4"
                                 style={{ fontFamily: TYPOGRAPHY.fontFamily.primary }}
                             >
-                                NHÀ HÀNG LION
+                                NHÀ HÀNG LION & SKY BAR
                             </h3>
                             <p
                                 className="text-base leading-relaxed mb-4 sm:mb-6"
@@ -108,7 +108,7 @@ const ServicesSection: React.FC = () => {
                             <Button
                                 type="primary"
                                 size="small"
-                                className="border-white hover:bg-white hover:text-yellow-800 text-xs sm:text-sm underline"
+                                className="border-white hover:bg-white hover:text-yellow-800 text-xs sm:text-sm"
                                 style={{
                                     fontFamily: TYPOGRAPHY.fontFamily.secondary,
                                     fontWeight: TYPOGRAPHY.fontWeight.medium,
@@ -129,7 +129,7 @@ const ServicesSection: React.FC = () => {
                         style={{ transitionDelay: '1000ms' }}
                     >
                         <img
-                            src={DEMO_IMAGES.restaurant}
+                            src="/images/home10.jpg"
                             alt="Nhà hàng Lion"
                             className="w-full h-64 sm:h-80 lg:h-96 object-cover rounded-lg shadow-lg"
                         />

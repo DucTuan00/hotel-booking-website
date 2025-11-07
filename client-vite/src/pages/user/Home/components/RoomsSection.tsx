@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from 'antd';
-import { COLORS, TYPOGRAPHY, DEMO_IMAGES } from '@/config/constants';
+import { COLORS, TYPOGRAPHY } from '@/config/constants';
 import useIntersectionObserver from '@/hooks/useIntersectionObserver';
 
 const RoomsSection: React.FC = () => {
@@ -9,7 +9,7 @@ const RoomsSection: React.FC = () => {
     });
 
     return (
-        <section ref={sectionRef} className="py-12 sm:py-16 lg:py-20 bg-white overflow-hidden">
+        <section ref={sectionRef} className="py-12 sm:py-16 lg:py-20 bg-gray-50 overflow-hidden">
             <div className="max-w-7xl mx-auto px-3 sm:px-4">
                 {/* Section Title */}
                 <div className="text-center mb-8 sm:mb-12 lg:mb-16">
@@ -27,7 +27,7 @@ const RoomsSection: React.FC = () => {
 
                 {/* Rooms Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 mb-8 sm:mb-12 lg:mb-16">
-                    {/* Lion Boutique Hotel & Spa */}
+                    {/* Phòng Đôi */}
                     <div
                         className={`relative group transition-all duration-1000 transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'
                             }`}
@@ -35,8 +35,8 @@ const RoomsSection: React.FC = () => {
                     >
                         <div className="relative overflow-hidden rounded-lg shadow-2xl">
                             <img
-                                src={DEMO_IMAGES.lionBoutique}
-                                alt="Lion Boutique Hotel & Spa"
+                                src="/images/home4.jpg"
+                                alt="Phòng Đôi"
                                 className="w-full h-64 sm:h-72 lg:h-80 object-cover group-hover:scale-105 transition-transform duration-500"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-70"></div>
@@ -45,30 +45,19 @@ const RoomsSection: React.FC = () => {
                                     className="text-lg sm:text-xl lg:text-2xl font-bold mb-2"
                                     style={{ fontFamily: TYPOGRAPHY.fontFamily.primary }}
                                 >
-                                    LION BOUTIQUE HOTEL & SPA
+                                    PHÒNG ĐÔI
                                 </h3>
                                 <p
-                                    className="text-xs sm:text-sm mb-3 sm:mb-4 opacity-90 line-clamp-2"
+                                    className="text-xs sm:text-sm opacity-90 line-clamp-2"
                                     style={{ fontFamily: TYPOGRAPHY.fontFamily.secondary }}
                                 >
-                                    Phòng cao cấp với đầy đủ tiện nghi hiện đại và dịch vụ spa thư giãn
+                                    Phòng thoải mái với giường đôi, view đẹp, đầy đủ tiện nghi cao cấp. Lý tưởng cho cặp đôi và khách công tác
                                 </p>
-                                <Button
-                                    type="primary"
-                                    size="small"
-                                    className="bg-transparent border-white text-white hover:bg-white hover:text-gray-800 text-xs sm:text-sm"
-                                    style={{
-                                        fontFamily: TYPOGRAPHY.fontFamily.secondary,
-                                        fontWeight: TYPOGRAPHY.fontWeight.medium,
-                                    }}
-                                >
-                                    XEM CHI TIẾT
-                                </Button>
                             </div>
                         </div>
                     </div>
 
-                    {/* Lion Westlake Studio & Spa */}
+                    {/* Phòng Suite Gia Đình */}
                     <div
                         className={`relative group transition-all duration-1000 transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'
                             }`}
@@ -76,8 +65,8 @@ const RoomsSection: React.FC = () => {
                     >
                         <div className="relative overflow-hidden rounded-lg shadow-2xl">
                             <img
-                                src={DEMO_IMAGES.lionWestlake}
-                                alt="Lion Westlake Studio & Spa"
+                                src="/images/home5.jpg"
+                                alt="Phòng Suite Gia Đình"
                                 className="w-full h-64 sm:h-72 lg:h-80 object-cover group-hover:scale-105 transition-transform duration-500"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-70"></div>
@@ -86,32 +75,25 @@ const RoomsSection: React.FC = () => {
                                     className="text-lg sm:text-xl lg:text-2xl font-bold mb-2"
                                     style={{ fontFamily: TYPOGRAPHY.fontFamily.primary }}
                                 >
-                                    LION WESTLAKE STUDIO & SPA
+                                    PHÒNG SUITE GIA ĐÌNH
                                 </h3>
                                 <p
-                                    className="text-xs sm:text-sm mb-3 sm:mb-4 opacity-90 line-clamp-2"
+                                    className="text-xs sm:text-sm opacity-90 line-clamp-2"
                                     style={{ fontFamily: TYPOGRAPHY.fontFamily.secondary }}
                                 >
-                                    Studio rộng rãi với view tuyệt đẹp và dịch vụ spa cao cấp
+                                    Phòng rộng rãi với không gian riêng biệt, giường tách, phòng khách. Lý tưởng cho gia đình và nhóm bạn
                                 </p>
-                                <Button
-                                    type="primary"
-                                    size="small"
-                                    className="bg-transparent border-white text-white hover:bg-white hover:text-gray-800 text-xs sm:text-sm"
-                                    style={{
-                                        fontFamily: TYPOGRAPHY.fontFamily.secondary,
-                                        fontWeight: TYPOGRAPHY.fontWeight.medium,
-                                    }}
-                                >
-                                    XEM CHI TIẾT
-                                </Button>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* CTA Section */}
-                <div className="text-center">
+                <div 
+                    className={`text-center relative group transition-all duration-1000 transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'
+                            }`}
+                    style={{ transitionDelay: '800ms' }}
+                >
                     <Button
                         type="primary"
                         size="large"
@@ -121,6 +103,9 @@ const RoomsSection: React.FC = () => {
                             borderColor: COLORS.primary,
                             fontFamily: TYPOGRAPHY.fontFamily.secondary,
                             fontWeight: TYPOGRAPHY.fontWeight.semibold,
+                        }}
+                        onClick={() => {
+                            window.location.href = '/rooms';
                         }}
                     >
                         XEM TẤT CẢ PHÒNG

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Rate } from 'antd';
-import { COLORS, TYPOGRAPHY, DEMO_IMAGES } from '@/config/constants';
+import { COLORS, TYPOGRAPHY } from '@/config/constants';
 import useIntersectionObserver from '@/hooks/useIntersectionObserver';
 
 const TestimonialsSection: React.FC = () => {
@@ -11,65 +11,63 @@ const TestimonialsSection: React.FC = () => {
     const testimonials = [
         {
             id: 1,
-            name: 'Nguyễn Minh Anh',
+            name: 'Nguyễn Văn A',
             rating: 5,
             comment: 'Khách sạn tuyệt vời với dịch vụ chuyên nghiệp. Nhân viên rất thân thiện và phòng ốc sạch sẽ, thoải mái. Tôi sẽ quay lại lần sau.',
-            avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b5ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80',
+            avatar: '/images/default-image.jpg',
         },
         {
             id: 2,
             name: 'Trần Văn Nam',
             rating: 5,
             comment: 'Vị trí tuyệt vời, gần biển và các điểm tham quan. Spa ở đây rất tuyệt, giúp tôi thư giãn hoàn toàn sau những ngày làm việc căng thẳng.',
-            avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80',
+            avatar: '/images/default-image.jpg',
         },
     ];
 
     return (
-        <section ref={sectionRef} className="py-12 sm:py-16 lg:py-20 relative overflow-hidden">
-            {/* Background */}
+        <section ref={sectionRef} className="relative h-96 sm:h-[28rem] lg:h-[32rem] my-12 sm:my-16 lg:my-20 bg-gray-100">
+            {/* Background Image - Full width, centered */}
             <div
                 className="absolute inset-0 bg-cover bg-center"
                 style={{
-                    backgroundImage: `url(${DEMO_IMAGES.hero})`,
+                    backgroundImage: `url(/images/home8.jpg)`,
                 }}
             >
-                <div className="absolute inset-0 bg-black bg-opacity-70"></div>
             </div>
 
-            <div className="relative z-10 max-w-7xl mx-auto px-3 sm:px-4">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center">
-                    {/* Left Side - Hotel Image */}
+            {/* Content - Overlay */}
+            <div className="relative z-10 w-full h-full flex items-center justify-center">
+                <div className="w-full max-w-6xl mx-auto px-3 sm:px-4">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center h-full">
+
+                    {/* Right Side - Testimonials (Red Box Overlay) */}
                     <div
-                        className={`order-2 lg:order-1 transition-all duration-1000 transform ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-20'
+                        className={`transition-all duration-1000 transform ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-20'
                             }`}
                         style={{ transitionDelay: '200ms' }}
                     >
-                        <img
-                            src={DEMO_IMAGES.hero}
-                            alt="Lion Boutique Hotel"
-                            className="w-full h-64 sm:h-80 lg:h-96 object-cover rounded-lg shadow-2xl"
-                        />
-                    </div>
-
-                    {/* Right Side - Testimonials */}
-                    <div
-                        className={`order-1 lg:order-2 transition-all duration-1000 transform ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-20'
-                            }`}
-                        style={{ transitionDelay: '400ms' }}
-                    >
                         <div
-                            className="p-6 sm:p-8 rounded-lg"
+                            className="p-6 sm:p-8 lg:p-10 rounded-lg shadow-2xl h-full flex flex-col justify-center"
                             style={{ backgroundColor: COLORS.secondary }}
                         >
-                            <h2
-                                className="text-2xl sm:text-3xl font-bold text-white mb-6 sm:mb-8 text-center"
-                                style={{ fontFamily: TYPOGRAPHY.fontFamily.primary }}
-                            >
-                                CẢM NHẬN KHÁCH HÀNG
-                            </h2>
+                            {/* Title with line */}
+                            <div className="mb-5 sm:mb-6">
+                                <div className="flex items-center gap-3 mb-1">
+                                    <div 
+                                        className="w-10 h-1"
+                                        style={{ backgroundColor: COLORS.primary }}
+                                    ></div>
+                                    <h2
+                                        className="text-lg sm:text-xl lg:text-2xl font-bold text-white"
+                                        style={{ fontFamily: TYPOGRAPHY.fontFamily.primary }}
+                                    >
+                                        CẢM NHẬN KHÁCH HÀNG
+                                    </h2>
+                                </div>
+                            </div>
 
-                            <div className="space-y-6 sm:space-y-8">
+                            <div className="space-y-4 sm:space-y-5">
                                 {testimonials.map((testimonial, index) => (
                                     <div
                                         key={testimonial.id}
@@ -77,51 +75,58 @@ const TestimonialsSection: React.FC = () => {
                                             }`}
                                         style={{ transitionDelay: `${600 + index * 200}ms` }}
                                     >
-                                        <div className="flex items-center mb-3 sm:mb-4">
-                                            <img
-                                                src={testimonial.avatar}
-                                                alt={testimonial.name}
-                                                className="w-10 sm:w-12 h-10 sm:h-12 rounded-full object-cover mr-3 sm:mr-4"
-                                            />
-                                            <div>
-                                                <h4
-                                                    className="text-white font-semibold text-sm sm:text-base"
-                                                    style={{ fontFamily: TYPOGRAPHY.fontFamily.secondary }}
-                                                >
-                                                    {testimonial.name}
-                                                </h4>
-                                                <Rate
-                                                    disabled
-                                                    defaultValue={testimonial.rating}
-                                                    className="text-yellow-400"
-                                                    style={{ fontSize: '12px' }}
-                                                />
-                                            </div>
-                                        </div>
-                                        <p
-                                            className="text-white text-xs sm:text-sm leading-relaxed opacity-90"
+                                    <div
+                                    className="flex items-center mb-2 sm:mb-3"
+                                >
+                                    <img
+                                        src={testimonial.avatar}
+                                        alt={testimonial.name}
+                                        className="w-10 sm:w-12 h-10 sm:h-12 rounded-full object-cover mr-3"
+                                    />
+                                    <div className="flex-1">
+                                        <h4
+                                            className="text-black font-semibold text-xs sm:text-sm"
                                             style={{ fontFamily: TYPOGRAPHY.fontFamily.secondary }}
                                         >
-                                            "{testimonial.comment}"
-                                        </p>
+                                            {testimonial.name}
+                                        </h4>
+                                        <Rate
+                                            disabled
+                                            defaultValue={testimonial.rating}
+                                            className="text-yellow-400"
+                                            style={{ fontSize: '12px' }}
+                                        />
+                                    </div>
+                                </div>
+                                <p
+                                    className="text-white text-xs sm:text-sm leading-relaxed opacity-95"
+                                    style={{ fontFamily: TYPOGRAPHY.fontFamily.secondary }}
+                                >
+                                    "{testimonial.comment}"
+                                </p>
                                     </div>
                                 ))}
                             </div>
 
-                            {/* Navigation Dots */}
+                            {/* Navigation Buttons */}
                             <div
-                                className={`flex justify-center mt-6 sm:mt-8 space-x-2 transition-all duration-1000 transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+                                className={`flex justify-start gap-2 mt-3 sm:mt-4 transition-all duration-1000 transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
                                     }`}
                                 style={{ transitionDelay: '1000ms' }}
                             >
-                                <div
-                                    className="w-2 sm:w-3 h-2 sm:h-3 rounded-full"
-                                    style={{ backgroundColor: COLORS.primary }}
-                                ></div>
-                                <div className="w-2 sm:w-3 h-2 sm:h-3 rounded-full bg-white bg-opacity-30"></div>
-                                <div className="w-2 sm:w-3 h-2 sm:h-3 rounded-full bg-white bg-opacity-30"></div>
+                                <button className="p-1.5 rounded-full border-2 border-white hover:bg-white hover:text-gray-800 transition-colors">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                </button>
+                                <button className="p-1.5 rounded-full border-2 border-white hover:bg-white hover:text-gray-800 transition-colors">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </button>
                             </div>
                         </div>
+                    </div>
                     </div>
                 </div>
             </div>

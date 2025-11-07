@@ -62,22 +62,13 @@ const Footer: React.FC = () => {
 
         {/* Social Media & Payment */}
         <div className="border-t border-gray-800 pt-6 sm:pt-8 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
-          <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4">
-            <span className="text-xs sm:text-sm text-gray-300">Theo dõi chúng tôi:</span>
-            <div className="flex space-x-2 sm:space-x-3">
-              <a href="#" className="w-6 sm:w-8 h-6 sm:h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs hover:bg-blue-700 transition-colors">f</a>
-              <a href="#" className="w-6 sm:w-8 h-6 sm:h-8 bg-blue-400 rounded-full flex items-center justify-center text-white text-xs hover:bg-blue-500 transition-colors">t</a>
-              <a href="#" className="w-6 sm:w-8 h-6 sm:h-8 bg-pink-600 rounded-full flex items-center justify-center text-white text-xs hover:bg-pink-700 transition-colors">i</a>
-              <a href="#" className="w-6 sm:w-8 h-6 sm:h-8 bg-red-600 rounded-full flex items-center justify-center text-white text-xs hover:bg-red-700 transition-colors">y</a>
-            </div>
-          </div>
+          
 
           <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4">
             <span className="text-xs sm:text-sm text-gray-300">Thanh toán:</span>
             <div className="flex space-x-1 sm:space-x-2">
-              <div className="w-6 sm:w-8 h-4 sm:h-5 bg-blue-600 rounded text-xs text-white flex items-center justify-center">VISA</div>
-              <div className="w-6 sm:w-8 h-4 sm:h-5 bg-red-600 rounded text-xs text-white flex items-center justify-center">MC</div>
-              <div className="w-6 sm:w-8 h-4 sm:h-5 bg-blue-800 rounded text-xs text-white flex items-center justify-center">AMEX</div>
+              <div className="w-6 sm:w-8 h-4 sm:h-5 bg-blue-600 rounded text-xs text-white flex items-center justify-center">VNPAY</div>
+              <div className="w-6 sm:w-8 h-4 sm:h-5 bg-red-600 rounded text-xs text-white flex items-center justify-center">Momo</div>
             </div>
           </div>
         </div>
@@ -85,7 +76,7 @@ const Footer: React.FC = () => {
         {/* Copyright */}
         <div className="border-t border-gray-800 mt-6 sm:mt-8 pt-6 sm:pt-8 text-center">
           <p className="text-xs sm:text-sm text-gray-400">
-            Copyright © 2025 Lion Lion Boutique Hotel & Spa Nha Trang and all rights reserved.
+            Copyright © 2025 Lion Lion Boutique Hotel & Spa Ha Noi and all rights reserved.
           </p>
         </div>
       </div>
