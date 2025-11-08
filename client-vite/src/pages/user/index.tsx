@@ -5,6 +5,7 @@ import RoomDetail from '@/pages/user/RoomDetail';
 import Booking from '@/pages/user/Booking';
 import BookingComplete from '@/pages/user/BookingComplete';
 import Restaurant from '@/pages/user/Restaurant';
+import Spa from '@/pages/user/Spa';
 import UserProfile from '@/pages/user/UserProfile';
 
 export {
@@ -15,5 +16,6 @@ export {
     Booking,
     BookingComplete,
     Restaurant,
+    Spa,
     UserProfile,
 }
