@@ -1,21 +1,27 @@
 import React, { useState } from 'react';
-import { Row, Col } from 'antd';
+import { Row, Col, Empty } from 'antd';
+import { RestaurantImage } from '@/types/restaurant';
 
-const restaurantImages = [
-    'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
-    'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
-    'https://images.unsplash.com/photo-1551218808-94e220e084d2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
-    'https://images.unsplash.com/photo-1590846406792-0adc7f938f1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
-    'https://images.unsplash.com/photo-1544148103-0773bf10d330?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
-    'https://images.unsplash.com/photo-1559339352-11d035aa65de?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'
-];
+interface RestaurantGalleryProps {
+    images: RestaurantImage[];
+}
 
-const RestaurantGallery: React.FC = () => {
+const RestaurantGallery: React.FC<RestaurantGalleryProps> = ({ images }) => {
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
     const handleThumbnailClick = (index: number) => {
         setSelectedImageIndex(index);
     };
+
+    if (images.length === 0) {
+        return (
+            <section className="py-16 px-4">
+                <div className="max-w-6xl mx-auto">
+                    <Empty description="Chưa có ảnh nào" />
+                </div>
+            </section>
+        );
+    }
 
     return (
         <section className="py-16 px-4">
@@ -25,8 +31,8 @@ const RestaurantGallery: React.FC = () => {
                     <Col xs={24} lg={18}>
                         <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                             <img 
-                                src={restaurantImages[selectedImageIndex]} 
-                                alt={`Restaurant view ${selectedImageIndex + 1}`}
+                                src={images[selectedImageIndex]?.imagePath} 
+                                alt={images[selectedImageIndex]?.title || `Restaurant view ${selectedImageIndex + 1}`}
                                 className="w-full h-[400px] md:h-[500px] object-cover transition-all duration-500"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
@@ -36,9 +42,9 @@ const RestaurantGallery: React.FC = () => {
                     {/* Thumbnail Images */}
                     <Col xs={24} lg={6}>
                         <div className="flex lg:flex-col gap-3 overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0">
-                            {restaurantImages.map((image, index) => (
+                            {images.map((image, index) => (
                                 <div
-                                    key={index}
+                                    key={image.id}
                                     onClick={() => handleThumbnailClick(index)}
                                     className={`
                                         relative flex-shrink-0 cursor-pointer rounded-lg overflow-hidden transition-all duration-300 border-2
@@ -49,8 +55,8 @@ const RestaurantGallery: React.FC = () => {
                                     `}
                                 >
                                     <img 
-                                        src={image} 
-                                        alt={`Restaurant thumbnail ${index + 1}`}
+                                        src={image.imagePath} 
+                                        alt={image.title || `Restaurant thumbnail ${index + 1}`}
                                         className="w-20 h-16 md:w-24 md:h-20 lg:w-full lg:h-20 object-cover"
                                     />
                                     {/* Active overlay */}
