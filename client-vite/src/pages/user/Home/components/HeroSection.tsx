@@ -10,7 +10,7 @@ const HeroSection: React.FC = () => {
     ];
 
     return (
-        <section className="relative h-96 sm:h-screen md:h-screen flex items-center justify-center overflow-hidden" style={{ paddingTop: '60px' }}>
+        <section className="relative h-96 sm:h-[500px] md:h-[600px] lg:h-[700px] flex items-center justify-center overflow-hidden" style={{ paddingTop: '60px' }}>
             {/* Background Image Slider */}
             <ImageSlider images={sliderImages} interval={5000} />
 
