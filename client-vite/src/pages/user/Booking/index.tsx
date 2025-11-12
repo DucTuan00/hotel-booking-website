@@ -100,7 +100,8 @@ const Booking: React.FC = () => {
 
             // Set initial form values with URL params
             form.setFieldsValue({
-                paymentMethod: PaymentMethod.ONSITE
+                paymentMethod: PaymentMethod.ONSITE,
+                paymentGateway: 'vnpay'
             });
         } catch (error) {
             console.error('Error loading booking data:', error);
@@ -166,13 +167,25 @@ const Booking: React.FC = () => {
             if (values.paymentMethod === PaymentMethod.ONLINE) {
                 // Redirect to VNPay payment page
                 try {
-                    const paymentResponse = await createVNPayPaymentUrl({
-                        bookingId: booking.id,
-                        locale: 'vn'
-                    });
+                    const paymentGateway = values.paymentGateway || 'vnpay';
+                    
+                    // Currently only VNPay is supported
+                    if (paymentGateway === 'vnpay') {
+                        const paymentResponse = await createVNPayPaymentUrl({
+                            bookingId: booking.id,
+                            locale: 'vn'
+                        });
 
-                    // Redirect to VNPay
-                    window.location.href = paymentResponse.data.paymentUrl;
+                        // Redirect to VNPay
+                        window.location.href = paymentResponse.data.paymentUrl;
+                    } else {
+                        // Future: Handle other gateways (MoMo, ZaloPay, etc.)
+                        setMessage({
+                            type: 'error',
+                            text: 'Cổng thanh toán này chưa được hỗ trợ. Vui lòng chọn VNPay.'
+                        });
+                        setIsProcessing(false);
+                    }
                 } catch (paymentError: any) {
                     console.error('Error creating payment URL:', paymentError);
                     setMessage({
