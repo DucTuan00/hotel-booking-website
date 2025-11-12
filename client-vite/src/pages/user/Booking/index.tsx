@@ -7,6 +7,7 @@ import roomService from '@/services/rooms/roomService';
 import bookingService from '@/services/bookings/bookingService';
 import userService from '@/services/users/userService';
 import celebrateItemService from '@/services/celebrations/celebrateItemService';
+import { createVNPayPaymentUrl } from '@/services/payment/vnpayService';
 import Notification from '@/components/Notification';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { Message } from '@/types/message';
@@ -156,14 +157,35 @@ const Booking: React.FC = () => {
 
             console.log('Submitting booking data:', bookingData);
 
-            await bookingService.createBooking(bookingData);
+            // Create booking
+            const booking = await bookingService.createBooking(bookingData);
 
             setIsProcessing(true);
 
-            // Timeout to simulate processing delay
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // Check payment method
+            if (values.paymentMethod === PaymentMethod.ONLINE) {
+                // Redirect to VNPay payment page
+                try {
+                    const paymentResponse = await createVNPayPaymentUrl({
+                        bookingId: booking.id,
+                        locale: 'vn'
+                    });
 
-            navigate('/booking/complete');
+                    // Redirect to VNPay
+                    window.location.href = paymentResponse.data.paymentUrl;
+                } catch (paymentError: any) {
+                    console.error('Error creating payment URL:', paymentError);
+                    setMessage({
+                        type: 'error',
+                        text: 'Không thể tạo link thanh toán. Vui lòng thử lại.'
+                    });
+                    setIsProcessing(false);
+                }
+            } else {
+                // Onsite payment - redirect to complete page
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                navigate('/booking/complete');
+            }
         } catch (error: any) {
             console.error('Error creating booking:', error);
             const errorMessage = error?.response?.data?.message || 'Có lỗi xảy ra khi đặt phòng. Vui lòng thử lại.';
@@ -171,9 +193,9 @@ const Booking: React.FC = () => {
                 type: 'error',
                 text: errorMessage
             });
+            setIsProcessing(false);
         } finally {
             setSubmitting(false);
-            setIsProcessing(false);
         }
     };
 

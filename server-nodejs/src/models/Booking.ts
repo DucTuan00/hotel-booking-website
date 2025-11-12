@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
-import { BookingStatus, PaymentMethod, PaymentStatus } from '@/types/booking';
+import { BookingStatus, PaymentMethod, PaymentStatus, PaymentDetails } from '@/types/booking';
 
 interface Guests {
     adults: number;
@@ -29,9 +29,11 @@ interface BookingInterface extends Document {
     cancelledAt?: Date;
     cancellationReason?: string;
     paidAt?: Date;
-    paymentIntentId?: string;
     refundedAt?: Date;
     snapshot: Record<string, any>;
+    paymentDetails?: PaymentDetails;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 const bookingSchema: Schema = new mongoose.Schema({
@@ -129,15 +131,17 @@ const bookingSchema: Schema = new mongoose.Schema({
     paidAt: { 
         type: Date 
     },
-    paymentIntentId: { 
-        type: String 
-    },
     refundedAt: { 
         type: Date 
     },
     snapshot: { 
         type: Schema.Types.Mixed, 
         required: true 
+    },
+    // Generic payment details (flexible for any payment gateway)
+    paymentDetails: {
+        type: Schema.Types.Mixed,
+        default: null
     },
 }, { timestamps: true });
 

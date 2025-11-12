@@ -18,6 +18,16 @@ export enum PaymentStatus {
     REFUNDED = 'Refunded'
 }
 
+export interface PaymentDetails {
+    gateway?: 'vnpay' | 'momo' | 'zalopay'; // Payment gateway used
+    transactionId?: string; // Transaction ID from gateway
+    responseCode?: string; // Response code from gateway
+    bankCode?: string; // Bank code (if applicable)
+    cardType?: string; // Card type (if applicable)
+    payDate?: string; // Payment date from gateway
+    rawData?: Record<string, any>; // Raw response data from gateway
+}
+
 export interface CelebrateItemInput {
     celebrateItemId: string;
     quantity: number;

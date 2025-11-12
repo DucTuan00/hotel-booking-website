@@ -121,7 +121,7 @@ export async function updateBooking(req: Request, res: Response, next: NextFunct
 export async function updatePaymentStatus(req: Request, res: Response, next: NextFunction) {
     try {
         const bookingId = req.params.id;
-        const { paymentStatus, paymentIntentId } = req.body;
+        const { paymentStatus } = req.body;
 
         if (!paymentStatus) {
             throw new ApiError('Missing required parameter: paymentStatus', 400);
@@ -130,7 +130,6 @@ export async function updatePaymentStatus(req: Request, res: Response, next: Nex
         const updatedBooking = await bookingService.updatePaymentStatus(
             bookingId, 
             paymentStatus,
-            paymentIntentId
         );
         res.json(updatedBooking);
     } catch (error: any) {

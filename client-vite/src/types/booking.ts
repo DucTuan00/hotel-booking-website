@@ -93,8 +93,10 @@ export interface BookingCelebrateItem {
 
 export interface Booking {
     id: string;
+    bookingCode?: string;
     userId: string | { id: string; name: string; email: string };
     roomId: string | { id: string; name: string; roomType: string; price: number };
+    room?: { id: string; name: string; roomType: string; price: number };
     checkIn: string;
     checkOut: string;
     guests: {
@@ -110,6 +112,15 @@ export interface Booking {
     phoneNumber: string;
     paymentMethod: PaymentMethod;
     paymentStatus: PaymentStatus;
+    paymentDetails?: {
+        gateway?: 'vnpay' | 'momo' | 'zalopay';
+        transactionId?: string;
+        responseCode?: string;
+        bankCode?: string;
+        cardType?: string;
+        payDate?: string;
+        rawData?: Record<string, any>;
+    };
     confirmedAt?: string;
     checkedInAt?: string;
     checkedOutAt?: string;
@@ -117,7 +128,6 @@ export interface Booking {
     cancelledAt?: string;
     cancellationReason?: string;
     paidAt?: string;
-    paymentIntentId?: string;
     refundedAt?: string;
     snapshot?: {
         room: {

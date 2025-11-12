@@ -516,7 +516,6 @@ export async function updateBooking(args: UpdateBookingInput) {
 export async function updatePaymentStatus(
     bookingId: string,
     paymentStatus: PaymentStatus,
-    paymentIntentId?: string
 ): Promise<any> {
     const booking = await Booking.findById(bookingId);
     if (!booking) {
@@ -527,9 +526,6 @@ export async function updatePaymentStatus(
     
     if (paymentStatus === PaymentStatus.PAID) {
         booking.paidAt = new Date();
-        if (paymentIntentId) {
-            booking.paymentIntentId = paymentIntentId;
-        }
         
         // Auto-confirm if payment is ONLINE and paid
         if (booking.paymentMethod === PaymentMethod.ONLINE && booking.status === BookingStatus.PENDING) {
