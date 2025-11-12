@@ -66,7 +66,14 @@ export async function getBookingsByUserId(req: Request, res: Response, next: Nex
         if (!userId) {
             throw new ApiError('Unauthorized: missing user ID', 401);
         }
-        const bookings = await bookingService.getBookingsByUserId({ userId });
+
+        const { page, pageSize } = req.query;
+
+        const bookings = await bookingService.getBookingsByUserId({ 
+            userId,
+            page: page ? parseInt(page as string) : undefined,
+            pageSize: pageSize ? parseInt(pageSize as string) : undefined
+        });
         res.status(200).json(bookings);
     } catch (error: any) {
         next(new ApiError(error.message, error.statusCode || 500));

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button, Drawer, Layout, Dropdown, Space } from 'antd';
-import { MenuOutlined, CloseOutlined, UserOutlined, LogoutOutlined, DownOutlined } from '@ant-design/icons';
+import { MenuOutlined, CloseOutlined, UserOutlined, LogoutOutlined, DownOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { COLORS, TYPOGRAPHY } from '@/config/constants';
@@ -72,6 +72,12 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
             label: 'Hồ sơ',
             icon: <UserOutlined />,
             onClick: () => navigate('/user/profile'),
+        },
+        {
+            key: 'bookings',
+            label: 'Đơn đặt phòng',
+            icon: <UnorderedListOutlined />,
+            onClick: () => navigate('/user/bookings'),
         },
         {
             type: 'divider',
@@ -310,6 +316,21 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
                                 <Button
                                     block
                                     size="large"
+                                    icon={<UnorderedListOutlined />}
+                                    onClick={() => {
+                                        navigate('/user/bookings');
+                                        setMobileMenuOpen(false);
+                                    }}
+                                    style={{
+                                        fontFamily: TYPOGRAPHY.fontFamily.secondary,
+                                        height: '48px',
+                                    }}
+                                >
+                                    Đơn đặt phòng
+                                </Button>
+                                <Button
+                                    block
+                                    size="large"
                                     danger
                                     icon={<LogoutOutlined />}
                                     onClick={() => {
@@ -344,10 +365,6 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
                                 ĐĂNG NHẬP
                             </Button>
                         )}
-
-                        <div className="flex justify-center space-x-4 text-sm text-gray-500 mt-4">
-                            <span>Hotline: 0258.3834.666</span>
-                        </div>
                     </div>
                 </div>
             </Drawer>

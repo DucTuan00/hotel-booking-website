@@ -7,6 +7,7 @@ import BookingComplete from '@/pages/user/BookingComplete';
 import Restaurant from '@/pages/user/Restaurant';
 import Spa from '@/pages/user/Spa';
 import UserProfile from '@/pages/user/UserProfile';
+import UserBookings from '@/pages/user/UserBookings';
 
 export {
     Home,
@@ -18,4 +19,5 @@ export {
     Restaurant,
     Spa,
     UserProfile,
+    UserBookings,
 }

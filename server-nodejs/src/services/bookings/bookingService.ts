@@ -247,18 +247,30 @@ export async function getBookingById(arg: BookingIdInput) {
 /**
  * Get all bookings for a specific user
  */
-export async function getBookingsByUserId(arg: UserIdInput) {
-    const { userId } = arg;
+export async function getBookingsByUserId(arg: UserIdInput & { page?: number; pageSize?: number }) {
+    const { userId, page = 1, pageSize = 10 } = arg;
 
-    const bookings = await Booking.find({ userId: userId })
-        .populate({ path: 'roomId', select: 'name roomType price' })
-        .sort({ createdAt: -1 });
+    const skip = (page - 1) * pageSize;
+
+    const [bookings, totalBookings] = await Promise.all([
+        Booking.find({ userId: userId })
+            .populate({ path: 'roomId', select: 'name roomType price' })
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(pageSize),
+        Booking.countDocuments({ userId: userId })
+    ]);
 
     if (!bookings) {
         throw new ApiError('No bookings found', 404);
     }
 
-    return mapIds(bookings);
+    return {
+        bookings: mapIds(bookings),
+        total: totalBookings,
+        currentPage: page,
+        pageSize: pageSize
+    };
 }
 
 /**

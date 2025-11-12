@@ -60,6 +60,41 @@ const PaymentInfo: React.FC<PaymentInfoProps> = ({ booking, paymentStatus, onPay
         }
     };
 
+    const getGatewayText = (gateway?: 'vnpay' | 'momo' | 'zalopay') => {
+        switch (gateway) {
+            case 'vnpay':
+                return 'VNPay';
+            case 'momo':
+                return 'MoMo';
+            case 'zalopay':
+                return 'ZaloPay';
+            default:
+                return gateway || 'N/A';
+        }
+    };
+
+    const formatPayDate = (payDate?: string) => {
+        if (!payDate) return '';
+        
+        // VNPay format: yyyyMMddHHmmss
+        if (payDate.length === 14) {
+            const year = payDate.substring(0, 4);
+            const month = payDate.substring(4, 6);
+            const day = payDate.substring(6, 8);
+            const hour = payDate.substring(8, 10);
+            const minute = payDate.substring(10, 12);
+            const second = payDate.substring(12, 14);
+            return `${day}/${month}/${year} ${hour}:${minute}:${second}`;
+        }
+        
+        // Fallback: try to parse as ISO date
+        try {
+            return new Date(payDate).toLocaleString('vi-VN');
+        } catch {
+            return payDate;
+        }
+    };
+
     return (
         <DetailSection title="Thông tin thanh toán">
             <BaseDetailRow
@@ -86,6 +121,46 @@ const PaymentInfo: React.FC<PaymentInfoProps> = ({ booking, paymentStatus, onPay
                     )
                 }
             />
+            {booking.paymentDetails && (
+                <>
+                    {booking.paymentDetails.gateway && (
+                        <BaseDetailRow
+                            label="Cổng thanh toán"
+                            value={getGatewayText(booking.paymentDetails.gateway)}
+                        />
+                    )}
+                    {booking.paymentDetails.transactionId && (
+                        <BaseDetailRow
+                            label="Mã giao dịch"
+                            value={booking.paymentDetails.transactionId}
+                        />
+                    )}
+                    {booking.paymentDetails.responseCode && (
+                        <BaseDetailRow
+                            label="Mã phản hồi"
+                            value={booking.paymentDetails.responseCode}
+                        />
+                    )}
+                    {booking.paymentDetails.bankCode && (
+                        <BaseDetailRow
+                            label="Ngân hàng"
+                            value={booking.paymentDetails.bankCode}
+                        />
+                    )}
+                    {booking.paymentDetails.cardType && (
+                        <BaseDetailRow
+                            label="Loại thẻ"
+                            value={booking.paymentDetails.cardType}
+                        />
+                    )}
+                    {booking.paymentDetails.payDate && (
+                        <BaseDetailRow
+                            label="Thời gian thanh toán"
+                            value={formatPayDate(booking.paymentDetails.payDate)}
+                        />
+                    )}
+                </>
+            )}
         </DetailSection>
     );
 };

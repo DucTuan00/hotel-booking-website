@@ -19,7 +19,7 @@ const PriceBreakdown: React.FC<PriceBreakdownProps> = ({ booking }) => {
             {/* Daily Rates */}
             {snapshot.dailyRates && snapshot.dailyRates.length > 0 && (
                 <>
-                    <DetailSection title="Giá theo ngày">
+                    <DetailSection title="Giá phòng theo ngày">
                         {snapshot.dailyRates.map((rate, index) => (
                             <BaseDetailRow
                                 key={index}
@@ -33,7 +33,7 @@ const PriceBreakdown: React.FC<PriceBreakdownProps> = ({ booking }) => {
 
             {/* Celebrate Items */}
             {snapshot.celebrateItems && snapshot.celebrateItems.length > 0 && (
-                <DetailSection title="Quà kỷ niệm">
+                <DetailSection title="Giá quà kỷ niệm">
                     {snapshot.celebrateItems.map((item, index) => (
                         <BaseDetailRow
                             key={index}

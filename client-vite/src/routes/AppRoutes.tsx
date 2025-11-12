@@ -18,6 +18,7 @@ const AppRoutes: React.FC = () => (
             <Route path="/restaurant" element={<User.Restaurant />} />
             <Route path="/spa" element={<User.Spa />} />
             <Route path="/user/profile" element={<User.UserProfile />} />
+            <Route path="/user/bookings" element={<User.UserBookings />} />
             <Route path="/login" element={<Login />} />
         </Route>
 

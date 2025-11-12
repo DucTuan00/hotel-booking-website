@@ -27,7 +27,7 @@ const BookingList: React.FC = () => {
     const [loading, setLoading] = useState<boolean>(false);
     const [message, setMessage] = useState<Message | null>(null);
     const [currentPage, setCurrentPage] = useState<number>(1);
-    const [pageSize, setPageSize] = useState<number>(5);
+    const [pageSize, setPageSize] = useState<number>(10);
     const [totalBookings, setTotalBookings] = useState<number>(0);
     const [currentSearchParams, setCurrentSearchParams] = useState<any>({});
 

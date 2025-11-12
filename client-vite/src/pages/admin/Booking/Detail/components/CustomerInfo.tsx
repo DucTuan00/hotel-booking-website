@@ -20,6 +20,12 @@ const CustomerInfo: React.FC<CustomerInfoProps> = ({ booking }) => {
             />
             <BaseDetailRow label="Email" value={booking.email} />
             <BaseDetailRow label="Số điện thoại" value={booking.phoneNumber} />
+            {booking.note && (
+                <BaseDetailRow 
+                    label="Ghi chú" 
+                    value={booking.note} 
+                />
+            )}
         </DetailSection>
     );
 };

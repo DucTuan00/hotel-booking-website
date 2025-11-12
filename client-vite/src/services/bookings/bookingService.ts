@@ -102,6 +102,16 @@ const cancelBooking = async (args: BookingIdInput): Promise<CancelBookingRespons
     }
 };
 
+const getUserBookings = async (params?: { page?: number; pageSize?: number }): Promise<GetAllBookingsResponse> => {
+    try {
+        const response = await api.get<GetAllBookingsResponse>('/booking/user', { params });
+        return response.data;
+    } catch (error) {
+        console.error('Error getting user bookings:', error);
+        throw error;
+    }
+};
+
 export default {
     getAllBookings,
     getBookingById,
@@ -110,4 +120,5 @@ export default {
     updatePaymentStatus,
     previewBookingPrice,
     cancelBooking,
+    getUserBookings,
 };
