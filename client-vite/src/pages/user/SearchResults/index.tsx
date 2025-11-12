@@ -1,250 +1,139 @@
-import React, { useState, useMemo, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import SearchHeader from "@/pages/user/SearchResults/components/SearchHeader";
 import SearchFilters from "@/pages/user/SearchResults/components/SearchFilters";
 import SearchResultsList from "@/pages/user/SearchResults/components/SearchResultsList";
-import { DEMO_IMAGES } from "@/config/constants";
+import roomService from "@/services/rooms/roomService";
+import amenityService from "@/services/amenities/amenityService";
+import { Room } from "@/types/room";
+import { Amenity } from "@/types/amenity";
 import "@/pages/user/SearchResults/SearchResults.css";
 
-export interface Room {
-    id: number;
-    name: string;
-    type: string;
-    price: number;
-    originalPrice?: number;
-    rating: number;
-    reviews: number;
-    image: string;
-    amenities: string[];
-    size: number;
-    bedType: string;
-    maxGuests: number;
-    discount?: number;
-    isFavorite?: boolean;
-}
-
-export type SortOption = "price-asc" | "price-desc" | "rating" | "name";
-
-const mockRooms: Room[] = [
-    {
-        id: 1,
-        name: "Superior Double Ocean View",
-        type: "Superior",
-        price: 2500000,
-        originalPrice: 3000000,
-        rating: 4.8,
-        reviews: 124,
-        image: DEMO_IMAGES.hero,
-        amenities: [
-            "WiFi miễn phí",
-            "Điều hòa",
-            "TV màn hình phẳng",
-            "Mini Bar",
-            "View biển",
-            "Ban công riêng",
-        ],
-        size: 35,
-        bedType: "Giường đôi King",
-        maxGuests: 2,
-        discount: 17,
-        isFavorite: false,
-    },
-    {
-        id: 2,
-        name: "Deluxe Family Suite",
-        type: "Deluxe",
-        price: 4200000,
-        rating: 4.9,
-        reviews: 89,
-        image: DEMO_IMAGES.familySuite,
-        amenities: [
-            "WiFi miễn phí",
-            "Điều hòa",
-            "TV",
-            "Bếp nhỏ",
-            "Phòng tắm riêng",
-        ],
-        size: 55,
-        bedType: "2 giường đôi",
-        maxGuests: 4,
-        isFavorite: true,
-    },
-    {
-        id: 3,
-        name: "Standard Twin Room",
-        type: "Standard",
-        price: 1800000,
-        originalPrice: 2200000,
-        rating: 4.6,
-        reviews: 201,
-        image: DEMO_IMAGES.lionBoutique,
-        amenities: ["WiFi miễn phí", "Điều hòa", "TV", "Minibar"],
-        size: 28,
-        bedType: "2 giường đơn",
-        maxGuests: 2,
-        discount: 18,
-        isFavorite: false,
-    },
-    {
-        id: 4,
-        name: "Royal Suite Premium",
-        type: "Suite",
-        price: 6500000,
-        rating: 5.0,
-        reviews: 45,
-        image: DEMO_IMAGES.lionWestlake,
-        amenities: [
-            "WiFi miễn phí",
-            "Điều hòa",
-            "TV",
-            "Jacuzzi",
-            "Butler service",
-            "View toàn cảnh",
-        ],
-        size: 85,
-        bedType: "Giường King",
-        maxGuests: 2,
-        isFavorite: false,
-    },
-];
+export type SortOption = "price-asc" | "price-desc" | "name";
 
 const SearchResults: React.FC = () => {
+    const [searchParams] = useSearchParams();
+    
     // States
     const [showMobileFilter, setShowMobileFilter] = useState(false);
     const [rooms, setRooms] = useState<Room[]>([]);
+    const [total, setTotal] = useState(0);
+    const [amenities, setAmenities] = useState<Amenity[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [priceRange, setPriceRange] = useState<[number, number]>([
-        1000000, 7000000,
-    ]);
+    const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000000]);
     const [selectedRoomTypes, setSelectedRoomTypes] = useState<string[]>([]);
     const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
-    const [sortBy, setSortBy] = useState("price-asc");
+    const [sortBy, setSortBy] = useState<SortOption>("price-asc");
     const [isLoading, setIsLoading] = useState(false);
+    
+    // Debounce ref for price filter
+    const priceDebounceRef = useRef<NodeJS.Timeout | null>(null);
 
     const pageSize = 8;
 
-    // Simulate loading search results
+    // Get search params from URL
+    const checkIn = searchParams.get('checkIn');
+    const checkOut = searchParams.get('checkOut');
+    const adults = parseInt(searchParams.get('adults') || '0');
+    const children = parseInt(searchParams.get('children') || '0');
+    const maxGuests = adults + children;
+
+    // Load amenities once on mount
     useEffect(() => {
-        const loadResults = async () => {
-            setIsLoading(true);
-            // Simulate API call
-            await new Promise((resolve) => setTimeout(resolve, 1200));
-            setRooms(mockRooms);
-            setIsLoading(false);
+        const loadAmenities = async () => {
+            try {
+                const amenitiesData = await amenityService.getAllAmenities({
+                    page: 1,
+                    pageSize: 100,
+                });
+                setAmenities(amenitiesData.amenities);
+            } catch (error) {
+                console.error('Error loading amenities:', error);
+                setAmenities([]);
+            }
         };
 
-        loadResults();
+        loadAmenities();
     }, []);
 
-    const toggleFavorite = useCallback((roomId: number) => {
-        setRooms((prevRooms) =>
-            prevRooms.map((room) =>
-                room.id === roomId
-                    ? { ...room, isFavorite: !room.isFavorite }
-                    : room
-            )
-        );
-    }, []);
-
-    const filterRooms = useCallback(
-        (rooms: Room[]): Room[] => {
-            return rooms.filter((room) => {
-                // Price filter
-                if (room.price < priceRange[0] || room.price > priceRange[1])
-                    return false;
-
-                // Room type filter
-                if (
-                    selectedRoomTypes.length > 0 &&
-                    !selectedRoomTypes.includes(room.type)
-                )
-                    return false;
-
-                // Amenities filter
-                if (selectedAmenities.length > 0) {
-                    const hasAllAmenities = selectedAmenities.every((amenity) =>
-                        room.amenities.includes(amenity)
-                    );
-                    if (!hasAllAmenities) return false;
-                }
-
-                return true;
-            });
-        },
-        [priceRange, selectedRoomTypes, selectedAmenities]
-    );
-
-    const sortRooms = useCallback(
-        (rooms: Room[]): Room[] => {
-            const sorted = [...rooms];
-            switch (sortBy) {
-                case "price-asc":
-                    return sorted.sort((a, b) => a.price - b.price);
-                case "price-desc":
-                    return sorted.sort((a, b) => b.price - a.price);
-                case "rating":
-                    return sorted.sort((a, b) => b.rating - a.rating);
-                case "name":
-                    return sorted.sort((a, b) => a.name.localeCompare(b.name));
-                default:
-                    return sorted;
-            }
-        },
-        [sortBy]
-    );
-
-    const filteredAndSortedRooms = useMemo(() => {
-        return sortRooms(filterRooms(rooms));
-    }, [rooms, filterRooms, sortRooms]);
-
-    const currentRooms = useMemo(() => {
-        const startIndex = (currentPage - 1) * pageSize;
-        const endIndex = startIndex + pageSize;
-        return filteredAndSortedRooms.slice(startIndex, endIndex);
-    }, [filteredAndSortedRooms, currentPage, pageSize]);
-
-    // Handle filter changes with loading
-    const handlePriceRangeChange = useCallback(
-        async (newPriceRange: [number, number]) => {
+    // Search rooms whenever filters change
+    useEffect(() => {
+        const searchRooms = async () => {
             setIsLoading(true);
-            await new Promise((resolve) => setTimeout(resolve, 500));
-            setPriceRange(newPriceRange);
-            setCurrentPage(1);
-            setIsLoading(false);
+            try {
+                const response = await roomService.searchRooms({
+                    checkIn: checkIn || undefined,
+                    checkOut: checkOut || undefined,
+                    guests: maxGuests > 0 ? maxGuests : undefined,
+                    roomType: selectedRoomTypes.length > 0 ? selectedRoomTypes[0] : undefined,
+                    minPrice: priceRange[0],
+                    maxPrice: priceRange[1],
+                    amenities: selectedAmenities,
+                    page: currentPage,
+                    pageSize,
+                });
+                
+                setRooms(response.rooms);
+                setTotal(response.total);
+            } catch (error) {
+                console.error('Error searching rooms:', error);
+                setRooms([]);
+                setTotal(0);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        searchRooms();
+    }, [checkIn, checkOut, maxGuests, selectedRoomTypes, priceRange, selectedAmenities, currentPage, pageSize]);
+
+    // Cleanup debounce on unmount
+    useEffect(() => {
+        return () => {
+            if (priceDebounceRef.current) {
+                clearTimeout(priceDebounceRef.current);
+            }
+        };
+    }, []);
+
+    // Handle filter changes with debounce for price
+    const handlePriceRangeChange = useCallback(
+        (newPriceRange: [number, number]) => {
+            // Clear existing timeout
+            if (priceDebounceRef.current) {
+                clearTimeout(priceDebounceRef.current);
+            }
+
+            priceDebounceRef.current = setTimeout(() => {
+                setPriceRange(newPriceRange);
+                setCurrentPage(1);
+            }, 500);
         },
         []
     );
 
     const handleRoomTypesChange = useCallback(
-        async (newRoomTypes: string[]) => {
-            setIsLoading(true);
-            await new Promise((resolve) => setTimeout(resolve, 500));
+        (newRoomTypes: string[]) => {
             setSelectedRoomTypes(newRoomTypes);
             setCurrentPage(1);
-            setIsLoading(false);
         },
         []
     );
 
     const handleAmenitiesChange = useCallback(
-        async (newAmenities: string[]) => {
-            setIsLoading(true);
-            await new Promise((resolve) => setTimeout(resolve, 500));
+        (newAmenities: string[]) => {
             setSelectedAmenities(newAmenities);
             setCurrentPage(1);
-            setIsLoading(false);
         },
         []
     );
 
-    const handleSortChange = useCallback(async (newSortBy: string) => {
-        setIsLoading(true);
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        setSortBy(newSortBy);
-        setIsLoading(false);
+    const handleSortChange = useCallback((newSortBy: string) => {
+        setSortBy(newSortBy as SortOption);
     }, []);
 
     const handleClearFilters = useCallback(() => {
-        setPriceRange([1000000, 7000000]);
+        setPriceRange([0, 10000000]);
         setSelectedRoomTypes([]);
         setSelectedAmenities([]);
     }, []);
@@ -252,10 +141,16 @@ const SearchResults: React.FC = () => {
     return (
         <div className="search-results-page min-h-screen bg-gray-50 pt-20">
             <SearchHeader
-                totalRooms={filteredAndSortedRooms.length}
+                totalRooms={total}
                 onToggleMobileFilter={() =>
                     setShowMobileFilter(!showMobileFilter)
                 }
+                searchInfo={{
+                    checkIn: checkIn || undefined,
+                    checkOut: checkOut || undefined,
+                    adults,
+                    children,
+                }}
             />
 
             <div className="max-w-7xl mx-auto px-4 py-8">
@@ -266,6 +161,7 @@ const SearchResults: React.FC = () => {
                         selectedRoomTypes={selectedRoomTypes}
                         selectedAmenities={selectedAmenities}
                         sortBy={sortBy}
+                        availableAmenities={amenities}
                         onPriceRangeChange={handlePriceRangeChange}
                         onRoomTypesChange={handleRoomTypesChange}
                         onAmenitiesChange={handleAmenitiesChange}
@@ -274,13 +170,13 @@ const SearchResults: React.FC = () => {
                     />
 
                     <SearchResultsList
-                        rooms={currentRooms}
-                        allRooms={filteredAndSortedRooms}
+                        rooms={rooms}
+                        allRooms={rooms}
                         currentPage={currentPage}
                         pageSize={pageSize}
                         isLoading={isLoading}
                         onPageChange={setCurrentPage}
-                        onToggleFavorite={toggleFavorite}
+                        total={total}
                     />
                 </div>
             </div>

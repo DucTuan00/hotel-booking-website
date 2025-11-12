@@ -4,8 +4,26 @@ import {
     CreateRoomInput,
     UpdateRoomInput,
     GetAllRoomsInput,
-    GetAllRoomsResponse
+    GetAllRoomsResponse,
+    SearchRoomsInput
 } from '@/types/room';
+
+const searchRooms = async (params: SearchRoomsInput): Promise<GetAllRoomsResponse> => {
+    try {
+        const queryParams: any = { ...params };
+        
+        // Convert amenities array to comma-separated string
+        if (params.amenities && params.amenities.length > 0) {
+            queryParams.amenities = params.amenities.join(',');
+        }
+        
+        const response = await api.get('/room/search', { params: queryParams });
+        return response.data;
+    } catch (error) {
+        console.error('Error searching rooms:', error);
+        throw error;
+    }
+};
 
 const getAllRooms = async (params: GetAllRoomsInput): Promise<GetAllRoomsResponse> => {
     try {
@@ -98,6 +116,7 @@ const toggleRoomActive = async (roomId: string): Promise<{ message: string; acti
 };
 
 export default {
+    searchRooms,
     getAllRooms,
     getAllRoomsWithoutPagination,
     getActiveRooms,

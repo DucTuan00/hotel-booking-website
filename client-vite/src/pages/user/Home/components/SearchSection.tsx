@@ -3,6 +3,8 @@ import { Button, DatePicker, Modal } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { COLORS, TYPOGRAPHY } from '@/config/constants';
 import { MinusOutlined, PlusOutlined } from '@ant-design/icons';
+import type { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 
 const { RangePicker } = DatePicker;
 
@@ -13,12 +15,33 @@ interface GuestCounts {
 
 const SearchSection: React.FC = () => {
     const navigate = useNavigate();
-    const [dateRange, setDateRange] = useState<any>(null);
+    const [dateRange, setDateRange] = useState<[Dayjs, Dayjs] | null>(null);
     const [guests, setGuests] = useState<GuestCounts>({ adults: 2, children: 0 });
     const [isGuestModalOpen, setIsGuestModalOpen] = useState(false);
 
+    // Disable dates: past dates and dates beyond 30 days from today
+    const disabledDate = (current: Dayjs) => {
+        if (!current) return false;
+        
+        const today = dayjs().startOf('day');
+        const maxDate = dayjs().add(30, 'days').endOf('day');
+        
+        // Disable if before today or after 30 days from today
+        return current.isBefore(today, 'day') || current.isAfter(maxDate, 'day');
+    };
+
     const handleSearch = () => {
-        navigate('/search');
+        const params = new URLSearchParams();
+        
+        if (dateRange && dateRange[0] && dateRange[1]) {
+            params.append('checkIn', dateRange[0].format('YYYY-MM-DD'));
+            params.append('checkOut', dateRange[1].format('YYYY-MM-DD'));
+        }
+        
+        params.append('adults', guests.adults.toString());
+        params.append('children', guests.children.toString());
+        
+        navigate(`/search?${params.toString()}`);
     };
 
     const handleAddAdult = () => {
@@ -81,7 +104,14 @@ const SearchSection: React.FC = () => {
                                 className="w-full"
                                 placeholder={['Nhận phòng', 'Trả phòng']}
                                 value={dateRange}
-                                onChange={setDateRange}
+                                disabledDate={disabledDate}
+                                onChange={(dates) => {
+                                    if (dates && dates[0] && dates[1]) {
+                                        setDateRange([dates[0], dates[1]]);
+                                    } else {
+                                        setDateRange(null);
+                                    }
+                                }}
                                 style={{ fontSize: '13px', border: `1px solid ${COLORS.gray[300]}` }}
                             />
                         </div>

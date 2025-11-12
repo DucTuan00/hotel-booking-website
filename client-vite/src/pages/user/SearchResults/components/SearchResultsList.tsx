@@ -2,7 +2,7 @@ import React from 'react';
 import { Pagination } from 'antd';
 import SearchResultCard from './SearchResultCard';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { Room } from '@/pages/user/SearchResults';
+import { Room } from '@/types/room';
 
 interface SearchResultsListProps {
   rooms: Room[];
@@ -11,7 +11,7 @@ interface SearchResultsListProps {
   pageSize: number;
   isLoading: boolean;
   onPageChange: (page: number) => void;
-  onToggleFavorite: (roomId: number) => void;
+  total?: number; 
 }
 
 const SearchResultsList: React.FC<SearchResultsListProps> = ({
@@ -21,7 +21,7 @@ const SearchResultsList: React.FC<SearchResultsListProps> = ({
   pageSize,
   isLoading,
   onPageChange,
-  onToggleFavorite,
+  total,
 }) => {
   if (isLoading) {
     return (
@@ -31,6 +31,9 @@ const SearchResultsList: React.FC<SearchResultsListProps> = ({
     );
   }
 
+  // Use total from props if available, otherwise fallback to allRooms length
+  const totalRooms = total !== undefined ? total : allRooms.length;
+
   return (
     <div className="flex-1">
       <div className="grid gap-6">
@@ -38,17 +41,16 @@ const SearchResultsList: React.FC<SearchResultsListProps> = ({
           <SearchResultCard
             key={room.id}
             room={room}
-            onToggleFavorite={onToggleFavorite}
           />
         ))}
       </div>
 
       {/* Pagination */}
-      {allRooms.length > 0 && (
+      {totalRooms > 0 && (
         <div className="mt-12 flex justify-center">
           <Pagination
             current={currentPage}
-            total={allRooms.length}
+            total={totalRooms}
             pageSize={pageSize}
             onChange={onPageChange}
             showSizeChanger={false}

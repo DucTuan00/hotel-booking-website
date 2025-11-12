@@ -6,12 +6,44 @@ import { TYPOGRAPHY, COLORS } from '@/config/constants';
 interface SearchHeaderProps {
   totalRooms: number;
   onToggleMobileFilter: () => void;
+  searchInfo?: {
+    checkIn?: string;
+    checkOut?: string;
+    adults?: number;
+    children?: number;
+  };
 }
 
 const SearchHeader: React.FC<SearchHeaderProps> = ({
   totalRooms,
   onToggleMobileFilter,
+  searchInfo,
 }) => {
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return null;
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  };
+
+  const getSearchDescription = () => {
+    const parts: string[] = [];
+    
+    // Date range
+    if (searchInfo?.checkIn && searchInfo?.checkOut) {
+      parts.push(`${formatDate(searchInfo.checkIn)} - ${formatDate(searchInfo.checkOut)}`);
+    }
+    
+    // Guests
+    if (searchInfo?.adults || searchInfo?.children) {
+      const adults = searchInfo.adults || 0;
+      const children = searchInfo.children || 0;
+      const total = adults + children;
+      parts.push(`${total} khách`);
+    }
+    
+    return parts.length > 0 ? parts.join(' • ') : '';
+  };
+
   return (
     <div className="bg-white shadow-sm border-b">
       <div className="max-w-7xl mx-auto px-4 py-6">
@@ -27,7 +59,8 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
               className="text-gray-600"
               style={{ fontFamily: TYPOGRAPHY.fontFamily.secondary }}
             >
-              Tìm thấy {totalRooms} phòng phù hợp • 15-17 Tháng 9, 2025 • 2 khách
+              Tìm thấy {totalRooms} phòng phù hợp
+              {getSearchDescription() && ` • ${getSearchDescription()}`}
             </p>
           </div>
 

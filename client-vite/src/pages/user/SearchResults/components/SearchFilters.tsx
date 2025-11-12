@@ -1,6 +1,9 @@
-import React from 'react';
-import { Button, Slider, Checkbox, Select } from 'antd';
+import React, { useEffect } from 'react';
+import { Button, Slider, Checkbox, Select, Input, Form } from 'antd';
 import { COLORS, TYPOGRAPHY } from '@/config/constants';
+import { formatPrice } from '@/utils/formatPrice';
+import { RoomType } from '@/types/room';
+import { Amenity } from '@/types/amenity';
 
 const { Option } = Select;
 
@@ -10,6 +13,7 @@ interface SearchFiltersProps {
   selectedRoomTypes: string[];
   selectedAmenities: string[];
   sortBy: string;
+  availableAmenities: Amenity[];
   onPriceRangeChange: (value: [number, number]) => void;
   onRoomTypesChange: (value: string[]) => void;
   onAmenitiesChange: (value: string[]) => void;
@@ -23,20 +27,35 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
   selectedRoomTypes,
   selectedAmenities,
   sortBy,
+  availableAmenities,
   onPriceRangeChange,
   onRoomTypesChange,
   onAmenitiesChange,
   onSortChange,
   onClearFilters,
 }) => {
-  const roomTypes = ['Standard', 'Superior', 'Deluxe', 'Suite'];
-  const amenities = ['WiFi miễn phí', 'Điều hòa', 'TV', 'Mini Bar', 'View biển', 'Bếp nhỏ', 'Jacuzzi'];
+  const [form] = Form.useForm();
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
-    }).format(price);
+  useEffect(() => {
+    form.setFieldsValue({
+      priceFrom: priceRange[0],
+      priceTo: priceRange[1],
+    });
+  }, [priceRange, form]);
+
+  const roomTypes = Object.values(RoomType);
+
+  const handleCustomPriceChange = () => {
+    form.validateFields(['priceFrom', 'priceTo']).then(() => {
+      const fromValue = form.getFieldValue('priceFrom');
+      const toValue = form.getFieldValue('priceTo');
+      
+      if (fromValue !== undefined && toValue !== undefined) {
+        onPriceRangeChange([fromValue, toValue]);
+      }
+    }).catch(() => {
+      // Validation failed, do nothing
+    });
   };
 
   return (
@@ -64,19 +83,85 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
           <h4 className="font-medium text-gray-900 mb-3">Giá phòng (VNĐ/đêm)</h4>
           <Slider
             range
-            min={1000000}
-            max={7000000}
+            min={0}
+            max={10000000}
             step={100000}
             value={priceRange}
-            onChange={(value) => onPriceRangeChange(value as [number, number])}
+            onChange={(value) => {
+              const newRange = value as [number, number];
+              form.setFieldsValue({
+                priceFrom: newRange[0],
+                priceTo: newRange[1],
+              });
+              onPriceRangeChange(newRange);
+            }}
             tooltip={{
               formatter: (value) => formatPrice(value!)
             }}
           />
-          <div className="flex justify-between text-sm text-gray-500 mt-2">
+          <div className="flex justify-between text-sm text-gray-500 mt-2 mb-4">
             <span>{formatPrice(priceRange[0])}</span>
             <span>{formatPrice(priceRange[1])}</span>
           </div>
+
+          {/* Custom Price Inputs */}
+          <Form form={form} layout="vertical">
+            <div className="grid grid-cols-2 gap-2">
+              <Form.Item
+                label="Từ"
+                name="priceFrom"
+                rules={[
+                  { required: true, message: 'Vui lòng nhập giá' },
+                  {
+                    type: 'number',
+                    min: 0,
+                    message: 'Giá phải lớn hơn hoặc bằng 0',
+                    transform: (value) => Number(value)
+                  }
+                ]}
+                className="mb-0"
+              >
+                <Input
+                  type="number"
+                  min={0}
+                  placeholder="0"
+                  onBlur={handleCustomPriceChange}
+                />
+              </Form.Item>
+              <Form.Item
+                label="Đến"
+                name="priceTo"
+                rules={[
+                  { required: true, message: 'Vui lòng nhập giá' },
+                  {
+                    type: 'number',
+                    min: 100000,
+                    max: 10000000,
+                    message: 'Giá từ 100,000 đến 10,000,000',
+                    transform: (value) => Number(value)
+                  },
+                  ({ getFieldValue }) => ({
+                    validator(_, value) {
+                      const fromValue = getFieldValue('priceFrom');
+                      if (!value || !fromValue || Number(value) >= Number(fromValue)) {
+                        return Promise.resolve();
+                      }
+                      return Promise.reject(new Error('Giá đến phải lớn hơn giá từ'));
+                    },
+                  }),
+                ]}
+                className="mb-0"
+              >
+                <Input
+                  type="number"
+                  min={100000}
+                  max={10000000}
+                  placeholder="10,000,000"
+                  onBlur={handleCustomPriceChange}
+                />
+              </Form.Item>
+            </div>
+          </Form>
         </div>
 
         {/* Room Type */}
@@ -104,9 +189,9 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
             onChange={(values) => onAmenitiesChange(values as string[])}
           >
             <div className="space-y-2">
-              {amenities.map(amenity => (
-                <div key={amenity}>
-                  <Checkbox value={amenity}>{amenity}</Checkbox>
+              {availableAmenities.map((amenity) => (
+                <div key={amenity.id}>
+                  <Checkbox value={amenity.name}>{amenity.name}</Checkbox>
                 </div>
               ))}
             </div>
@@ -123,7 +208,6 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
           >
             <Option value="price-asc">Giá thấp đến cao</Option>
             <Option value="price-desc">Giá cao đến thấp</Option>
-            <Option value="rating">Đánh giá cao nhất</Option>
             <Option value="name">Tên A-Z</Option>
           </Select>
         </div>

@@ -1,10 +1,14 @@
 import { Router } from 'express';
 import * as roomController from '@/controllers/rooms/roomController';
 import * as roomAvailableController from '@/controllers/rooms/roomAvailableController';
+import * as roomSearchController from '@/controllers/rooms/roomSearchController';
 import authMiddleware from '@/middlewares/authMiddleware';
 import { UserRole } from "@/types/user";
 
 const router = Router();
+
+// Room search route (public)
+router.get('/search', roomSearchController.searchAvailableRooms);
 
 // Room availability routes
 router.post('/availability', authMiddleware([UserRole.ADMIN]), roomAvailableController.createRoomAvailable);

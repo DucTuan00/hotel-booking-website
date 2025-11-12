@@ -1,23 +1,19 @@
 import React from 'react';
-import { Button, Rate } from 'antd';
-import { HeartOutlined, HeartFilled } from '@ant-design/icons';
+import { Button } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import { COLORS, TYPOGRAPHY } from '@/config/constants';
-import { Room } from '@/pages/user/SearchResults';
+import { Room } from '@/types/room';
+import { formatPrice } from '@/utils/formatPrice';
 
 interface SearchResultCardProps {
   room: Room;
-  onToggleFavorite: (roomId: number) => void;
 }
 
-const SearchResultCard: React.FC<SearchResultCardProps> = ({
-  room,
-  onToggleFavorite,
-}) => {
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
-    }).format(price);
+const SearchResultCard: React.FC<SearchResultCardProps> = ({ room }) => {
+  const navigate = useNavigate();
+  
+  const handleViewDetail = () => {
+    navigate(`/rooms/${room.id}`);
   };
 
   return (
@@ -26,26 +22,9 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
         {/* Room Image */}
         <div className="md:w-80 h-64 md:h-auto relative">
           <img
-            src={room.image}
+            src={room.images && room.images.length > 0 ? room.images[0].path : '/images/placeholder.jpg'}
             alt={room.name}
             className="w-full h-full object-cover"
-          />
-          {room.discount && (
-            <div
-              className="absolute top-4 left-4 px-2 py-1 text-white text-sm font-medium rounded"
-              style={{ backgroundColor: COLORS.secondary }}
-            >
-              -{room.discount}%
-            </div>
-          )}
-          <Button
-            type="text"
-            icon={room.isFavorite ? <HeartFilled /> : <HeartOutlined />}
-            onClick={() => onToggleFavorite(room.id)}
-            className="absolute top-4 right-4 bg-white bg-opacity-80 hover:bg-opacity-100"
-            style={{
-              color: room.isFavorite ? COLORS.secondary : COLORS.gray[500]
-            }}
           />
         </div>
 
@@ -60,23 +39,19 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
                 >
                   {room.name}
                 </h3>
-                <div className="flex items-center gap-1">
-                  <Rate disabled defaultValue={room.rating} />
-                  <span className="text-sm text-gray-600">({room.reviews})</span>
-                </div>
               </div>
 
               <p className="text-gray-600 mb-3">
-                {room.bedType} • {room.size}m² • {room.maxGuests} khách
+                {room.roomType} • {room.roomArea ? `${room.roomArea}m²` : 'N/A'} • {room.maxGuests} khách
               </p>
 
               <div className="flex flex-wrap gap-2 mb-4">
-                {room.amenities.slice(0, 4).map((amenity: string) => (
+                {room.amenities.slice(0, 4).map((amenity) => (
                   <span
-                    key={amenity}
+                    key={amenity.id}
                     className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full"
                   >
-                    {amenity}
+                    {amenity.name}
                   </span>
                 ))}
                 {room.amenities.length > 4 && (
@@ -89,11 +64,6 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
 
             <div className="flex justify-between items-end">
               <div>
-                {room.originalPrice && (
-                  <span className="text-sm text-gray-500 line-through block">
-                    {formatPrice(room.originalPrice)}
-                  </span>
-                )}
                 <div className="flex items-baseline gap-1">
                   <span
                     className="text-2xl font-bold"
@@ -109,13 +79,14 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
                 type="primary"
                 size="large"
                 className="px-8"
+                onClick={handleViewDetail}
                 style={{
                   backgroundColor: COLORS.primary,
                   borderColor: COLORS.primary,
                   fontFamily: TYPOGRAPHY.fontFamily.secondary,
                 }}
               >
-                Đặt ngay
+                Chi tiết
               </Button>
             </div>
           </div>

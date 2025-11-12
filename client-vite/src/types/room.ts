@@ -129,3 +129,15 @@ export interface RoomAvailabilityData {
         inventory: number;
     }>;
 }
+
+export interface SearchRoomsInput {
+    checkIn?: string;
+    checkOut?: string;
+    guests?: number;
+    roomType?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    amenities?: string[];
+    page?: number;
+    pageSize?: number;
+}
