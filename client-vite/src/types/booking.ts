@@ -41,6 +41,7 @@ export interface CreateBookingInput {
     lastName: string;
     email: string;
     phoneNumber: string;
+    note?: string;
     paymentMethod: PaymentMethod;
     celebrateItems?: CelebrateItemInput[];
 }
@@ -110,6 +111,7 @@ export interface Booking {
     lastName: string;
     email: string;
     phoneNumber: string;
+    note?: string;
     paymentMethod: PaymentMethod;
     paymentStatus: PaymentStatus;
     paymentDetails?: {

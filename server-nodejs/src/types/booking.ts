@@ -47,6 +47,7 @@ export interface CreateBookingInput {
     lastName: string;
     email: string;
     phoneNumber: string;
+    note?: string;
     paymentMethod: PaymentMethod;
     celebrateItems?: CelebrateItemInput[];
 }

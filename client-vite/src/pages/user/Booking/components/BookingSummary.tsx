@@ -16,6 +16,7 @@ interface BookingSummaryProps {
     adults: number;
     children: number;
     selectedCelebrations: CelebrateItem[];
+    selectedCelebrationQuantities: Map<string, number>;
     onSubmit: () => void;
     submitting: boolean;
 }
@@ -29,11 +30,18 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
     adults,
     children,
     selectedCelebrations,
+    selectedCelebrationQuantities,
     onSubmit,
     submitting
 }) => {
     const nights = dayjs(checkOut).diff(dayjs(checkIn), 'day');
-    const celebrationTotal = selectedCelebrations.reduce((sum, item) => sum + item.price, 0);
+    
+    // Calculate celebration total with quantities
+    const celebrationTotal = selectedCelebrations.reduce((sum, item) => {
+        const itemQuantity = selectedCelebrationQuantities.get(item.id) || 1;
+        return sum + (item.price * itemQuantity);
+    }, 0);
+    
     const grandTotal = pricePreview.totalPrice + celebrationTotal;
 
     return (
@@ -116,12 +124,19 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
                     <Divider className="my-4" />
                     <div className="space-y-2">
                         <p className="text-sm font-medium text-gray-700 mb-2">Quà kỷ niệm:</p>
-                        {selectedCelebrations.map((item) => (
-                            <div key={item.id} className="flex justify-between text-sm pl-4">
-                                <span className="text-gray-600">{item.name}</span>
-                                <span>{formatPrice(item.price)}</span>
-                            </div>
-                        ))}
+                        {selectedCelebrations.map((item) => {
+                            const itemQuantity = selectedCelebrationQuantities.get(item.id) || 1;
+                            const itemTotal = item.price * itemQuantity;
+                            
+                            return (
+                                <div key={item.id} className="flex justify-between text-sm pl-4">
+                                    <span className="text-gray-600">
+                                        {item.name} {itemQuantity > 1 && `x${itemQuantity}`}
+                                    </span>
+                                    <span>{formatPrice(itemTotal)}</span>
+                                </div>
+                            );
+                        })}
                     </div>
                 </>
             )}

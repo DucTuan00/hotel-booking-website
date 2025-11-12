@@ -54,13 +54,13 @@ const BookingComplete: React.FC = () => {
                                 color: COLORS.primary
                             }}
                         >
-                            Cảm ơn đã đặt phòng!
+                            Cảm ơn quý khách đã đặt phòng!
                         </h1>
 
                         {/* Description */}
                         <div className="mb-8 space-y-4">
                             <p className="text-lg text-gray-600">
-                                Chúng tôi đã nhận được yêu cầu đặt phòng của bạn
+                                Chúng tôi đã nhận được yêu cầu đặt phòng của quý khách
                             </p>
                         </div>
 

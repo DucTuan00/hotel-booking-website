@@ -15,6 +15,7 @@ export async function createBooking(req: Request, res: Response, next: NextFunct
             lastName,
             email,
             phoneNumber,
+            note,
             paymentMethod,
             celebrateItems
         } = req.body;
@@ -35,6 +36,7 @@ export async function createBooking(req: Request, res: Response, next: NextFunct
                 lastName,
                 email,
                 phoneNumber,
+                note,
                 paymentMethod,
                 celebrateItems
             });

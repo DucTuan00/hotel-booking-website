@@ -16,6 +16,7 @@ import { PaymentMethod, PreviewPriceResponse } from '@/types/booking';
 import { User } from '@/types/user';
 import { CelebrateItem } from '@/types/celebrate';
 import GuestInfoForm from '@/pages/user/Booking/components/GuestInfoForm';
+import NoteForm from '@/pages/user/Booking/components/NoteForm';
 import PaymentMethodForm from '@/pages/user/Booking/components/PaymentMethodForm';
 import BookingSummary from '@/pages/user/Booking/components/BookingSummary';
 import CelebrationItemsForm from '@/pages/user/Booking/components/CelebrationItemsForm';
@@ -33,7 +34,7 @@ const Booking: React.FC = () => {
     const [pricePreview, setPricePreview] = useState<PreviewPriceResponse | null>(null);
     const [message, setMessage] = useState<Message | null>(null);
     const [celebrateItems, setCelebrateItems] = useState<CelebrateItem[]>([]);
-    const [selectedCelebrateIds, setSelectedCelebrateIds] = useState<string[]>([]);
+    const [selectedCelebrateItems, setSelectedCelebrateItems] = useState<Map<string, number>>(new Map());
     
     const roomId = searchParams.get('roomId');
     const checkIn = searchParams.get('checkIn');
@@ -127,12 +128,12 @@ const Booking: React.FC = () => {
             const formattedCheckOut = dayjs(checkOut).format('YYYY-MM-DD');
 
             // Prepare celebration items if any selected
-            const celebrateItemsData = selectedCelebrateIds.length > 0 
-                ? selectedCelebrateIds.map(id => {
+            const celebrateItemsData = selectedCelebrateItems.size > 0 
+                ? Array.from(selectedCelebrateItems.entries()).map(([id, quantity]) => {
                     const item = celebrateItems.find(c => c.id === id);
                     return {
                         celebrateItemId: id,
-                        quantity: 1,
+                        quantity: quantity,
                         price: item?.price || 0
                     };
                 })
@@ -152,6 +153,7 @@ const Booking: React.FC = () => {
                 lastName: values.lastName,
                 email: values.email,
                 phoneNumber: values.phoneNumber,
+                note: values.note,
                 paymentMethod: values.paymentMethod,
                 ...(celebrateItemsData && { celebrateItems: celebrateItemsData })
             };
@@ -273,11 +275,14 @@ const Booking: React.FC = () => {
                                 {/* Guest Information */}
                                 <GuestInfoForm />
 
+                                {/* Note */}
+                                <NoteForm />
+
                                 {/* Celebration Items */}
                                 <CelebrationItemsForm
                                     items={celebrateItems}
-                                    selectedIds={selectedCelebrateIds}
-                                    onSelectionChange={setSelectedCelebrateIds}
+                                    selectedItems={selectedCelebrateItems}
+                                    onSelectionChange={setSelectedCelebrateItems}
                                 />
 
                                 {/* Payment Method */}
@@ -296,7 +301,8 @@ const Booking: React.FC = () => {
                             quantity={quantity}
                             adults={adults}
                             children={children}
-                            selectedCelebrations={celebrateItems.filter(item => selectedCelebrateIds.includes(item.id))}
+                            selectedCelebrations={celebrateItems.filter(item => selectedCelebrateItems.has(item.id))}
+                            selectedCelebrationQuantities={selectedCelebrateItems}
                             onSubmit={() => form.submit()}
                             submitting={submitting}
                         />

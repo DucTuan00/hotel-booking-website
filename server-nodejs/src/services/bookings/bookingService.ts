@@ -40,6 +40,7 @@ export async function createBooking(args: CreateBookingInput) {
         lastName,
         email,
         phoneNumber,
+        note,
         paymentMethod,
         celebrateItems = []
     } = args;
@@ -170,6 +171,7 @@ export async function createBooking(args: CreateBookingInput) {
             lastName,
             email,
             phoneNumber,
+            note,
             paymentMethod,
             paymentStatus,
             snapshot
