@@ -1,6 +1,6 @@
 import React from 'react';
 import moment from 'moment';
-import BaseDetailRow from '@/pages/admin/Booking/Detail/components/BaseDetailRow';
+import BaseDetailRow from '@/components/BaseDetail';
 import DetailSection from '@/pages/admin/Booking/Detail/components/DetailSection';
 import { Booking } from '@/types/booking';
 

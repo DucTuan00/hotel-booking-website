@@ -56,5 +56,5 @@ app.use('/public/uploads', express.static(path.join(__dirname, '../public/upload
 app.use(errorHandler as ErrorRequestHandler);
 
 app.listen(PORT, (): void => {
-    console.log(`⚡ Server running on port http://localhost:${PORT}`);
+    console.log(`Server running on port http://localhost:${PORT}`);
 });

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Alert, Select, Button, Modal, Input, Space } from 'antd';
 import { ExclamationCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import moment from 'moment';
-import BaseDetailRow from '@/pages/admin/Booking/Detail/components/BaseDetailRow';
+import BaseDetailRow from '@/components/BaseDetail';
 import DetailSection from '@/pages/admin/Booking/Detail/components/DetailSection';
 import { Booking, BookingStatus } from '@/types/booking';
 import { calculateCancellationFee } from '@/utils/cancellationHelper';
@@ -99,10 +99,11 @@ const BookingStatusInfo: React.FC<BookingStatusInfoProps> = ({ booking, status, 
 
     const cancellationInfo = calculateCancellationFee(booking);
     
-    // Check if current date is before check-in date
-    const today = new Date();
-    const checkInDate = new Date(booking.checkIn);
-    const isBeforeCheckIn = today < checkInDate;
+    // Check if current time is before check-in time (14:00)
+    const checkInDateTime = new Date(booking.checkIn);
+    checkInDateTime.setHours(14, 0, 0, 0);
+    const now = new Date();
+    const isBeforeCheckIn = now < checkInDateTime;
     
     const canShowCancelButton = booking.status !== BookingStatus.CANCELLED && 
                                 booking.status !== BookingStatus.REJECTED &&
@@ -221,7 +222,12 @@ const BookingStatusInfo: React.FC<BookingStatusInfoProps> = ({ booking, status, 
                     message="Thông tin phí hủy"
                     description={
                         <div>
-                            <p><strong>Thời gian hủy:</strong> {cancellationInfo.daysBeforeCheckIn} ngày trước check-in</p>
+                            <p>
+                                <strong>Thời gian hủy:</strong>{' '}
+                                {cancellationInfo.hoursBeforeCheckIn < 24
+                                    ? `${Math.floor(cancellationInfo.hoursBeforeCheckIn)} giờ trước ngày nhận phòng`
+                                    : `${cancellationInfo.daysBeforeCheckIn} ngày trước ngày nhận phòng`}
+                            </p>
                             <p><strong>Phí hủy:</strong> {cancellationInfo.feePercentage}% = {formatPrice(cancellationInfo.fee)}</p>
                             <p><strong>Số tiền hoàn lại:</strong> {formatPrice(cancellationInfo.refundAmount)}</p>
                             <p><strong>Khôi phục phòng:</strong> {cancellationInfo.restoreInventory ? 'Có' : 'Không'}</p>
