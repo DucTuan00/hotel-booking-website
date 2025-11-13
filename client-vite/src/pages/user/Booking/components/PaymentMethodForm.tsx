@@ -37,37 +37,40 @@ const PaymentMethodForm: React.FC = () => {
                 </Radio.Group>
             </Form.Item>
 
-            {/* Sub-options for online payment - full width like celebration items */}
+            {/* Sub-options for online payment */}
             {selectedMethod === PaymentMethod.ONLINE && (
-                <div className="mt-3 p-3 sm:p-4 rounded-lg border border-gray-200">
-                    <p className="text-sm text-gray-600 mb-3">Chọn cổng thanh toán:</p>
+                <div className="mt-3">
                     <Radio.Group 
                         value={selectedGateway}
                         onChange={(e) => setSelectedGateway(e.target.value)}
                         className="w-full"
                     >
-                        <Space direction="vertical" style={{ width: '100%' }} size="small">
-                            <Radio value="vnpay" className="w-full">
-                                <div className="flex items-center gap-2">
-                                    <img 
-                                        src="/images/vnpay.png" 
-                                        alt="VNPay"
-                                        className="w-10 h-10 object-contain"
-                                    />
-                                    <span>VNPay</span>
-                                </div>
-                            </Radio>
-                            <Radio value="momo" className="w-full">
-                                <div className="flex items-center gap-2">
-                                    <img 
-                                        src="/images/momo.png" 
-                                        alt="MoMo"
-                                        className="w-10 h-10 object-contain"
-                                    />
-                                    <span>MoMo</span>
-                                </div>
-                            </Radio>
-                        </Space>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="border border-gray-200 rounded-lg">
+                                <Radio value="vnpay" className="!ml-4 w-full">
+                                    <div className="flex items-center justify-center gap-2 p-4 cursor-pointer w-full">
+                                        <img 
+                                            src="/images/vnpay.png" 
+                                            alt="VNPay"
+                                            className="w-12 h-12 object-contain"
+                                        />
+                                        <span className="font-medium">VNPAY</span>
+                                    </div>
+                                </Radio>
+                            </div>
+                            <div className="border border-gray-200 rounded-lg">
+                                <Radio value="momo" className="!ml-4 w-full">
+                                    <div className="flex items-center justify-center gap-2 p-4 cursor-pointer w-full">
+                                        <img 
+                                            src="/images/momo.png" 
+                                            alt="MoMo"
+                                            className="w-12 h-12 object-contain"
+                                        />
+                                        <span className="font-medium">MOMO</span>
+                                    </div>
+                                </Radio>
+                            </div>
+                        </div>
                     </Radio.Group>
                 </div>
             )}
