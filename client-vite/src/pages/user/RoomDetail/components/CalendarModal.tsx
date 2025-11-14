@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Modal, Button, Spin, InputNumber } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import dayjs, { Dayjs } from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
 import 'dayjs/locale/vi';
 import roomAvailableService from '@/services/rooms/roomAvailableService';
 import bookingService from '@/services/bookings/bookingService';
+import authService from '@/services/auth/authService';
 import Notification from '@/components/Notification';
 import { Message } from '@/types/message';
 import { COLORS } from '@/config/constants';
@@ -38,6 +40,7 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
     maxRooms,
     maxGuests
 }) => {
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [checkInDate, setCheckInDate] = useState<Dayjs | null>(null);
     const [checkOutDate, setCheckOutDate] = useState<Dayjs | null>(null);
@@ -402,9 +405,31 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
             return;
         }
 
-        // Check if quantity is available for all dates in the range
+        // Check authentication before proceeding
         try {
             setLoading(true);
+            await authService.verifyToken();
+        } catch {
+            setLoading(false);
+            setMessage({
+                type: 'error',
+                text: 'Vui lòng đăng nhập để tiếp tục đặt phòng'
+            });
+            
+            setTimeout(() => {
+                onClose();
+                navigate('/login', { 
+                    state: { 
+                        from: window.location.pathname,
+                        returnUrl: window.location.pathname + window.location.search
+                    } 
+                });
+            }, 3000);
+            return;
+        }
+
+        // Check if quantity is available for all dates in the range
+        try {
             const formattedCheckIn = checkInDate.format('YYYY-MM-DD');
             const formattedCheckOut = checkOutDate.format('YYYY-MM-DD');
             
