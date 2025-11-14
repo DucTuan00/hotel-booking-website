@@ -9,6 +9,8 @@ import Spa from '@/pages/user/Spa';
 import UserProfile from '@/pages/user/UserProfile';
 import UserBookings from '@/pages/user/UserBookings';
 import UserBookingDetail from '@/pages/user/UserBookingDetail';
+import MobileCategory from '@/pages/user/MobileCategory';
+import MobileAccount from '@/pages/user/MobileAccount';
 
 export {
     Home,
@@ -22,4 +24,6 @@ export {
     UserProfile,
     UserBookings,
     UserBookingDetail,
+    MobileCategory,
+    MobileAccount,
 }
