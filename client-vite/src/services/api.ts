@@ -15,9 +15,18 @@ const isAndroid = () => {
 };
 
 const getBaseURL = () => {
+    const envApiUrl = import.meta.env.VITE_API_BASE_URL;
+    if (envApiUrl) {
+        return envApiUrl;
+    }
+    
+    // Development mode
     if (isAndroid()) {
+        // Android emulator uses special IP
         return 'http://10.0.2.2:3000/api';
     }
+    
+    // Web development
     return 'http://localhost:3000/api';
 };
 

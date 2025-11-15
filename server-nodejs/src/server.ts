@@ -31,12 +31,27 @@ connectDB();
 
 //Middleware
 app.use(cookieParser());
+
+// CORS Configuration
+const allowedOrigins = [
+    process.env.FRONTEND_URL || 'http://localhost:5173',
+    'http://10.0.2.2:5173', // Android emulator (always for mobile dev)
+    'http://localhost:5173', // Web dev
+    'http://localhost', // Capacitor webview
+].filter(Boolean);
+
 app.use(cors({
-    origin: [
-        'http://localhost:5173',
-        'http://10.0.2.2:5173',
-        'http://localhost'
-    ], 
+    origin: (origin, callback) => {
+        // Allow requests with no origin (mobile apps, Postman, etc.)
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            console.warn(`⚠️  CORS blocked origin: ${origin}`);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
 }));
 app.use(express.json());
