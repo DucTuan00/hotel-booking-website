@@ -6,18 +6,12 @@ import {
     Tabs,
     Divider,
     Typography,
-    Row,
-    Col,
 } from "antd";
 import {
     UserOutlined,
     LockOutlined,
     PhoneOutlined,
     MailOutlined,
-    GoogleOutlined,
-    FacebookOutlined,
-    GithubOutlined,
-    LinkedinOutlined,
 } from "@ant-design/icons";
 import { COLORS, TYPOGRAPHY } from "@/config/constants";
 import Notification from "@/components/Notification";
@@ -71,21 +65,6 @@ const LoginForm2: React.FC<LoginFormProps> = ({
     const handleGoogleLogin = () => {
         window.location.href = 'http://localhost:3000/api/auth/google';
     };
-
-    const handleSocialLogin = (socialName: string) => {
-        if (socialName === 'Google') {
-            handleGoogleLogin();
-        } else {
-            setMessage({ type: 'error', text: `Đăng nhập với ${socialName} chưa hỗ trợ.` });
-        }
-    };
-
-    const socialLoginButtons = [
-        { icon: <GoogleOutlined />, color: "#DB4437", name: "Google" },
-        { icon: <FacebookOutlined />, color: "#4267B2", name: "Facebook" },
-        { icon: <GithubOutlined />, color: "#333", name: "Github" },
-        { icon: <LinkedinOutlined />, color: "#0077B5", name: "LinkedIn" },
-    ];
 
     return (
         <>
@@ -361,7 +340,7 @@ const LoginForm2: React.FC<LoginFormProps> = ({
                             </TabPane>
                         </Tabs>
 
-                        {/* Social Login */}
+                        {/* Google Login */}
                         <Divider className="my-6">
                             <Text
                                 style={{
@@ -373,27 +352,30 @@ const LoginForm2: React.FC<LoginFormProps> = ({
                             </Text>
                         </Divider>
 
-                        <Row gutter={[12, 12]} className="mb-6">
-                            {socialLoginButtons.map((social, index) => (
-                                <Col xs={12} sm={6} key={index}>
-                                    <Button
-                                        icon={social.icon}
-                                        className="w-full h-12 rounded-lg border-2 hover:border-opacity-80 transition-all duration-200"
-                                        style={{
-                                            borderColor: social.color,
-                                            color: social.color,
-                                        }}
-                                        onClick={() =>
-                                            handleSocialLogin(social.name)
-                                        }
-                                    >
-                                        <span className="hidden sm:inline ml-2">
-                                            {social.name}
-                                        </span>
-                                    </Button>
-                                </Col>
-                            ))}
-                        </Row>
+                        <Button
+                            className="w-full h-14 rounded-full border-2 hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-3"
+                            size="large"
+                            style={{
+                                borderColor: '#dadce0',
+                                backgroundColor: '#fff',
+                                color: '#3c4043',
+                                fontSize: '16px',
+                                fontWeight: 500,
+                                fontFamily: TYPOGRAPHY.fontFamily.secondary,
+                            }}
+                            onClick={handleGoogleLogin}
+                        >
+                            <img 
+                                src="/images/google.png" 
+                                alt="Google" 
+                                style={{ 
+                                    width: '20px', 
+                                    height: '20px',
+                                    objectFit: 'contain'
+                                }} 
+                            />
+                            <span>Đăng nhập bằng Google</span>
+                        </Button>
                     </Card>
                 </div>
             </div>
