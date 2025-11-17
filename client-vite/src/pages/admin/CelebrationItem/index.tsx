@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button, Space, Image, Popconfirm, Typography } from 'antd';
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 import CelebrateItemForm from './Form';
 import Notification from '@/components/Notification';
 import AdminTable from '@/components/AdminTable';
@@ -122,6 +122,9 @@ const CelebrationItemList: React.FC = () => {
                         src={imagePath}
                         alt="Item image"
                         style={{ objectFit: 'cover', borderRadius: '8px' }}
+                        preview={{
+                            mask: <EyeOutlined style={{ fontSize: '18px' }} />
+                        }}
                     />
                 ) : (
                     <div style={{ 
@@ -133,7 +136,7 @@ const CelebrationItemList: React.FC = () => {
                         background: '#f0f0f0',
                         borderRadius: '8px'
                     }}>
-                        <Text type="secondary">Không có</Text>
+                        <Text type="secondary">No Image</Text>
                     </div>
                 )
             ),
@@ -156,7 +159,6 @@ const CelebrationItemList: React.FC = () => {
             dataIndex: 'price',
             key: 'price',
             width: 150,
-            align: 'right',
             render: (price: number) => formatPrice(price),
         },
         {

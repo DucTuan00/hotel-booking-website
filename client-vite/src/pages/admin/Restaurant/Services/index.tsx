@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button, Space, Image, Popconfirm, Typography } from 'antd';
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 import RestaurantServiceForm from './Form';
 import Notification from '@/components/Notification';
 import AdminTable from '@/components/AdminTable';
@@ -122,6 +122,9 @@ const RestaurantServiceList: React.FC = () => {
                         src={imagePath}
                         alt="Service"
                         style={{ objectFit: 'cover', borderRadius: '8px' }}
+                        preview={{
+                            mask: <EyeOutlined style={{ fontSize: '18px' }} />
+                        }}
                     />
                 ) : (
                     <div style={{ 
