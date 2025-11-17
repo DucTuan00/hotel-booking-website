@@ -21,6 +21,7 @@ import userService from '@/services/users/userService';
 import roomService from '@/services/rooms/roomService';
 import bookingService from '@/services/bookings/bookingService';
 import { Booking as ApiBooking, BookingStatus } from '@/types/booking';
+import { getStatusText, getStatusColor } from '@/utils/status';
 
 const { Title } = Typography;
 
@@ -216,18 +217,11 @@ const DashboardPage: React.FC = () => {
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
-      render: (status: BookingStatus) => {
-        const statusConfig: Record<BookingStatus, { color: string; text: string }> = {
-          [BookingStatus.PENDING]: { color: 'orange', text: 'Chờ xác nhận' },
-          [BookingStatus.CONFIRMED]: { color: 'blue', text: 'Đã xác nhận' },
-          [BookingStatus.CHECKED_IN]: { color: 'cyan', text: 'Đã nhận phòng' },
-          [BookingStatus.CHECKED_OUT]: { color: 'green', text: 'Hoàn thành' },
-          [BookingStatus.CANCELLED]: { color: 'red', text: 'Đã hủy' },
-          [BookingStatus.REJECTED]: { color: 'volcano', text: 'Bị từ chối' },
-        };
-        const config = statusConfig[status] || { color: 'default', text: status };
-        return <Tag color={config.color}>{config.text}</Tag>;
-      },
+      render: (status: BookingStatus) => (
+        <Tag color={getStatusColor(status)}>
+          {getStatusText(status)}
+        </Tag>
+      ),
     },
     {
       title: 'Tổng giá',

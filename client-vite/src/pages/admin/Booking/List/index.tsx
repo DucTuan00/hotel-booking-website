@@ -6,9 +6,10 @@ import AdminTable from '@/components/AdminTable';
 import SearchTableAdmin, { SearchFilters } from '@/components/SearchTableAdmin';
 import bookingService from '@/services/bookings/bookingService';
 import moment from 'moment';
-import { Booking, BookingStatus, PaymentStatus, PaymentMethod } from '@/types/booking';
+import { Booking, PaymentMethod } from '@/types/booking';
 import type { TableColumnsType } from 'antd';
 import { Message } from '@/types/message';
+import { getStatusText, getStatusColor, getPaymentStatusText, getPaymentStatusColor } from '@/utils/status';
 
 // Helper to get name or id from user/room, always returns string  
 const getName = (val: string | { name?: string } | null | undefined): string => {
@@ -76,70 +77,6 @@ const BookingList: React.FC = () => {
 
     const handleEdit = (booking: Booking) => {
         navigate(`/dashboard/bookings/${booking.id}`);
-    };
-
-    const getStatusColor = (status: BookingStatus) => {
-        switch (status) {
-            case BookingStatus.CONFIRMED:
-                return 'success';
-            case BookingStatus.PENDING:
-                return 'warning';
-            case BookingStatus.REJECTED:
-                return 'error';
-            case BookingStatus.CANCELLED:
-                return 'default';
-            case BookingStatus.CHECKED_IN:
-                return 'processing';
-            case BookingStatus.CHECKED_OUT:
-                return 'blue';
-            default:
-                return 'default';
-        }
-    };
-
-    const getStatusText = (status: BookingStatus) => {
-        switch (status) {
-            case BookingStatus.CONFIRMED:
-                return 'Đã xác nhận';
-            case BookingStatus.PENDING:
-                return 'Chờ xác nhận';
-            case BookingStatus.REJECTED:
-                return 'Đã từ chối';
-            case BookingStatus.CANCELLED:
-                return 'Đã hủy';
-            case BookingStatus.CHECKED_IN:
-                return 'Đã check-in';
-            case BookingStatus.CHECKED_OUT:
-                return 'Đã check-out';
-            default:
-                return status;
-        }
-    };
-
-    const getPaymentStatusColor = (status: PaymentStatus) => {
-        switch (status) {
-            case PaymentStatus.PAID:
-                return 'success';
-            case PaymentStatus.UNPAID:
-                return 'warning';
-            case PaymentStatus.REFUNDED:
-                return 'default';
-            default:
-                return 'default';
-        }
-    };
-
-    const getPaymentStatusText = (status: PaymentStatus) => {
-        switch (status) {
-            case PaymentStatus.PAID:
-                return 'Đã thanh toán';
-            case PaymentStatus.UNPAID:
-                return 'Chưa thanh toán';
-            case PaymentStatus.REFUNDED:
-                return 'Đã hoàn tiền';
-            default:
-                return status;
-        }
     };
 
     const getPaymentMethodText = (method: PaymentMethod) => {

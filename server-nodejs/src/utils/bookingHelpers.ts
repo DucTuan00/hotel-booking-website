@@ -273,8 +273,8 @@ export function calculateCancellationFee(
         // 24h-3 days: 50% fee
         feePercentage = 50;
     } else {
-        // < 24h: 80% fee, no inventory restore
-        feePercentage = 80;
+        // < 24h: 100% fee, no inventory restore
+        feePercentage = 100;
         restoreInventory = false;
     }
 

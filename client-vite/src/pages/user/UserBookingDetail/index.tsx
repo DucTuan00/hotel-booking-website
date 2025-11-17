@@ -14,7 +14,7 @@ import { Message } from '@/types/message';
 import { COLORS } from '@/config/constants';
 import { calculateCancellationFee } from '@/utils/cancellationHelper';
 import { formatPrice } from '@/utils/formatPrice';
-import { getStatusText, getStatusColor, getPaymentStatusText, getPaymentStatusColor } from '@/pages/user/UserBookings';
+import { getStatusText, getStatusColor, getPaymentStatusText, getPaymentStatusColor } from '@/utils/status';
 
 const { TextArea } = Input;
 
