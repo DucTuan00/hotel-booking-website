@@ -172,6 +172,16 @@ const RoomForm: React.FC<RoomFormProps> = ({ visible, onCancel, onSubmit, initia
             footer={null}
             width={800}
             destroyOnHidden
+            styles={{
+                body: {
+                    maxHeight: 'calc(90vh - 110px)',
+                    overflowY: 'auto',
+                    padding: 10
+                }
+            }}
+            style={{
+                top: 50
+            }}
         >
             <Form
                 form={form}
@@ -305,16 +315,18 @@ const RoomForm: React.FC<RoomFormProps> = ({ visible, onCancel, onSubmit, initia
                 </Form.Item>
 
                 <Form.Item className="mb-0 text-right">
-                    <Button onClick={handleCancel} className="mr-2" disabled={loading}>
-                        Hủy
-                    </Button>
-                    <Button
-                        type="primary"
-                        htmlType="submit"
-                        loading={loading}
-                    >
-                        {isEditing ? 'Cập nhật' : 'Thêm mới'}
-                    </Button>
+                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                        <Button onClick={handleCancel} className="mr-2" disabled={loading}>
+                            Hủy
+                        </Button>
+                        <Button
+                            type="primary"
+                            htmlType="submit"
+                            loading={loading}
+                        >
+                            {isEditing ? 'Cập nhật' : 'Thêm mới'}
+                        </Button>
+                    </div>
                 </Form.Item>
             </Form>
         </Modal>

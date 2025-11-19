@@ -468,9 +468,19 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
                     Chọn ngày nhận phòng và trả phòng
                 </div>
             }
+            styles={{
+                body: {
+                    maxHeight: 'calc(90vh - 110px)',
+                    overflowY: 'auto',
+                    padding: 0
+                }
+            }}
+            style={{
+                top: 50
+            }}
         >
             <Spin spinning={loading}>
-                <div className="py-4">
+                <div className="py-4 px-2">
                     {/* Booking Details Form */}
                     <div className="mb-6 p-4 bg-gray-50 rounded-lg">
                         <h3 className="font-semibold text-base mb-4">Chi tiết đặt phòng</h3>

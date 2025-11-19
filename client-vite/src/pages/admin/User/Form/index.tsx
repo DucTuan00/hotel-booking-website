@@ -134,20 +134,22 @@ const UserForm: React.FC<UserFormProps> = ({ visible, onCancel, onSubmit, initia
                 )}
 
                 <Form.Item className="mb-0 text-right">
-                    <Button 
-                        onClick={handleCancel} 
-                        className="mr-2"
-                        disabled={loading}
-                    >
-                        Hủy
-                    </Button>
-                    <Button
-                        type="primary"
-                        htmlType="submit"
-                        loading={loading}
-                    >
-                        {isEditing ? 'Lưu' : 'Thêm'}
-                    </Button>
+                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                        <Button
+                            onClick={handleCancel}
+                            className="mr-2"
+                            disabled={loading}
+                        >
+                            Hủy
+                        </Button>
+                        <Button
+                            type="primary"
+                            htmlType="submit"
+                            loading={loading}
+                        >
+                            {isEditing ? 'Lưu' : 'Thêm'}
+                        </Button>
+                    </div>
                 </Form.Item>
             </Form>
     );
