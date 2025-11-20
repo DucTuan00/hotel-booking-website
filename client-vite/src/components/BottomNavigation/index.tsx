@@ -43,10 +43,12 @@ const BottomNavigation: React.FC = () => {
         <div
             style={{
                 position: 'fixed',
+                paddingBottom: '20px',
+                paddingTop: '10px',
                 bottom: 0,
                 left: 0,
                 right: 0,
-                height: '65px',
+                height: '70px',
                 backgroundColor: '#fff',
                 borderTop: `1px solid ${COLORS.gray[200]}`,
                 display: 'flex',
