@@ -18,6 +18,8 @@ const SearchSection: React.FC = () => {
     const [dateRange, setDateRange] = useState<[Dayjs, Dayjs] | null>(null);
     const [guests, setGuests] = useState<GuestCounts>({ adults: 2, children: 0 });
     const [isGuestModalOpen, setIsGuestModalOpen] = useState(false);
+    const MAX_ADULTS = 5;
+    const MAX_TOTAL_BONUS = 2;
 
     // Disable dates: past dates and dates beyond 30 days from today
     const disabledDate = (current: Dayjs) => {
@@ -49,9 +51,10 @@ const SearchSection: React.FC = () => {
     };
 
     const handleRemoveAdult = () => {
-        if (guests.adults > 1) {
-            setGuests(prev => ({ ...prev, adults: prev.adults - 1 }));
-        }
+        setGuests(prev => {
+            const newAdults = prev.adults - 1;
+            return { adults: newAdults, children: prev.children };
+        });
     };
 
     const handleAddChild = () => {
@@ -59,13 +62,7 @@ const SearchSection: React.FC = () => {
     };
 
     const handleRemoveChild = () => {
-        if (guests.children > 0) {
-            setGuests(prev => ({ ...prev, children: prev.children - 1 }));
-        }
-    };
-
-    const getTotalGuests = () => {
-        return guests.adults + guests.children;
+        setGuests(prev => ({ ...prev, children: prev.children - 1 }));
     };
 
     const getGuestLabel = () => {
@@ -177,7 +174,8 @@ const SearchSection: React.FC = () => {
                             <span className="text-lg font-semibold w-8 text-center">{guests.adults}</span>
                             <button
                                 onClick={handleAddAdult}
-                                className="p-2 border border-gray-300 rounded hover:border-gray-400"
+                                disabled={guests.adults >= MAX_ADULTS || guests.adults + guests.children >= MAX_ADULTS + MAX_TOTAL_BONUS}
+                                className="p-2 border border-gray-300 rounded hover:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <PlusOutlined />
                             </button>
@@ -201,18 +199,12 @@ const SearchSection: React.FC = () => {
                             <span className="text-lg font-semibold w-8 text-center">{guests.children}</span>
                             <button
                                 onClick={handleAddChild}
-                                className="p-2 border border-gray-300 rounded hover:border-gray-400"
+                                disabled={guests.children >= MAX_ADULTS + MAX_TOTAL_BONUS - guests.adults}
+                                className="p-2 border border-gray-300 rounded hover:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <PlusOutlined />
                             </button>
                         </div>
-                    </div>
-
-                    {/* Total */}
-                    <div className="pt-4 border-t border-gray-200">
-                        <p className="text-sm text-gray-600">
-                            Tổng cộng: <span className="font-semibold">{getTotalGuests()} khách</span>
-                        </p>
                     </div>
                 </div>
             </Modal>

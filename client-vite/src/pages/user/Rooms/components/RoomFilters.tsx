@@ -22,7 +22,7 @@ const RoomFilters: React.FC<RoomFiltersProps> = ({
   onSortChange,
 }) => {
   return (
-    <div className="bg-white shadow-sm border-b">
+    <div className="bg-white border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="text-center mb-8">
           <h1 

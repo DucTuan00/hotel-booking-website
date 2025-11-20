@@ -34,18 +34,18 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
     }
     
     // Guests
-    if (searchInfo?.adults || searchInfo?.children) {
-      const adults = searchInfo.adults || 0;
-      const children = searchInfo.children || 0;
-      const total = adults + children;
-      parts.push(`${total} khách`);
-    }
+    // if (searchInfo?.adults || searchInfo?.children) {
+    //   const adults = searchInfo.adults || 0;
+    //   const children = searchInfo.children || 0;
+    //   const total = adults + children;
+    //   parts.push(`${total} khách`);
+    // }
     
     return parts.length > 0 ? parts.join(' • ') : '';
   };
 
   return (
-    <div className="bg-white shadow-sm border-b">
+    <div className="bg-white border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>

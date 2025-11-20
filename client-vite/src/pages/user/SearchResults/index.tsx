@@ -36,7 +36,6 @@ const SearchResults: React.FC = () => {
     const checkOut = searchParams.get('checkOut');
     const adults = parseInt(searchParams.get('adults') || '0');
     const children = parseInt(searchParams.get('children') || '0');
-    const maxGuests = adults + children;
 
     // Load amenities once on mount
     useEffect(() => {
@@ -64,7 +63,8 @@ const SearchResults: React.FC = () => {
                 const response = await roomService.searchRooms({
                     checkIn: checkIn || undefined,
                     checkOut: checkOut || undefined,
-                    guests: maxGuests > 0 ? maxGuests : undefined,
+                    adults: adults > 0 ? adults : undefined,
+                    children: children > 0 ? children : undefined,
                     roomType: selectedRoomTypes.length > 0 ? selectedRoomTypes[0] : undefined,
                     minPrice: priceRange[0],
                     maxPrice: priceRange[1],
@@ -85,7 +85,7 @@ const SearchResults: React.FC = () => {
         };
 
         searchRooms();
-    }, [checkIn, checkOut, maxGuests, selectedRoomTypes, priceRange, selectedAmenities, currentPage, pageSize]);
+    }, [checkIn, checkOut, adults, children, selectedRoomTypes, priceRange, selectedAmenities, currentPage, pageSize]);
 
     // Cleanup debounce on unmount
     useEffect(() => {
@@ -139,7 +139,7 @@ const SearchResults: React.FC = () => {
     }, []);
 
     return (
-        <div className="search-results-page min-h-screen bg-gray-50 pt-20">
+        <div className="search-results-page min-h-screen bg-gray-50">
             <SearchHeader
                 totalRooms={total}
                 onToggleMobileFilter={() =>

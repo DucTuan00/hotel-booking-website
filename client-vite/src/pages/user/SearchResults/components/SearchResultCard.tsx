@@ -17,7 +17,7 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({ room }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300">
+    <div className="bg-white rounded-lg overflow-hidden hover:shadow-md transition-shadow duration-300 border border-gray-200">
       <div className="flex flex-col md:flex-row">
         {/* Room Image */}
         <div className="md:w-80 h-64 md:h-auto relative">

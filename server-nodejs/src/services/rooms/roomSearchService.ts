@@ -10,7 +10,9 @@ import { RoomType } from '@/types/room';
 interface SearchAvailableRoomsInput {
     checkIn?: Date;
     checkOut?: Date;
-    guests?: number;
+    guests?: number; // Deprecated: for backward compatibility
+    adults?: number;
+    children?: number;
     roomType?: RoomType;
     minPrice?: number;
     maxPrice?: number;
@@ -24,6 +26,8 @@ export async function searchAvailableRooms(input: SearchAvailableRoomsInput) {
         checkIn,
         checkOut,
         guests,
+        adults,
+        children,
         roomType,
         minPrice,
         maxPrice,
@@ -40,8 +44,25 @@ export async function searchAvailableRooms(input: SearchAvailableRoomsInput) {
         roomFilter.roomType = roomType;
     }
 
-    // Filter by max guests
-    if (guests && guests > 0) {
+    // Filter by max guests with flexible logic
+    // If children <= 2, they are "flexible" and don't count strictly towards maxGuests
+    // Only adults (and children > 2) are counted
+    if (adults !== undefined && adults > 0) {
+        const childrenCount = children || 0;
+        let minGuestsRequired: number;
+        
+        if (childrenCount <= 2) {
+            // Children <= 2 are flexible, only count adults
+            minGuestsRequired = adults;
+        } else {
+            // Children > 2: count adults + (children - 2)
+            // This means first 2 children are "free", additional children count
+            minGuestsRequired = adults + (childrenCount - 2);
+        }
+        
+        roomFilter.maxGuests = { $gte: minGuestsRequired };
+    } else if (guests && guests > 0) {
+        // Backward compatibility: if using old 'guests' param
         roomFilter.maxGuests = { $gte: guests };
     }
 

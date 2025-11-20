@@ -134,6 +134,8 @@ export interface SearchRoomsInput {
     checkIn?: string;
     checkOut?: string;
     guests?: number;
+    adults?: number;
+    children?: number;
     roomType?: string;
     minPrice?: number;
     maxPrice?: number;
