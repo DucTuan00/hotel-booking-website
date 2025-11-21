@@ -5,9 +5,11 @@ import {
     ArrowLeftOutlined,
     CloseCircleOutlined,
     ExclamationCircleOutlined,
+    FilePdfOutlined,
 } from '@ant-design/icons';
 import moment from 'moment';
 import bookingService from '@/services/bookings/bookingService';
+import { generateBookingPDF } from '@/services/bookings/bookingPdfService';
 import Notification from '@/components/Notification';
 import { Booking, BookingStatus, PaymentMethod } from '@/types/booking';
 import { Message } from '@/types/message';
@@ -116,6 +118,19 @@ const UserBookingDetail: React.FC = () => {
         navigate('/user/bookings');
     };
 
+    const handleDownloadPDF = async () => {
+        if (!booking) return;
+        
+        try {
+            setMessage({ type: 'success', text: 'Đang tạo file PDF...' });
+            await generateBookingPDF(booking);
+            setMessage({ type: 'success', text: 'Đã tải hóa đơn PDF thành công!' });
+        } catch (error) {
+            console.error('Error downloading PDF:', error);
+            setMessage({ type: 'error', text: 'Không thể tải hóa đơn PDF. Vui lòng thử lại.' });
+        }
+    };
+
     if (loading) {
         return (
             <div className="flex justify-center items-center min-h-screen">
@@ -169,11 +184,24 @@ const UserBookingDetail: React.FC = () => {
                             >
                                 Quay lại
                             </Button>
-                            {canShowCancelButton && (
-                                <Button type="primary" danger icon={<CloseCircleOutlined />} onClick={handleCancelClick}>
-                                    Hủy đơn
+                            <div className="flex items-center gap-3">
+                                <Button
+                                    icon={<FilePdfOutlined />}
+                                    onClick={handleDownloadPDF}
+                                    style={{
+                                        borderColor: COLORS.primary,
+                                        color: COLORS.primary,
+                                    }}
+                                    className="hover:opacity-80"
+                                >
+                                    Tải hóa đơn PDF
                                 </Button>
-                            )}
+                                {canShowCancelButton && (
+                                    <Button type="primary" danger icon={<CloseCircleOutlined />} onClick={handleCancelClick}>
+                                        Hủy đơn
+                                    </Button>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
