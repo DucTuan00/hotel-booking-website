@@ -194,7 +194,7 @@ const UserBookingDetail: React.FC = () => {
                                     }}
                                     className="hover:opacity-80"
                                 >
-                                    Tải hóa đơn PDF
+                                    Xuất hóa đơn PDF
                                 </Button>
                                 {canShowCancelButton && (
                                     <Button type="primary" danger icon={<CloseCircleOutlined />} onClick={handleCancelClick}>

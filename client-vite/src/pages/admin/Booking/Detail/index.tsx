@@ -211,7 +211,7 @@ const BookingDetail: React.FC = () => {
                         }}
                         className="hover:opacity-80"
                     >
-                        Tải hóa đơn PDF
+                        Xuất hóa đơn PDF
                     </Button>
                 </div>
                 <CustomerInfo booking={booking} />
