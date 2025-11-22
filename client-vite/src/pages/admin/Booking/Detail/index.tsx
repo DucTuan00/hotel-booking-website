@@ -8,8 +8,10 @@ import {
 import {
     ArrowLeftOutlined,
     SaveOutlined,
+    FilePdfOutlined,
 } from '@ant-design/icons';
 import bookingService from '@/services/bookings/bookingService';
+import { generateBookingPDF } from '@/services/bookings/bookingPdfService';
 import Notification from '@/components/Notification';
 import {
     Booking,
@@ -22,6 +24,7 @@ import RoomInfo from '@/pages/admin/Booking/Detail/components/RoomInfo';
 import PaymentInfo from '@/pages/admin/Booking/Detail/components/PaymentInfo';
 import PriceBreakdown from '@/pages/admin/Booking/Detail/components/PriceBreakdown';
 import BookingStatusInfo from '@/pages/admin/Booking/Detail/components/BookingStatusInfo';
+import { COLORS } from '@/config/constants';
 
 const BookingDetail: React.FC = () => {
     const { bookingId } = useParams<{ bookingId: string }>();
@@ -148,6 +151,19 @@ const BookingDetail: React.FC = () => {
         navigate('/dashboard/bookings');
     };
 
+    const handleDownloadPDF = async () => {
+        if (!booking) return;
+        
+        try {
+            setMessage({ type: 'success', text: 'Đang tạo file PDF...' });
+            await generateBookingPDF(booking);
+            setMessage({ type: 'success', text: 'Đã tải hóa đơn PDF thành công!' });
+        } catch (error) {
+            console.error('Error downloading PDF:', error);
+            setMessage({ type: 'error', text: 'Không thể tải hóa đơn PDF. Vui lòng thử lại.' });
+        }
+    };
+
     if (loading) {
         return (
             <div className="flex justify-center items-center h-screen">
@@ -177,13 +193,26 @@ const BookingDetail: React.FC = () => {
             <Notification message={message} onClose={() => setMessage(null)} />
 
             <div className="bg-white">
-                <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-200">
+                <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+                    <div className="flex items-center gap-2">
+                        <Button
+                            type="text"
+                            icon={<ArrowLeftOutlined />}
+                            onClick={handleGoBack}
+                        />
+                        <span className="text-xl font-semibold text-gray-900">Chi tiết đơn đặt phòng: {booking.id}</span>
+                    </div>
                     <Button
-                        type="text"
-                        icon={<ArrowLeftOutlined />}
-                        onClick={handleGoBack}
-                    />
-                    <span className="text-xl font-semibold text-gray-900">Chi tiết đơn đặt phòng: {booking.id}</span>
+                        icon={<FilePdfOutlined />}
+                        onClick={handleDownloadPDF}
+                        style={{
+                            borderColor: COLORS.primary,
+                            color: COLORS.primary,
+                        }}
+                        className="hover:opacity-80"
+                    >
+                        Tải hóa đơn PDF
+                    </Button>
                 </div>
                 <CustomerInfo booking={booking} />
                 <RoomInfo booking={booking} />

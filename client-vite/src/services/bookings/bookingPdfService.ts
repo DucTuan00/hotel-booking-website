@@ -133,7 +133,7 @@ const createInvoiceHTML = (booking: Booking): string => {
 
                 <!-- Invoice Title -->
                 <h2 style="text-align: center; font-size: 18px; font-weight: bold; margin-bottom: 20px; letter-spacing: 2px;">
-                    HÓA ĐƠN
+                    HÓA ĐƠN ĐẶT PHÒNG
                 </h2>
 
                 <!-- Invoice Info Line -->
