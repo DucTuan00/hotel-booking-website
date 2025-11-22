@@ -1,6 +1,6 @@
 import express from 'express';
 import * as vnpayController from '@/controllers/payment/vnpayController';
-import authMiddleware from '../middlewares/authMiddleware.js';
+import authMiddleware from '@/middlewares/authMiddleware';
 
 const router = express.Router();
 

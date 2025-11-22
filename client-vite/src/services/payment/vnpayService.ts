@@ -1,4 +1,4 @@
-import api from '../api';
+import api from '@/services/api';
 import { CreatePaymentUrlRequest, CreatePaymentUrlResponse } from '@/types/payment';
 import { isMobile } from '@/utils/auth';
 
