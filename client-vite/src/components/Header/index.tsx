@@ -28,7 +28,7 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
         { name: 'PHÒNG', path: '/rooms' },
         { name: 'NHÀ HÀNG & SKY BAR', path: '/restaurant' },
         { name: 'SPA & TẮM BIA', path: '/spa' },
-        { name: 'AI PLANNER', path: '/#' },
+        { name: 'AI PLANNER', path: '/ai-planner' },
         { name: 'LIÊN HỆ', path: '/#contact' },
     ];
 

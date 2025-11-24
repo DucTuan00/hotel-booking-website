@@ -14,6 +14,7 @@ import spaRoute from '@/routes/spaRoute';
 import uploadRoute from '@/routes/uploadRoute';
 import celebrateItemRoute from '@/routes/celebrateItemRoute';
 import vnpayRoute from '@/routes/vnpayRoute';
+import aiPlannerRoute from '@/routes/aiPlannerRoute';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -66,6 +67,7 @@ app.use('/api/spa', spaRoute);
 app.use('/api/upload', uploadRoute);
 app.use('/api/celebrate-item', celebrateItemRoute);
 app.use('/api/vnpay', vnpayRoute);
+app.use('/api/ai-planner', aiPlannerRoute);
 app.use('/public/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
 app.use(errorHandler as ErrorRequestHandler);

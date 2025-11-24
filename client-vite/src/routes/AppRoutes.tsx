@@ -20,6 +20,7 @@ const AppRoutes: React.FC = () => (
             <Route path="/user/profile" element={<User.UserProfile />} />
             <Route path="/user/bookings" element={<User.UserBookings />} />
             <Route path="/user/bookings/:bookingId" element={<User.UserBookingDetail />} />
+            <Route path="/ai-planner" element={<User.AIPlanner />} />
             <Route path="/mobile/category" element={<User.MobileCategory />} />
             <Route path="/mobile/account" element={<User.MobileAccount />} />
             <Route path="/login" element={<Login />} />
