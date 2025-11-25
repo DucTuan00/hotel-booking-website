@@ -156,12 +156,12 @@ export async function getPlanById(
         });
 
         if (!plan) {
-            throw new ApiError('Kế hoạch không tìm thấy', 404);
+            throw new ApiError('Plan not found', 404);
         }
 
         return mapPlanToResponse(plan);
     } catch (error: any) {
-        throw new ApiError(error.message || 'Không thể tải kế hoạch', 500);
+        throw new ApiError(error.message || 'Failed to load plan', 500);
     }
 }
 
@@ -200,7 +200,7 @@ export async function getUserPlans(
             },
         };
     } catch (error: any) {
-        throw new ApiError(error.message || 'Không thể tải danh sách kế hoạch', 500);
+        throw new ApiError(error.message || 'Failed to load plans list', 500);
     }
 }
 
@@ -221,7 +221,7 @@ export async function updateFavorite(input: {
         });
 
         if (!plan) {
-            throw new ApiError('Kế hoạch không tìm thấy', 404);
+            throw new ApiError('Plan not found', 404);
         }
 
         plan.isFavorite = isFavorite;
@@ -229,7 +229,7 @@ export async function updateFavorite(input: {
 
         return mapPlanToResponse(plan);
     } catch (error: any) {
-        throw new ApiError(error.message || 'Không thể cập nhật yêu thích', 500);
+        throw new ApiError(error.message || 'Failed to update favorite status', 500);
     }
 }
 
