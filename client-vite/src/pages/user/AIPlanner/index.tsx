@@ -8,11 +8,15 @@ import { TravelPlan, GroupType, BudgetLevel, UserPreferences } from '@/types/aiP
 import { Message } from '@/types/message';
 import Notification from '@/components/Notification';
 import dayjs, { Dayjs } from 'dayjs';
+import authService from '@/services/auth/authService';
+import { useNavigate } from 'react-router-dom';
+
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
 
 const AIPlanner: React.FC = () => {
+    const navigate = useNavigate();
     const [plan, setPlan] = useState<TravelPlan | null>(null);
     const [userPlans, setUserPlans] = useState<TravelPlan[]>([]);
     const [loading, setLoading] = useState(false);
@@ -67,6 +71,28 @@ const AIPlanner: React.FC = () => {
                 type: 'error',
                 text: 'Vui lòng điền đầy đủ thông tin: ngày đi, loại nhóm, ngân sách và sở thích',
             });
+            return;
+        }
+
+        // Check authentication before proceeding
+        try {
+            setLoading(true);
+            await authService.verifyToken();
+        } catch {
+            setLoading(false);
+            setMessage({
+                type: 'error',
+                text: 'Vui lòng đăng nhập để tiếp tục đặt phòng'
+            });
+            
+            setTimeout(() => {
+                navigate('/login', { 
+                    state: { 
+                        from: window.location.pathname,
+                        returnUrl: window.location.pathname + window.location.search
+                    } 
+                });
+            }, 3000);
             return;
         }
 
