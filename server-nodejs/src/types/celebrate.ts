@@ -1,3 +1,4 @@
+// MARK: Input
 export interface CreateCelebrateItemInput {
     name: string;
     description?: string;
@@ -13,6 +14,7 @@ export interface CelebrateItemIdInput {
     id: string;
 }
 
+// MARK: Response
 export interface GetAllCelebrateItemsResponse {
     items: CelebrateItem[];
     total?: number;
@@ -20,6 +22,7 @@ export interface GetAllCelebrateItemsResponse {
     pageSize?: number;
 }
 
+// MARK: Interface
 export interface CelebrateItem {
     id: string;
     name: string;

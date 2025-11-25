@@ -1,3 +1,4 @@
+// MARK: Enums
 export enum PaymentMethod {
   CASH = 'CASH',
   VNPAY = 'VNPAY',
@@ -10,6 +11,7 @@ export enum PaymentStatus {
   REFUNDED = 'REFUNDED',
 }
 
+// MARK: Interfaces
 export interface VNPayConfig {
   tmnCode: string;
   secretKey: string;
@@ -18,6 +20,7 @@ export interface VNPayConfig {
   returnUrl: string;
 }
 
+// MARK: Input
 export interface CreatePaymentUrlParams {
   amount: number;
   bookingId: string;
@@ -27,6 +30,7 @@ export interface CreatePaymentUrlParams {
   bankCode?: string;
 }
 
+// MARK: Query
 export interface VNPayReturnQuery {
   vnp_Amount?: string;
   vnp_BankCode?: string;
@@ -43,6 +47,7 @@ export interface VNPayReturnQuery {
   [key: string]: string | undefined;
 }
 
+// MARK: Response
 export interface VNPayVerifyResult {
   isValid: boolean;
   isSuccess: boolean;

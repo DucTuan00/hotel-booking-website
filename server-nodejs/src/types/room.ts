@@ -1,12 +1,15 @@
+// MARK: Enums
 export enum RoomType {
     SINGLE = 'Single',
     DOUBLE = 'Double',
     SUITE = 'Suite',
 }
 
+// MARK: Types
 export type RoomSortField = 'price' | 'name' | 'createdAt';
 export type SortOrder = 'asc' | 'desc';
 
+// MARK: Input
 export interface RoomData {
     id?: string;
     name: string;
@@ -19,34 +22,6 @@ export interface RoomData {
     quantity: number;
     roomArea?: number;
     active?: boolean;
-}
-
-export interface RoomResponse {
-    id: string;
-    name: string;
-    roomType: RoomType;
-    description?: string;
-    amenities: Array<{
-        id: string;
-        name: string;
-    }>;
-    price: number;
-    images: Array<{
-        id: string;
-        path: string;
-    }>;
-    maxGuests: number;
-    quantity: number;
-    roomArea?: number;
-    active: boolean;
-    deletedAt?: Date | null;
-}
-
-export interface GetAllRoomsResponse {
-    rooms: RoomResponse[];
-    total: number;
-    currentPage: number;
-    pageSize: number;
 }
 
 export interface GetAllRoomsInput {
@@ -90,6 +65,35 @@ export interface UpdateRoomAvailableInput {
     date: Date;
     price?: number;
     inventory?: number;
+}
+
+// MARK: Response
+export interface RoomResponse {
+    id: string;
+    name: string;
+    roomType: RoomType;
+    description?: string;
+    amenities: Array<{
+        id: string;
+        name: string;
+    }>;
+    price: number;
+    images: Array<{
+        id: string;
+        path: string;
+    }>;
+    maxGuests: number;
+    quantity: number;
+    roomArea?: number;
+    active: boolean;
+    deletedAt?: Date | null;
+}
+
+export interface GetAllRoomsResponse {
+    rooms: RoomResponse[];
+    total: number;
+    currentPage: number;
+    pageSize: number;
 }
 
 export interface RoomAvailableResponse {

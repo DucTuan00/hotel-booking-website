@@ -1,16 +1,6 @@
+// MARK: Interface
 export interface Spa {
     information: string;
-}
-
-export interface CreateSpaServiceInput {
-    title: string;
-    description?: string;
-    price?: number;
-    imagePath?: string;
-}
-
-export interface UpdateSpaServiceInput extends CreateSpaServiceInput {
-    id: string;
 }
 
 export interface SpaService {
@@ -22,16 +12,28 @@ export interface SpaService {
     deletedAt?: Date;
 }
 
-export interface CreateSpaImageInput {
-    imagePath: string;
-    title?: string;
-    description?: string;
-}
-
 export interface SpaImage {
     spaId: string;
     imagePath: string;
     title?: string;
     description?: string;
     deletedAt?: Date;
+}
+
+// MARK: Input
+export interface CreateSpaServiceInput {
+    title: string;
+    description?: string;
+    price?: number;
+    imagePath?: string;
+}
+
+export interface UpdateSpaServiceInput extends CreateSpaServiceInput {
+    id: string;
+}
+
+export interface CreateSpaImageInput {
+    imagePath: string;
+    title?: string;
+    description?: string;
 }

@@ -1,11 +1,14 @@
+// MARK: Enums
 export enum UserRole {
     USER = 'user',
     ADMIN = 'admin',
 }
 
+// MARK: Types
 export type UserSortField = 'name' | 'email' | 'createdAt';
 export type SortOrder = 'asc' | 'desc';
 
+// MARK: Input
 export interface InputCreateUser {
     email: string;
     password: string;

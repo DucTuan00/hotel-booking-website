@@ -1,3 +1,4 @@
+// MARK: Enums
 export enum BookingStatus {
     PENDING = 'Pending',
     CONFIRMED = 'Confirmed',
@@ -18,6 +19,7 @@ export enum PaymentStatus {
     REFUNDED = 'Refunded'
 }
 
+// MARK: Interfaces
 export interface PaymentDetails {
     gateway?: 'vnpay' | 'momo' | 'zalopay'; // Payment gateway used
     transactionId?: string; // Transaction ID from gateway
@@ -28,6 +30,7 @@ export interface PaymentDetails {
     rawData?: Record<string, any>; // Raw response data from gateway
 }
 
+// MARK: Input
 export interface CelebrateItemInput {
     celebrateItemId: string;
     quantity: number;
@@ -66,9 +69,6 @@ export interface UpdateBookingInput {
     status: BookingStatus;
 }
 
-export type BookingSortField = 'createdAt' | 'checkIn' | 'checkOut' | 'totalPrice';
-export type SortOrder = 'asc' | 'desc';
-
 export interface GetAllBookingsInput {
     search?: string;
     status?: BookingStatus;
@@ -78,3 +78,7 @@ export interface GetAllBookingsInput {
     page?: number;
     pageSize?: number;
 }
+
+// MARK: Type
+export type BookingSortField = 'createdAt' | 'checkIn' | 'checkOut' | 'totalPrice';
+export type SortOrder = 'asc' | 'desc';

@@ -1,3 +1,4 @@
+// MARK: Input
 export interface FavoriteInput {
     userId: string;
     roomId: string;

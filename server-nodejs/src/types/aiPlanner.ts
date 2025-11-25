@@ -1,3 +1,4 @@
+// MARK: Enum
 export enum GroupType {
     SOLO = 'solo',
     COUPLE = 'couple',
@@ -22,6 +23,7 @@ export enum ActivityCategory {
     RELAXATION = 'relaxation'
 }
 
+// MARK: Interfaces
 export interface UserPreferences {
     travelDates?: {
         checkIn: Date;
@@ -68,11 +70,13 @@ export interface AIGenerationMetadata {
     lastGeneratedAt?: Date;
 }
 
+// MARK: Input
 export interface GeneratePlanInput {
     userId: string;
     preferences: UserPreferencesResponse;
 }
 
+// MARK: Response
 export interface UserPreferencesResponse {
     travelDates?: {
         checkIn: string; 
@@ -121,12 +125,6 @@ export interface PlanResponse {
     updatedAt: Date;
 }
 
-export interface GetPlansQuery {
-    page?: number;
-    limit?: number;
-    status?: 'active' | 'completed';
-}
-
 export interface PlansListResponse {
     plans: PlanResponse[];
     pagination: {
@@ -137,4 +135,9 @@ export interface PlansListResponse {
     };
 }
 
-
+// MARK: Query
+export interface GetPlansQuery {
+    page?: number;
+    limit?: number;
+    status?: 'active' | 'completed';
+}

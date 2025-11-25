@@ -1,5 +1,6 @@
 import { UserRole } from "@/types/user";
 
+// MARK: Input
 export interface RegisterInput {
     email: string;
     password: string;

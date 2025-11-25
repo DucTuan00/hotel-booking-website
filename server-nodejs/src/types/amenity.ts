@@ -1,6 +1,8 @@
+// MARK: Type
 export type AmenitySortField = 'name' | 'createdAt';
 export type SortOrder = 'asc' | 'desc';
 
+// MARK: Input
 export interface CreateAmenityInput {
     name: string;
 }

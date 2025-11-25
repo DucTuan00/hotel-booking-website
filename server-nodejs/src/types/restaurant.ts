@@ -1,3 +1,4 @@
+// MARK: Input
 export interface CreateRestaurantServiceInput {
     title: string;
     description?: string;
@@ -13,6 +14,13 @@ export interface RestaurantServiceIdInput {
     id: string;
 }
 
+export interface CreateRestaurantImageInput {
+    imagePath: string;
+    title?: string;
+    description?: string;
+}
+
+// MARK: Response
 export interface GetAllRestaurantServicesResponse {
     services: RestaurantService[];
     total?: number;
@@ -20,6 +28,7 @@ export interface GetAllRestaurantServicesResponse {
     pageSize?: number;
 }
 
+// MARK: Interface
 export interface RestaurantService {
     id: string;
     restaurantId: string;
@@ -29,10 +38,4 @@ export interface RestaurantService {
     imagePath?: string;
     createdAt: Date;
     updatedAt: Date;
-}
-
-export interface CreateRestaurantImageInput {
-    imagePath: string;
-    title?: string;
-    description?: string;
 }
