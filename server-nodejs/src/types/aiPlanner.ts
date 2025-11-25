@@ -22,6 +22,52 @@ export enum ActivityCategory {
     RELAXATION = 'relaxation'
 }
 
+export interface UserPreferences {
+    travelDates?: {
+        checkIn: Date;
+        checkOut: Date;
+    };
+    groupType?: GroupType;
+    groupSize?: number;
+    budget?: BudgetLevel;
+    interests?: string[];
+    dietaryRestrictions?: string[];
+    mobilityNeeds?: string[];
+    priorities?: string[];
+}
+
+export interface DailyActivity {
+    time: string;
+    title: string;
+    location: string;
+    duration: number;
+    category: ActivityCategory;
+    description: string;
+    estimatedCost: number;
+    bookingLink?: string;
+}
+
+export interface DailyPlan {
+    date: Date;
+    dayNumber: number;
+    activities: DailyActivity[];
+}
+
+export interface GeneratedPlan {
+    days: DailyPlan[];
+    suggestions: string[];
+    hanoiTips: string[];
+    totalEstimatedCost: number;
+}
+
+export interface AIGenerationMetadata {
+    model: string;
+    promptTokens?: number;
+    completionTokens?: number;
+    temperature?: number;
+    lastGeneratedAt?: Date;
+}
+
 export interface GeneratePlanInput {
     userId: string;
     preferences: UserPreferencesResponse;

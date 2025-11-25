@@ -2,54 +2,11 @@ import mongoose, { Schema, Document, Types } from 'mongoose';
 import { 
     GroupType, 
     BudgetLevel, 
-    ActivityCategory 
+    ActivityCategory,
+    UserPreferences,
+    GeneratedPlan,
+    AIGenerationMetadata 
 } from '@/types/aiPlanner';
-
-interface UserPreferences {
-    travelDates?: {
-        checkIn: Date;
-        checkOut: Date;
-    };
-    groupType?: GroupType;
-    groupSize?: number;
-    budget?: BudgetLevel;
-    interests?: string[];
-    dietaryRestrictions?: string[];
-    mobilityNeeds?: string[];
-    priorities?: string[];
-}
-
-interface DailyActivity {
-    time: string;
-    title: string;
-    location: string;
-    duration: number;
-    category: ActivityCategory;
-    description: string;
-    estimatedCost: number;
-    bookingLink?: string;
-}
-
-interface DailyPlan {
-    date: Date;
-    dayNumber: number;
-    activities: DailyActivity[];
-}
-
-interface GeneratedPlan {
-    days: DailyPlan[];
-    suggestions: string[];
-    hanoiTips: string[];
-    totalEstimatedCost: number;
-}
-
-interface AIGenerationMetadata {
-    model: string;
-    promptTokens?: number;
-    completionTokens?: number;
-    temperature?: number;
-    lastGeneratedAt?: Date;
-}
 
 interface AITravelPlannerInterface extends Document {
     userId: Types.ObjectId;
