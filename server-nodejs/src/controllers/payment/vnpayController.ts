@@ -95,6 +95,7 @@ export async function vnpayReturn(req: Request, res: Response, next: NextFunctio
             booking.paymentStatus = PaymentStatus.PAID;
             booking.paidAt = new Date();
             booking.status = BookingStatus.CONFIRMED;
+            booking.confirmedAt = new Date();
         }
         // Store payment details regardless of success/failure
         booking.paymentDetails = {
@@ -174,6 +175,7 @@ export async function vnpayIPN(req: Request, res: Response, next: NextFunction):
             booking.paymentStatus = PaymentStatus.PAID;
             booking.paidAt = new Date();
             booking.status = BookingStatus.CONFIRMED;
+            booking.confirmedAt = new Date();
         }
         // Store payment details regardless of success/failure
         booking.paymentDetails = {

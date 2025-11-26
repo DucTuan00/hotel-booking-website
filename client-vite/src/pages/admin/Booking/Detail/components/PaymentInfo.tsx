@@ -3,6 +3,7 @@ import { Select } from 'antd';
 import BaseDetailRow from '@/components/BaseDetail';
 import DetailSection from '@/pages/admin/Booking/Detail/components/DetailSection';
 import { Booking, PaymentStatus, PaymentMethod, BookingStatus } from '@/types/booking';
+import moment from 'moment';
 
 interface PaymentInfoProps {
     booking: Booking;
@@ -73,28 +74,6 @@ const PaymentInfo: React.FC<PaymentInfoProps> = ({ booking, paymentStatus, onPay
         }
     };
 
-    const formatPayDate = (payDate?: string) => {
-        if (!payDate) return '';
-        
-        // VNPay format: yyyyMMddHHmmss
-        if (payDate.length === 14) {
-            const year = payDate.substring(0, 4);
-            const month = payDate.substring(4, 6);
-            const day = payDate.substring(6, 8);
-            const hour = payDate.substring(8, 10);
-            const minute = payDate.substring(10, 12);
-            const second = payDate.substring(12, 14);
-            return `${day}/${month}/${year} ${hour}:${minute}:${second}`;
-        }
-        
-        // Fallback: try to parse as ISO date
-        try {
-            return new Date(payDate).toLocaleString('vi-VN');
-        } catch {
-            return payDate;
-        }
-    };
-
     return (
         <DetailSection title="Thông tin thanh toán">
             <BaseDetailRow
@@ -153,10 +132,10 @@ const PaymentInfo: React.FC<PaymentInfoProps> = ({ booking, paymentStatus, onPay
                             value={booking.paymentDetails.cardType}
                         />
                     )}
-                    {booking.paymentDetails.payDate && (
+                    {booking.paidAt && (
                         <BaseDetailRow
                             label="Thời gian thanh toán"
-                            value={formatPayDate(booking.paymentDetails.payDate)}
+                            value={moment(booking.paidAt).format('DD/MM/YYYY HH:mm')}
                         />
                     )}
                 </>

@@ -16,6 +16,7 @@ const vnpay = new VNPay({
     testMode: true,
     hashAlgorithm: HashAlgorithm.SHA512,
     enableLog: true,
+    loggerFn: ignoreLogger,
 });
 
 /**
