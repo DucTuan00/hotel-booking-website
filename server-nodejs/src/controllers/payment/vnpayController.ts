@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import * as vnpayService from '@/services/payment/vnpayService';
 import Booking from '@/models/Booking';
 import ApiError from '@/utils/apiError';
-import { PaymentStatus } from '@/types/booking';
+import { PaymentStatus, BookingStatus } from '@/types/booking';
 import { dateFormat } from 'vnpay';
 
 /**
@@ -94,6 +94,7 @@ export async function vnpayReturn(req: Request, res: Response, next: NextFunctio
         if (verifyResult.isSuccess) {
             booking.paymentStatus = PaymentStatus.PAID;
             booking.paidAt = new Date();
+            booking.status = BookingStatus.CONFIRMED;
         }
         // Store payment details regardless of success/failure
         booking.paymentDetails = {
@@ -172,6 +173,7 @@ export async function vnpayIPN(req: Request, res: Response, next: NextFunction):
         if (verifyResult.isSuccess) {
             booking.paymentStatus = PaymentStatus.PAID;
             booking.paidAt = new Date();
+            booking.status = BookingStatus.CONFIRMED;
         }
         // Store payment details regardless of success/failure
         booking.paymentDetails = {
