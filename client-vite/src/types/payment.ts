@@ -4,10 +4,19 @@ export interface CreatePaymentUrlRequest {
     locale?: string;
 }
 
-export interface CreatePaymentUrlResponse {
+// Response VNPay
+export interface CreateVNPayPaymentUrlResponse {
     success: boolean;
     data: {
         paymentUrl: string;
+    };
+}
+
+// Response Momo
+export interface CreateMomoPaymentUrlResponse {
+    success: boolean;
+    data: {
+        payUrl: string;
     };
 }
 

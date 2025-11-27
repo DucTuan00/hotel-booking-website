@@ -8,6 +8,7 @@ import bookingService from '@/services/bookings/bookingService';
 import userService from '@/services/users/userService';
 import celebrateItemService from '@/services/celebrations/celebrateItemService';
 import { createVNPayPaymentUrl } from '@/services/payment/vnpayService';
+import { createMoMoPaymentUrl } from '@/services/payment/momoService';
 import Notification from '@/components/Notification';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { Message } from '@/types/message';
@@ -167,11 +168,10 @@ const Booking: React.FC = () => {
 
             // Check payment method
             if (values.paymentMethod === PaymentMethod.ONLINE) {
-                // Redirect to VNPay payment page
+                // Redirect to payment gateway
                 try {
                     const paymentGateway = values.paymentGateway || 'vnpay';
                     
-                    // Currently only VNPay is supported
                     if (paymentGateway === 'vnpay') {
                         const paymentResponse = await createVNPayPaymentUrl({
                             bookingId: booking.id,
@@ -180,11 +180,17 @@ const Booking: React.FC = () => {
 
                         // Redirect to VNPay
                         window.location.href = paymentResponse.data.paymentUrl;
+                    } else if (paymentGateway === 'momo') {
+                        const paymentResponse = await createMoMoPaymentUrl({
+                            bookingId: booking.id,
+                        });
+
+                        // Redirect to MoMo
+                        window.location.href = paymentResponse.data.payUrl;
                     } else {
-                        // Future: Handle other gateways (MoMo, ZaloPay, etc.)
                         setMessage({
                             type: 'error',
-                            text: 'Cổng thanh toán này chưa được hỗ trợ. Vui lòng chọn VNPay.'
+                            text: 'Cổng thanh toán này chưa được hỗ trợ.'
                         });
                         setIsProcessing(false);
                     }

@@ -1,5 +1,5 @@
 import api from '@/services/api';
-import { CreatePaymentUrlRequest, CreatePaymentUrlResponse } from '@/types/payment';
+import { CreatePaymentUrlRequest, CreateVNPayPaymentUrlResponse } from '@/types/payment';
 import { isMobile } from '@/utils/auth';
 
 /**
@@ -7,8 +7,8 @@ import { isMobile } from '@/utils/auth';
  */
 export const createVNPayPaymentUrl = async (
     data: CreatePaymentUrlRequest
-): Promise<CreatePaymentUrlResponse> => {
-    const response = await api.post<CreatePaymentUrlResponse>(
+): Promise<CreateVNPayPaymentUrlResponse> => {
+    const response = await api.post<CreateVNPayPaymentUrlResponse>(
         '/vnpay/create-payment-url',
         {
             ...data,

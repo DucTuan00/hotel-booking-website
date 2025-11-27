@@ -1,25 +1,7 @@
 import crypto from 'crypto';
 import https from 'https';
 import { momoConfig } from '@/config/momo';
-
-interface MomoPaymentRequest {
-    amount: string;
-    orderInfo: string;
-    extraData?: string;
-}
-
-interface MomoPaymentResponse {
-    partnerCode: string;
-    orderId: string;
-    requestId: string;
-    amount: string;
-    responseTime: number;
-    message: string;
-    resultCode: number;
-    payUrl?: string;
-    deeplink?: string;
-    qrCodeUrl?: string;
-}
+import { MomoPaymentRequest, MomoPaymentResponse } from '@/types/momo';
 
 const generateSignature = (rawSignature: string): string => {
     return crypto

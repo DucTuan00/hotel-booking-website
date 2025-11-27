@@ -40,46 +40,44 @@ const PaymentMethodForm: React.FC = () => {
             {/* Sub-options for online payment */}
             {selectedMethod === PaymentMethod.ONLINE && (
                 <div className="mt-3">
-                    <Radio.Group 
-                        value={selectedGateway}
-                        onChange={(e) => setSelectedGateway(e.target.value)}
-                        className="w-full"
+                    <Form.Item
+                        name="paymentGateway"
+                        initialValue={selectedGateway}
+                        rules={[{ required: true, message: 'Vui lòng chọn cổng thanh toán!' }]}
                     >
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div className="border border-gray-200 rounded-lg">
-                                <Radio value="vnpay" className="!ml-4 w-full">
-                                    <div className="flex items-center justify-center gap-2 p-4 cursor-pointer w-full">
-                                        <img 
-                                            src="/images/vnpay.png" 
-                                            alt="VNPay"
-                                            className="w-12 h-12 object-contain"
-                                        />
-                                        <span className="font-medium">VNPAY</span>
-                                    </div>
-                                </Radio>
+                        <Radio.Group 
+                            onChange={(e) => setSelectedGateway(e.target.value)}
+                            className="w-full"
+                        >
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div className="border border-gray-200 rounded-lg hover:border-[#D4902A] transition-colors">
+                                    <Radio value="vnpay" className="!ml-4 w-full">
+                                        <div className="flex items-center justify-center gap-2 p-4 cursor-pointer w-full">
+                                            <img 
+                                                src="/images/vnpay.png" 
+                                                alt="VNPay"
+                                                className="w-12 h-12 object-contain"
+                                            />
+                                            <span className="font-medium">VNPAY</span>
+                                        </div>
+                                    </Radio>
+                                </div>
+                                <div className="border border-gray-200 rounded-lg hover:border-[#D4902A] transition-colors">
+                                    <Radio value="momo" className="!ml-4 w-full">
+                                        <div className="flex items-center justify-center gap-2 p-4 cursor-pointer w-full">
+                                            <img 
+                                                src="/images/momo.png" 
+                                                alt="MoMo"
+                                                className="w-12 h-12 object-contain"
+                                            />
+                                            <span className="font-medium">MOMO</span>
+                                        </div>
+                                    </Radio>
+                                </div>
                             </div>
-                            <div className="border border-gray-200 rounded-lg">
-                                <Radio value="momo" className="!ml-4 w-full">
-                                    <div className="flex items-center justify-center gap-2 p-4 cursor-pointer w-full">
-                                        <img 
-                                            src="/images/momo.png" 
-                                            alt="MoMo"
-                                            className="w-12 h-12 object-contain"
-                                        />
-                                        <span className="font-medium">MOMO</span>
-                                    </div>
-                                </Radio>
-                            </div>
-                        </div>
-                    </Radio.Group>
+                        </Radio.Group>
+                    </Form.Item>
                 </div>
-            )}
-
-            {/* Hidden field to store selected gateway */}
-            {selectedMethod === PaymentMethod.ONLINE && (
-                <Form.Item name="paymentGateway" hidden initialValue="vnpay">
-                    <input type="hidden" value={selectedGateway} />
-                </Form.Item>
             )}
         </div>
     );
