@@ -223,12 +223,15 @@ const UserBookingDetail: React.FC = () => {
                                     </p>
                                 </div>
                                 <div className="flex flex-wrap items-center gap-2">
-                                    <Tag color={getStatusColor(booking.status)} className="text-sm px-3 py-1">
+                                    <Tag 
+                                        color={getStatusColor(booking.status)} 
+                                        className="!text-base px-3 py-1"
+                                    >
                                         {getStatusText(booking.status)}
                                     </Tag>
                                     <Tag
                                         color={getPaymentStatusColor(booking.paymentStatus)}
-                                        className="text-sm px-3 py-1"
+                                        className="!text-base px-3 py-1"
                                     >
                                         {getPaymentStatusText(booking.paymentStatus)}
                                     </Tag>
@@ -281,7 +284,7 @@ const UserBookingDetail: React.FC = () => {
                                                         <div className="font-medium text-gray-900">
                                                             {moment(booking.checkIn).format('DD/MM/YYYY')}
                                                         </div>
-                                                        <div className="text-xs text-gray-500">Từ 14:00</div>
+                                                        <div className="text-sm text-gray-500">Từ 14:00</div>
                                                     </div>
                                                 </div>
 
@@ -291,7 +294,7 @@ const UserBookingDetail: React.FC = () => {
                                                         <div className="font-medium text-gray-900">
                                                             {moment(booking.checkOut).format('DD/MM/YYYY')}
                                                         </div>
-                                                        <div className="text-xs text-gray-500">Trước 12:00</div>
+                                                        <div className="text-sm text-gray-500">Trước 12:00</div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -522,7 +525,7 @@ const UserBookingDetail: React.FC = () => {
                                                 <span className="text-sm text-gray-600">Trạng thái</span>
                                                 <Tag
                                                     color={getPaymentStatusColor(booking.paymentStatus)}
-                                                    className="text-sm"
+                                                    className="!text-sm !mr-0"
                                                 >
                                                     {getPaymentStatusText(booking.paymentStatus)}
                                                 </Tag>

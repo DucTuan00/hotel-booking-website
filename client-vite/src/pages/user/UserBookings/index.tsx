@@ -112,10 +112,16 @@ const UserBookings: React.FC = () => {
                                             <div className="md:col-span-8 space-y-4">
                                                 {/* Status Tags */}
                                                 <div className="flex items-center gap-2">
-                                                    <Tag color={getStatusColor(booking.status)}>
+                                                    <Tag 
+                                                        color={getStatusColor(booking.status)}
+                                                        className="!text-base"
+                                                    >
                                                         {getStatusText(booking.status)}
                                                     </Tag>
-                                                    <Tag color={getPaymentStatusColor(booking.paymentStatus)}>
+                                                    <Tag 
+                                                        color={getPaymentStatusColor(booking.paymentStatus)}
+                                                        className="!text-base"
+                                                    >
                                                         {getPaymentStatusText(booking.paymentStatus)}
                                                     </Tag>
                                                 </div>

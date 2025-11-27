@@ -69,7 +69,7 @@ const BookingComplete: React.FC = () => {
                             <Button
                                 type="primary"
                                 size="large"
-                                onClick={() => navigate('/dashboard/bookings')}
+                                onClick={() => navigate('/user/bookings')}
                                 style={{
                                     backgroundColor: COLORS.primary,
                                     borderColor: COLORS.primary,
