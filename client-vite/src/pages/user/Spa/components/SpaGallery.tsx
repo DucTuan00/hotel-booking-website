@@ -29,7 +29,7 @@ const SpaGallery: React.FC<SpaGalleryProps> = ({ images }) => {
                 <Row gutter={[24, 24]}>
                     {/* Main Image */}
                     <Col xs={24} lg={18}>
-                        <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+                        <div className="relative rounded-2xl overflow-hidden">
                             <img 
                                 src={images[selectedImageIndex]?.imagePath} 
                                 alt={images[selectedImageIndex]?.title || `Spa view ${selectedImageIndex + 1}`}

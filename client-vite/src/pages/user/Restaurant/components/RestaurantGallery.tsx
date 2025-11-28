@@ -29,7 +29,7 @@ const RestaurantGallery: React.FC<RestaurantGalleryProps> = ({ images }) => {
                 <Row gutter={[24, 24]}>
                     {/* Main Image */}
                     <Col xs={24} lg={18}>
-                        <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+                        <div className="relative rounded-2xl overflow-hidden">
                             <img 
                                 src={images[selectedImageIndex]?.imagePath} 
                                 alt={images[selectedImageIndex]?.title || `Restaurant view ${selectedImageIndex + 1}`}

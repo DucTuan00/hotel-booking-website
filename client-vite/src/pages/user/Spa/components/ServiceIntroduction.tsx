@@ -38,8 +38,12 @@ const ServiceIntroduction: React.FC<ServiceIntroductionProps> = ({ information, 
                                                 className="h-48 object-cover"
                                             />
                                         }
-                                        className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300"
-                                        bodyStyle={{ padding: 0 }}
+                                        className="overflow-hidden hover:shadow-lg transition-shadow duration-300"
+                                        styles={{
+                                            body: {
+                                                padding: 0 
+                                            }
+                                        }}
                                     />
                                 </Col>
                                 {images.length > 1 && (
@@ -52,8 +56,12 @@ const ServiceIntroduction: React.FC<ServiceIntroductionProps> = ({ information, 
                                                     className="h-48 object-cover"
                                                 />
                                             }
-                                            className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300"
-                                            bodyStyle={{ padding: 0 }}
+                                            className="overflow-hidden hover:shadow-lg transition-shadow duration-300"
+                                            styles={{
+                                            body: {
+                                                padding: 0 
+                                            }
+                                        }}
                                         />
                                     </Col>
                                 )}

@@ -81,8 +81,12 @@ const ServicesSlider: React.FC<ServicesSliderProps> = ({ services, onBookingClic
                                                     />
                                                 </div>
                                             }
-                                            className="h-full shadow-lg hover:shadow-xl transition-shadow duration-300"
-                                            bodyStyle={{ height: '200px', display: 'flex', flexDirection: 'column' }}
+                                            className="h-full transition-shadow duration-300"
+                                            styles={{
+                                                body: {
+                                                    height: '200px', display: 'flex', flexDirection: 'column'
+                                                }
+                                            }}
                                         >
                                             <Title level={4} className="!mb-3" style={{ fontFamily: 'Playfair Display, serif' }}>
                                                 {service.title}
