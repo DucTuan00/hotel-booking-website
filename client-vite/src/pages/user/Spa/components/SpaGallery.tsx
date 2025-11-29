@@ -35,7 +35,6 @@ const SpaGallery: React.FC<SpaGalleryProps> = ({ images }) => {
                                 alt={images[selectedImageIndex]?.title || `Spa view ${selectedImageIndex + 1}`}
                                 className="w-full h-[400px] md:h-[500px] object-cover transition-all duration-500"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
                         </div>
                     </Col>
                     

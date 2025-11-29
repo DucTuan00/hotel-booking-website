@@ -35,7 +35,6 @@ const RestaurantGallery: React.FC<RestaurantGalleryProps> = ({ images }) => {
                                 alt={images[selectedImageIndex]?.title || `Restaurant view ${selectedImageIndex + 1}`}
                                 className="w-full h-[400px] md:h-[500px] object-cover transition-all duration-500"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
                         </div>
                     </Col>
                     
