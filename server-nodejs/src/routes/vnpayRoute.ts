@@ -13,6 +13,9 @@ router.get('/return', vnpayController.vnpayReturn);
 // VNPay IPN (public - VNPay sends notification here)
 router.get('/ipn', vnpayController.vnpayIPN);
 
+// Verify and update booking from mobile deep link (protected - requires login)
+router.post('/verify-and-update', authMiddleware([]), vnpayController.verifyAndUpdateFromMobile);
+
 // Query transaction status (protected - admin or owner)
 router.get('/query/:bookingId', authMiddleware([]), vnpayController.queryTransaction);
 

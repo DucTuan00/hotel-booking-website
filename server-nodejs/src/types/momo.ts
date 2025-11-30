@@ -3,6 +3,7 @@ export interface MomoPaymentRequest {
     amount: string;
     orderInfo: string;
     extraData?: string;
+    platform?: 'web' | 'mobile';
 }
 
 // MARK: Response

@@ -20,6 +20,21 @@ const vnpay = new VNPay({
 });
 
 /**
+ * Get return URL based on platform
+ * Mobile: Deep link directly to app (app will poll booking status)
+ * Web: Backend URL to handle redirect
+ */
+function getReturnUrl(platform?: 'web' | 'mobile', bookingId?: string): string {
+    if (platform === 'mobile') {
+        // Mobile: Deep link with bookingId for polling
+        const mobileReturnUrl = process.env.VNPAY_MOBILE_RETURN_URL || 'hotelboutique://payment-result';
+        return `${mobileReturnUrl}?bookingId=${bookingId}&gateway=vnpay`;
+    }
+    // Web: Backend URL
+    return vnpayConfig.returnUrl;
+}
+
+/**
  * Create payment URL for VNPay
  */
 export function createPaymentUrl(params: CreatePaymentUrlParams): string {
@@ -30,6 +45,7 @@ export function createPaymentUrl(params: CreatePaymentUrlParams): string {
         ipAddr,
         locale = 'vn',
         bankCode,
+        platform,
     } = params;
 
     const paymentUrl = vnpay.buildPaymentUrl({
@@ -38,7 +54,7 @@ export function createPaymentUrl(params: CreatePaymentUrlParams): string {
         vnp_TxnRef: bookingId,
         vnp_OrderInfo: orderInfo,
         vnp_OrderType: ProductCode.Hotel_Tourism,
-        vnp_ReturnUrl: vnpayConfig.returnUrl,
+        vnp_ReturnUrl: getReturnUrl(platform, bookingId),
         vnp_Locale: locale as VnpLocale,
         ...(bankCode && { vnp_BankCode: bankCode }),
     });

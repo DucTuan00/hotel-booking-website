@@ -27,6 +27,7 @@ export interface PaymentDetails {
     bankCode?: string; // Bank code (if applicable)
     cardType?: string; // Card type (if applicable)
     payDate?: string; // Payment date from gateway
+    platform?: 'web' | 'mobile'; // Platform used for payment
     rawData?: Record<string, any>; // Raw response data from gateway
 }
 

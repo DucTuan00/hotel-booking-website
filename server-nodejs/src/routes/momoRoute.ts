@@ -13,4 +13,7 @@ router.post('/callback', momoController.handleMomoCallback);
 // Handle MoMo return URL (public - MoMo redirects here)
 router.get('/return', momoController.handleMomoReturn);
 
+// Verify and update booking from mobile deep link (protected - requires login)
+router.post('/verify-and-update', authMiddleware([]), momoController.verifyAndUpdateFromMobile);
+
 export default router;

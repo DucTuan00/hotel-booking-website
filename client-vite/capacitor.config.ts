@@ -16,6 +16,9 @@ const config: CapacitorConfig = {
       style: 'LIGHT',
       backgroundColor: '#ffffff',
       overlaysWebView: false
+    },
+    App: {
+      launchUrl: 'hotelboutique://'
     }
   }
 };

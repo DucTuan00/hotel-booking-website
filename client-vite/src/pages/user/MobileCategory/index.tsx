@@ -10,7 +10,7 @@ const MobileCategory: React.FC = () => {
         { name: 'Phòng', path: '/rooms', icon: '/images/bed.png' },
         { name: 'Nhà hàng & Sky Bar', path: '/restaurant', icon: '/images/restaurant.png' },
         { name: 'Spa & Tắm bià', path: '/spa', icon: '/images/massage.png' },
-        { name: 'AI Planner', path: '/#', icon: '/images/ai.png' },
+        { name: 'AI Planner', path: '/ai-planner', icon: '/images/ai.png' },
         { name: 'Liên hệ', path: '/#contact', icon: '/images/contact-mail.png' },
     ];
 

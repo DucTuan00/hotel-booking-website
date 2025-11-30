@@ -10,15 +10,42 @@ const generateSignature = (rawSignature: string): string => {
         .digest('hex');
 };
 
+/**
+ * Get return URL based on platform
+ * Mobile: Deep link directly to app (app will poll booking status)
+ * Web: Backend URL to handle redirect
+ */
+function getReturnUrl(platform?: 'web' | 'mobile', bookingId?: string): string {
+    if (platform === 'mobile') {
+        // Mobile: Deep link with bookingId for polling
+        const mobileReturnUrl = process.env.MOMO_MOBILE_RETURN_URL || 'hotelboutique://payment-result';
+        return `${mobileReturnUrl}?bookingId=${bookingId}&gateway=momo`;
+    }
+    // Web: Backend URL
+    return momoConfig.redirectUrl || '';
+}
+
 export async function createPayment(paymentData: MomoPaymentRequest): Promise<MomoPaymentResponse> {
-    const { amount, orderInfo, extraData = '' } = paymentData;
+    const { amount, orderInfo, extraData = '', platform } = paymentData;
+
+    // Extract bookingId from extraData for deep link
+    let bookingId = '';
+    try {
+        const parsed = JSON.parse(extraData);
+        bookingId = parsed.bookingId;
+    } catch (e) {
+        console.error('Could not parse extraData for bookingId');
+    }
 
     // Generate unique IDs
     const orderId = momoConfig.partnerCode + new Date().getTime();
     const requestId = orderId;
 
+    // Get return URL based on platform
+    const returnUrl = getReturnUrl(platform, bookingId);
+
     // Create raw signature string
-    const rawSignature = `accessKey=${momoConfig.accessKey}&amount=${amount}&extraData=${extraData}&ipnUrl=${momoConfig.ipnUrl}&orderId=${orderId}&orderInfo=${orderInfo}&partnerCode=${momoConfig.partnerCode}&redirectUrl=${momoConfig.redirectUrl}&requestId=${requestId}&requestType=${momoConfig.requestType}`;
+    const rawSignature = `accessKey=${momoConfig.accessKey}&amount=${amount}&extraData=${extraData}&ipnUrl=${momoConfig.ipnUrl}&orderId=${orderId}&orderInfo=${orderInfo}&partnerCode=${momoConfig.partnerCode}&redirectUrl=${returnUrl}&requestId=${requestId}&requestType=${momoConfig.requestType}`;
 
     // Generate signature
     const signature = generateSignature(rawSignature);
@@ -32,7 +59,7 @@ export async function createPayment(paymentData: MomoPaymentRequest): Promise<Mo
         amount,
         orderId,
         orderInfo,
-        redirectUrl: momoConfig.redirectUrl,
+        redirectUrl: returnUrl, // Always backend URL
         ipnUrl: momoConfig.ipnUrl,
         lang: momoConfig.lang,
         requestType: momoConfig.requestType,

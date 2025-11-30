@@ -28,6 +28,7 @@ export interface CreatePaymentUrlParams {
   ipAddr: string;
   locale?: string;
   bankCode?: string;
+  platform?: 'web' | 'mobile';
 }
 
 // MARK: Query

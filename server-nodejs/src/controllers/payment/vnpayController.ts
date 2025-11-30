@@ -10,7 +10,7 @@ import { dateFormat } from 'vnpay';
  */
 export async function createPaymentUrl(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-        const { bookingId, bankCode, locale } = req.body;
+        const { bookingId, bankCode, locale, platform } = req.body;
 
         // Get booking
         const booking = await Booking.findById(bookingId);
@@ -29,6 +29,11 @@ export async function createPaymentUrl(req: Request, res: Response, next: NextFu
             req.socket.remoteAddress ||
             '127.0.0.1';
 
+        // Store platform info for later use in return handler
+        booking.paymentDetails = booking.paymentDetails || {};
+        booking.paymentDetails.platform = platform || 'web';
+        await booking.save();
+
         // Create payment URL
         const paymentUrl = vnpayService.createPaymentUrl({
             amount: booking.totalPrice,
@@ -37,6 +42,7 @@ export async function createPaymentUrl(req: Request, res: Response, next: NextFu
             ipAddr,
             locale,
             bankCode,
+            platform,
         });
 
         res.json({
@@ -110,9 +116,20 @@ export async function vnpayReturn(req: Request, res: Response, next: NextFunctio
 
         await booking.save();
 
-        // Redirect to frontend complete page
-        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-        res.redirect(`${frontendUrl}/booking/complete`);
+        // Detect if this is mobile return by checking paymentDetails.platform
+        const isMobileReturn = booking.paymentDetails?.platform === 'mobile';
+
+        if (isMobileReturn) {
+            // Redirect to mobile deep link
+            const mobileReturnUrl = process.env.VNPAY_MOBILE_RETURN_URL || 'hotelboutique://payment-result';
+            const redirectUrl = `${mobileReturnUrl}?success=${verifyResult.isSuccess}&message=${encodeURIComponent(verifyResult.message)}&bookingId=${txnRef}`;
+            
+            res.redirect(redirectUrl);
+        } else {
+            // Redirect to web frontend
+            const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+            res.redirect(`${frontendUrl}/booking/complete`);
+        }
     } catch (error) {
         console.error('VNPay return error:', error);
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
@@ -120,7 +137,7 @@ export async function vnpayReturn(req: Request, res: Response, next: NextFunctio
             `${frontendUrl}/booking/complete?success=false&message=${encodeURIComponent('Có lỗi xảy ra trong quá trình xử lý thanh toán')}`
         );
     }
-}
+};
 
 /**
  * VNPay IPN (Instant Payment Notification) handler
@@ -201,6 +218,84 @@ export async function vnpayIPN(req: Request, res: Response, next: NextFunction):
             RspCode: '99',
             Message: 'Unknown error',
         });
+    }
+}
+
+/**
+ * Verify and update booking from mobile deep link
+ * Mobile app sends all VNPay params from deep link
+ * Backend verifies signature and updates booking
+ */
+export async function verifyAndUpdateFromMobile(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+        const { bookingId, gateway, ...allParams } = req.body;
+
+        // Filter only vnp_* parameters for signature verification
+        const vnpayParams: Record<string, any> = {};
+        Object.keys(allParams).forEach(key => {
+            if (key.startsWith('vnp_')) {
+                vnpayParams[key] = allParams[key];
+            }
+        });
+
+        // Verify signature
+        const verifyResult = vnpayService.verifyReturnUrl(vnpayParams);
+        
+        if (!verifyResult.isValid) {
+            throw new ApiError('Invalid signature', 400);
+        }
+
+        if (!verifyResult.data) {
+            throw new ApiError('Invalid payment data', 400);
+        }
+
+        const { txnRef, transactionNo, responseCode } = verifyResult.data;
+
+        // Get booking
+        const booking = await Booking.findById(txnRef);
+        if (!booking) {
+            throw new ApiError('Booking not found', 404);
+        }
+
+        // Check if already updated
+        if (booking.paymentStatus === PaymentStatus.PAID) {
+            res.json({
+                success: true,
+                message: 'Order already paid',
+                data: booking,
+            });
+            return;
+        }
+
+        // Update payment status
+        if (verifyResult.isSuccess) {
+            booking.paymentStatus = PaymentStatus.PAID;
+            booking.paidAt = new Date();
+            booking.status = BookingStatus.CONFIRMED;
+            booking.confirmedAt = new Date();
+        }
+
+        // Store payment details
+        booking.paymentDetails = {
+            gateway: 'vnpay',
+            transactionId: transactionNo,
+            responseCode: responseCode,
+            bankCode: verifyResult.data.bankCode,
+            cardType: verifyResult.data.cardType,
+            payDate: verifyResult.data.payDate,
+            platform: 'mobile',
+            rawData: verifyResult.data,
+        };
+
+        await booking.save();
+
+        res.json({
+            success: true,
+            message: verifyResult.message,
+            data: booking,
+        });
+    } catch (error) {
+        next(error);
     }
 }
 
