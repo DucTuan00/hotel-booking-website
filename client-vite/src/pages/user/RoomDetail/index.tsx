@@ -11,6 +11,7 @@ import RoomInfo from "@/pages/user/RoomDetail/components/RoomInfo";
 import RoomCalendar from "@/pages/user/RoomDetail/components/RoomCalendar";
 import BookingCard from "@/pages/user/RoomDetail/components/BookingCard";
 import CalendarModal from "@/pages/user/RoomDetail/components/CalendarModal";
+import ReviewList from "@/components/ReviewList";
 
 const RoomDetail: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>();
@@ -124,6 +125,12 @@ const RoomDetail: React.FC = () => {
               maxGuests={room.maxGuests}
               onDateSelect={handleDateSelect}
             />
+
+            {/* Reviews Section */}
+            <div className="">
+              <h2 className="text-2xl font-bold mb-6">Đánh giá của khách hàng</h2>
+              <ReviewList roomId={room.id} />
+            </div>
           </div>
 
           {/* Right column - Booking card */}

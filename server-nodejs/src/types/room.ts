@@ -87,6 +87,8 @@ export interface RoomResponse {
     roomArea?: number;
     active: boolean;
     deletedAt?: Date | null;
+    averageRating?: number;
+    totalReviews?: number;
 }
 
 export interface GetAllRoomsResponse {

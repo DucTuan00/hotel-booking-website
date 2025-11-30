@@ -1,6 +1,7 @@
 import Room from '@/models/Room';
 import RoomImage from '@/models/RoomImage';
 import RoomAmenity from '@/models/RoomAmenity';
+import Review from '@/models/Review';
 import ApiError from '@/utils/apiError';
 import { mapId, mapIds } from '@/utils/mapId';
 import mongoose from 'mongoose';
@@ -195,7 +196,7 @@ export async function getAllRooms(args: GetAllRoomsInput): Promise<GetAllRoomsRe
         throw new ApiError('Failed to get rooms', 500);
     }
 
-    // Get images and amenities for each room
+    // Get images, amenities, and ratings for each room
     const roomsWithImagesAndAmenities = await Promise.all(
         rooms.map(async (room) => {
             // Get room images
@@ -211,6 +212,18 @@ export async function getAllRooms(args: GetAllRoomsInput): Promise<GetAllRoomsRe
                 path: 'amenityId',
                 select: 'name'
             });
+
+            // Get room rating
+            const ratingStats = await Review.aggregate([
+                { $match: { roomId: (room as any)._id, deletedAt: null } },
+                {
+                    $group: {
+                        _id: null,
+                        averageRating: { $avg: '$rating' },
+                        totalReviews: { $sum: 1 }
+                    }
+                }
+            ]);
             
             const roomData = mapId(room);
             return {
@@ -222,7 +235,9 @@ export async function getAllRooms(args: GetAllRoomsInput): Promise<GetAllRoomsRe
                 amenities: roomAmenities.map(ra => ({
                     id: (ra as any).amenityId._id.toString(),
                     name: (ra as any).amenityId.name
-                }))
+                })),
+                averageRating: ratingStats.length > 0 ? Math.round(ratingStats[0].averageRating * 10) / 10 : 0,
+                totalReviews: ratingStats.length > 0 ? ratingStats[0].totalReviews : 0
             };
         })
     );
@@ -290,7 +305,7 @@ export async function getActiveRooms(args: GetAllRoomsInput): Promise<GetAllRoom
         throw new ApiError('Failed to get active rooms', 500);
     }
 
-    // Get images and amenities for each room
+    // Get images, amenities, and ratings for each room
     const roomsWithImagesAndAmenities = await Promise.all(
         rooms.map(async (room) => {
             
@@ -305,6 +320,18 @@ export async function getActiveRooms(args: GetAllRoomsInput): Promise<GetAllRoom
                 path: 'amenityId',
                 select: 'name'
             });
+
+            // Get room rating
+            const ratingStats = await Review.aggregate([
+                { $match: { roomId: (room as any)._id, deletedAt: null } },
+                {
+                    $group: {
+                        _id: null,
+                        averageRating: { $avg: '$rating' },
+                        totalReviews: { $sum: 1 }
+                    }
+                }
+            ]);
             
             const roomData = mapId(room);
             return {
@@ -316,7 +343,9 @@ export async function getActiveRooms(args: GetAllRoomsInput): Promise<GetAllRoom
                 amenities: roomAmenities.map(ra => ({
                     id: (ra as any).amenityId._id.toString(),
                     name: (ra as any).amenityId.name,
-                }))
+                })),
+                averageRating: ratingStats.length > 0 ? Math.round(ratingStats[0].averageRating * 10) / 10 : 0,
+                totalReviews: ratingStats.length > 0 ? ratingStats[0].totalReviews : 0
             };
         })
     );
@@ -355,6 +384,18 @@ export async function getRoomById(arg: RoomIdInput): Promise<RoomResponse> {
         path: 'amenityId',
         select: 'name'
     });
+
+    // Get room rating
+    const ratingStats = await Review.aggregate([
+        { $match: { roomId: (room as any)._id, deletedAt: null } },
+        {
+            $group: {
+                _id: null,
+                averageRating: { $avg: '$rating' },
+                totalReviews: { $sum: 1 }
+            }
+        }
+    ]);
     
     const roomData = mapId(room);
     return {
@@ -366,7 +407,9 @@ export async function getRoomById(arg: RoomIdInput): Promise<RoomResponse> {
         amenities: roomAmenities.map(ra => ({
             id: (ra as any).amenityId._id.toString(),
             name: (ra as any).amenityId.name,
-        }))
+        })),
+        averageRating: ratingStats.length > 0 ? Math.round(ratingStats[0].averageRating * 10) / 10 : 0,
+        totalReviews: ratingStats.length > 0 ? ratingStats[0].totalReviews : 0
     };
 };
 

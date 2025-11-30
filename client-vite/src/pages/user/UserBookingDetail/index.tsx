@@ -6,11 +6,14 @@ import {
     CloseCircleOutlined,
     ExclamationCircleOutlined,
     FilePdfOutlined,
+    StarOutlined,
 } from '@ant-design/icons';
 import moment from 'moment';
 import bookingService from '@/services/bookings/bookingService';
 import { generateBookingPDF } from '@/services/bookings/bookingPdfService';
+import reviewService from '@/services/reviews/reviewService';
 import Notification from '@/components/Notification';
+import ReviewForm from '@/components/ReviewForm';
 import { Booking, BookingStatus, PaymentMethod } from '@/types/booking';
 import { Message } from '@/types/message';
 import { COLORS } from '@/config/constants';
@@ -41,6 +44,9 @@ const UserBookingDetail: React.FC = () => {
     const [isCancelModalVisible, setIsCancelModalVisible] = useState(false);
     const [cancellationReason, setCancellationReason] = useState('');
     const [submitting, setSubmitting] = useState(false);
+    const [isReviewModalVisible, setIsReviewModalVisible] = useState(false);
+    const [canReview, setCanReview] = useState(false);
+    const [reviewEligibilityMessage, setReviewEligibilityMessage] = useState('');
 
     useEffect(() => {
         const fetchBookingDetail = async () => {
@@ -49,6 +55,9 @@ const UserBookingDetail: React.FC = () => {
                 if (bookingId) {
                     const data = await bookingService.getBookingById(bookingId);
                     setBooking(data);
+                    
+                    // Check review eligibility
+                    checkReviewEligibility(bookingId);
                 }
             } catch (error) {
                 console.error('Error fetching booking detail:', error);
@@ -62,6 +71,35 @@ const UserBookingDetail: React.FC = () => {
             fetchBookingDetail();
         }
     }, [bookingId]);
+
+    const checkReviewEligibility = async (id: string) => {
+        try {
+            const eligibility = await reviewService.checkReviewEligibility(id);
+            setCanReview(eligibility.canReview);
+            if (!eligibility.canReview && eligibility.reason) {
+                setReviewEligibilityMessage(eligibility.reason);
+            }
+        } catch (error) {
+            console.error('Error checking review eligibility:', error);
+        }
+    };
+
+    const handleReviewClick = () => {
+        if (canReview) {
+            setIsReviewModalVisible(true);
+        } else {
+            Modal.info({
+                title: 'Không thể đánh giá',
+                content: reviewEligibilityMessage || 'Bạn chưa thể đánh giá đặt phòng này.',
+            });
+        }
+    };
+
+    const handleReviewSuccess = () => {
+        setIsReviewModalVisible(false);
+        setCanReview(false);
+        setMessage({ type: 'success', text: 'Cảm ơn bạn đã đánh giá!' });
+    };
 
     const handleCancelClick = () => {
         if (!booking) return;
@@ -194,8 +232,21 @@ const UserBookingDetail: React.FC = () => {
                                     }}
                                     className="hover:opacity-80"
                                 >
-                                    Xuất hóa đơn PDF
+                                    Xuất PDF
                                 </Button>
+                                {booking.status === BookingStatus.CHECKED_OUT && canReview && (
+                                    <Button 
+                                        type="primary" 
+                                        icon={<StarOutlined />} 
+                                        onClick={handleReviewClick}
+                                        style={{
+                                            backgroundColor: COLORS.primary,
+                                            borderColor: COLORS.primary,
+                                        }}
+                                    >
+                                        Đánh giá
+                                    </Button>
+                                )}
                                 {canShowCancelButton && (
                                     <Button type="primary" danger icon={<CloseCircleOutlined />} onClick={handleCancelClick}>
                                         Hủy đơn
@@ -644,6 +695,23 @@ const UserBookingDetail: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Review Modal */}
+            <Modal
+                open={isReviewModalVisible}
+                onCancel={() => setIsReviewModalVisible(false)}
+                footer={null}
+                width={600}
+            >
+                {booking && (
+                    <ReviewForm
+                        bookingId={booking.id}
+                        roomId={booking.snapshot?.room?.id || ''}
+                        roomName={booking.snapshot?.room?.name || 'Phòng'}
+                        onSuccess={handleReviewSuccess}
+                    />
+                )}
+            </Modal>
 
             {/* Cancel Modal */}
             <Modal

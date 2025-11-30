@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { COLORS, TYPOGRAPHY } from '@/config/constants';
 import { Room } from '@/types/room';
 import { formatPrice } from '@/utils/formatPrice';
+import RatingDisplay from '@/components/RatingDisplay';
 
 interface SearchResultCardProps {
   room: Room;
@@ -41,9 +42,19 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({ room }) => {
                 </h3>
               </div>
 
-              <p className="text-gray-600 mb-3">
-                {room.roomType} • {room.roomArea ? `${room.roomArea}m²` : 'N/A'} • {room.maxGuests} khách
+              <p className="text-gray-600 mb-2">
+                {room.roomType} • {room.roomArea ? `${room.roomArea}m²` : '-'} • {room.maxGuests} khách
               </p>
+
+              {room.averageRating !== undefined && (
+                <div className="mb-3">
+                  <RatingDisplay
+                    rating={room.averageRating}
+                    totalReviews={room.totalReviews}
+                    size="small"
+                  />
+                </div>
+              )}
 
               <div className="flex flex-wrap gap-2 mb-4">
                 {room.amenities.slice(0, 4).map((amenity) => (

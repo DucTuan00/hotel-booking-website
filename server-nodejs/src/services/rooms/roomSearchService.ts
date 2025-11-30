@@ -2,6 +2,7 @@ import Room from '@/models/Room';
 import RoomAvailable from '@/models/RoomAvailable';
 import RoomAmenity from '@/models/RoomAmenity';
 import RoomImage from '@/models/RoomImage';
+import Review from '@/models/Review';
 import Amenity from '@/models/Amenity';
 import ApiError from '@/utils/apiError';
 import mongoose from 'mongoose';
@@ -152,6 +153,27 @@ export async function searchAvailableRooms(input: SearchAvailableRoomsInput) {
         const roomImages = await RoomImage.find({ roomId: { $in: roomIds } })
             .lean();
         
+        // Get ratings for each room
+        const roomRatings = await Promise.all(
+            roomIds.map(async (roomId: any) => {
+                const ratingStats = await Review.aggregate([
+                    { $match: { roomId: roomId, deletedAt: null } },
+                    {
+                        $group: {
+                            _id: null,
+                            averageRating: { $avg: '$rating' },
+                            totalReviews: { $sum: 1 }
+                        }
+                    }
+                ]);
+                return {
+                    roomId: roomId.toString(),
+                    averageRating: ratingStats.length > 0 ? Math.round(ratingStats[0].averageRating * 10) / 10 : 0,
+                    totalReviews: ratingStats.length > 0 ? ratingStats[0].totalReviews : 0
+                };
+            })
+        );
+        
         const roomsWithRelations = paginatedRooms.map((room: any) => {
             const roomIdStr = room._id.toString();
             
@@ -162,10 +184,17 @@ export async function searchAvailableRooms(input: SearchAvailableRoomsInput) {
             const imagesForRoom = roomImages
                 .filter((ri: any) => ri.roomId.toString() === roomIdStr);
             
+            const ratingForRoom = roomRatings.find(r => r.roomId === roomIdStr) || {
+                averageRating: 0,
+                totalReviews: 0
+            };
+            
             return {
                 ...room,
                 amenities: amenitiesForRoom,
-                images: imagesForRoom
+                images: imagesForRoom,
+                averageRating: ratingForRoom.averageRating,
+                totalReviews: ratingForRoom.totalReviews
             };
         });
 
@@ -178,7 +207,7 @@ export async function searchAvailableRooms(input: SearchAvailableRoomsInput) {
                 price: room.searchPrice, // Use search price instead of default
                 images: room.images.map((img: any) => ({
                     id: img._id.toString(),
-                    path: img.path
+                    path: img.imagePath
                 })),
                 amenities: room.amenities.map((amenity: any) => ({
                     id: amenity._id.toString(),
@@ -187,7 +216,9 @@ export async function searchAvailableRooms(input: SearchAvailableRoomsInput) {
                 maxGuests: room.maxGuests,
                 quantity: room.quantity,
                 roomArea: room.roomArea,
-                active: room.active
+                active: room.active,
+                averageRating: room.averageRating,
+                totalReviews: room.totalReviews
             })),
             total,
             currentPage: page,
@@ -219,6 +250,27 @@ export async function searchAvailableRooms(input: SearchAvailableRoomsInput) {
     const roomImages = await RoomImage.find({ roomId: { $in: roomIds } })
         .lean();
     
+    // Get ratings for each room
+    const roomRatings = await Promise.all(
+        roomIds.map(async (roomId: any) => {
+            const ratingStats = await Review.aggregate([
+                { $match: { roomId: roomId, deletedAt: null } },
+                {
+                    $group: {
+                        _id: null,
+                        averageRating: { $avg: '$rating' },
+                        totalReviews: { $sum: 1 }
+                    }
+                }
+            ]);
+            return {
+                roomId: roomId.toString(),
+                averageRating: ratingStats.length > 0 ? Math.round(ratingStats[0].averageRating * 10) / 10 : 0,
+                totalReviews: ratingStats.length > 0 ? ratingStats[0].totalReviews : 0
+            };
+        })
+    );
+    
     const roomsWithRelations = paginatedRooms.map((room: any) => {
         const roomIdStr = room._id.toString();
         
@@ -229,10 +281,17 @@ export async function searchAvailableRooms(input: SearchAvailableRoomsInput) {
         const imagesForRoom = roomImages
             .filter((ri: any) => ri.roomId.toString() === roomIdStr);
         
+        const ratingForRoom = roomRatings.find(r => r.roomId === roomIdStr) || {
+            averageRating: 0,
+            totalReviews: 0
+        };
+        
         return {
             ...room,
             amenities: amenitiesForRoom,
-            images: imagesForRoom
+            images: imagesForRoom,
+            averageRating: ratingForRoom.averageRating,
+            totalReviews: ratingForRoom.totalReviews
         };
     });
 
@@ -245,7 +304,7 @@ export async function searchAvailableRooms(input: SearchAvailableRoomsInput) {
             price: room.price,
             images: room.images.map((img: any) => ({
                 id: img._id.toString(),
-                path: img.path
+                path: img.imagePath
             })),
             amenities: room.amenities.map((amenity: any) => ({
                 id: amenity._id.toString(),
@@ -254,7 +313,9 @@ export async function searchAvailableRooms(input: SearchAvailableRoomsInput) {
             maxGuests: room.maxGuests,
             quantity: room.quantity,
             roomArea: room.roomArea,
-            active: room.active
+            active: room.active,
+            averageRating: room.averageRating,
+            totalReviews: room.totalReviews
         })),
         total,
         currentPage: page,

@@ -16,6 +16,7 @@ import celebrateItemRoute from '@/routes/celebrateItemRoute';
 import vnpayRoute from '@/routes/vnpayRoute';
 import aiPlannerRoute from '@/routes/aiPlannerRoute';
 import momoRoute from '@/routes/momoRoute';
+import reviewRoute from '@/routes/reviewRoute';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -70,6 +71,7 @@ app.use('/api/celebrate-item', celebrateItemRoute);
 app.use('/api/vnpay', vnpayRoute);
 app.use('/api/ai-planner', aiPlannerRoute);
 app.use('/api/momo', momoRoute);
+app.use('/api/review', reviewRoute);
 app.use('/public/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
 app.use(errorHandler as ErrorRequestHandler);

@@ -5,6 +5,7 @@ import { EyeOutlined, UserOutlined, HomeOutlined } from '@ant-design/icons';
 import { Room } from "@/types/room";
 import { COLORS, TYPOGRAPHY } from '@/config/constants';
 import { formatPrice } from '@/pages/user/Rooms';
+import RatingDisplay from '@/components/RatingDisplay';
 
 interface RoomCardProps {
   room: Room;
@@ -77,6 +78,16 @@ const RoomCard: React.FC<RoomCardProps> = ({
           <p className="text-gray-600 text-sm md:text-sm mb-4 line-clamp-2 whitespace-pre-line">
             {room.description}
           </p>
+        )}
+
+        {room.averageRating !== undefined && (
+          <div className="mb-3">
+            <RatingDisplay
+              rating={room.averageRating}
+              totalReviews={room.totalReviews}
+              size="small"
+            />
+          </div>
         )}
 
         <div className="flex flex-wrap gap-2 md:gap-4 text-sm md:text-sm text-gray-600 mb-4">

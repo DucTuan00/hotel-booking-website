@@ -61,6 +61,8 @@ export interface Room {
     quantity: number;
     roomArea?: number;
     active: boolean;
+    averageRating?: number;
+    totalReviews?: number;
 }
 
 export interface RoomImage {
