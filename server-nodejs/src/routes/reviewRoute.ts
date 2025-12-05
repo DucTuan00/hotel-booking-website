@@ -5,6 +5,10 @@ import { UserRole } from "@/types/user";
 
 const router = Router();
 
+// Admin routes (must be before public routes to avoid conflicts)
+router.get('/admin', authMiddleware([UserRole.ADMIN]), reviewController.getAllReviews);
+router.delete('/admin/:reviewId', authMiddleware([UserRole.ADMIN]), reviewController.deleteReview);
+
 // Public routes
 router.get('/room/:roomId', reviewController.getReviewsByRoom);
 router.get('/room/:roomId/rating', reviewController.getRoomRating);

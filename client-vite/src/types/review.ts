@@ -54,3 +54,39 @@ export interface EligibleBooking {
     checkedOutAt: string;
     hasReview: boolean;
 }
+
+// Admin types
+export interface AdminReview {
+    id: string;
+    bookingId: {
+        id: string;
+    };
+    userId: {
+        id: string;
+        name: string;
+        email: string;
+    };
+    roomId: {
+        id: string;
+        name: string;
+        roomType: string;
+    };
+    rating: number;
+    comment?: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface GetAllReviewsParams {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    rating?: number;
+}
+
+export interface AdminReviewsListResponse {
+    reviews: AdminReview[];
+    total: number;
+    currentPage: number;
+    pageSize: number;
+}

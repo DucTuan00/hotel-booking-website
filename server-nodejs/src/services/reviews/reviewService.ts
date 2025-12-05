@@ -11,7 +11,10 @@ import {
     CheckReviewEligibilityInput,
     ReviewsListResponse,
     ReviewEligibilityResponse,
-    RoomRatingInfo
+    RoomRatingInfo,
+    GetAllReviewsInput,
+    AdminReviewsListResponse,
+    AdminReviewResponse
 } from '@/types/review';
 import { BookingStatus } from '@/types/booking';
 
@@ -246,4 +249,73 @@ export async function getEligibleBookingsForReview(userId: string) {
     );
 
     return bookingsWithReviewStatus.filter(b => !b.hasReview);
+}
+
+/**
+ * Get all reviews for admin
+ */
+export async function getAllReviews(args: GetAllReviewsInput): Promise<AdminReviewsListResponse> {
+    const { page = 1, pageSize = 10, search, rating } = args;
+    const skip = (page - 1) * pageSize;
+
+    // Build query
+    const query: any = { deletedAt: null };
+
+    // Filter by rating
+    if (rating && rating >= 1 && rating <= 5) {
+        query.rating = rating;
+    }
+
+    // Get total count first
+    let totalReviews = await Review.countDocuments(query);
+
+    // Get reviews with pagination
+    let reviews = await Review.find(query)
+        .populate({ path: 'userId', select: 'name email' })
+        .populate({ path: 'roomId', select: 'name roomType' })
+        .populate({ path: 'bookingId', select: '_id' })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(pageSize);
+
+    // If search is provided, filter by user name, room name, or comment
+    if (search && search.trim()) {
+        const searchLower = search.toLowerCase().trim();
+        reviews = reviews.filter((review: any) => {
+            const userName = review.userId?.name?.toLowerCase() || '';
+            const userEmail = review.userId?.email?.toLowerCase() || '';
+            const roomName = review.roomId?.name?.toLowerCase() || '';
+            const comment = review.comment?.toLowerCase() || '';
+            return userName.includes(searchLower) || 
+                   userEmail.includes(searchLower) ||
+                   roomName.includes(searchLower) || 
+                   comment.includes(searchLower);
+        });
+        totalReviews = reviews.length;
+    }
+
+    return {
+        reviews: mapIds(reviews) as unknown as AdminReviewResponse[],
+        total: totalReviews,
+        currentPage: page,
+        pageSize: pageSize
+    };
+}
+
+/**
+ * Delete review (soft delete) for admin
+ */
+export async function deleteReview(reviewId: string): Promise<void> {
+    if (!mongoose.Types.ObjectId.isValid(reviewId)) {
+        throw new ApiError('Invalid review ID', 400);
+    }
+
+    const review = await Review.findOne({ _id: reviewId, deletedAt: null });
+
+    if (!review) {
+        throw new ApiError('Review not found', 404);
+    }
+
+    review.deletedAt = new Date();
+    await review.save();
 }

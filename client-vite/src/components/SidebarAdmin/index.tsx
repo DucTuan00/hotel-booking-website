@@ -10,7 +10,8 @@ import {
   LogoutOutlined,
   CoffeeOutlined,
   MoonOutlined,
-  GiftOutlined
+  GiftOutlined,
+  StarOutlined
 } from '@ant-design/icons';
 import authService from '@/services/auth/authService';
 
@@ -72,6 +73,11 @@ const Sidebar: React.FC<SidebarProps> = ({
       key: '/dashboard/bookings', 
       icon: <CalendarOutlined />, 
       label: 'Đơn đặt phòng'
+    },
+    { 
+      key: '/dashboard/reviews', 
+      icon: <StarOutlined />, 
+      label: 'Đánh giá'
     },
     { 
       key: '/dashboard/amenities', 

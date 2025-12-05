@@ -168,3 +168,69 @@ export async function getRoomRating(req: Request, res: Response) {
         }
     }
 }
+
+/**
+ * GET /api/review/admin
+ * Get all reviews for admin
+ */
+export async function getAllReviews(req: Request, res: Response) {
+    try {
+        const page = parseInt(req.query.page as string) || 1;
+        const pageSize = parseInt(req.query.pageSize as string) || 10;
+        const search = req.query.search as string | undefined;
+        const rating = req.query.rating ? parseInt(req.query.rating as string) : undefined;
+
+        const result = await reviewService.getAllReviews({
+            page,
+            pageSize,
+            search,
+            rating
+        });
+
+        res.status(200).json({
+            success: true,
+            data: result
+        });
+    } catch (error: any) {
+        if (error instanceof ApiError) {
+            res.status(error.statusCode).json({
+                success: false,
+                message: error.message
+            });
+        } else {
+            res.status(500).json({
+                success: false,
+                message: 'Failed to get reviews'
+            });
+        }
+    }
+}
+
+/**
+ * DELETE /api/review/admin/:reviewId
+ * Delete review for admin
+ */
+export async function deleteReview(req: Request, res: Response) {
+    try {
+        const { reviewId } = req.params;
+
+        await reviewService.deleteReview(reviewId);
+
+        res.status(200).json({
+            success: true,
+            message: 'Review deleted successfully'
+        });
+    } catch (error: any) {
+        if (error instanceof ApiError) {
+            res.status(error.statusCode).json({
+                success: false,
+                message: error.message
+            });
+        } else {
+            res.status(500).json({
+                success: false,
+                message: 'Failed to delete review'
+            });
+        }
+    }
+}

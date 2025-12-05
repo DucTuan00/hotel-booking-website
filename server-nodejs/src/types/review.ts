@@ -55,3 +55,39 @@ export interface RoomRatingInfo {
     averageRating: number;
     totalReviews: number;
 }
+
+// MARK: Admin
+export interface GetAllReviewsInput {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    rating?: number;
+}
+
+export interface AdminReviewResponse {
+    id: string;
+    bookingId: {
+        id: string;
+    };
+    userId: {
+        id: string;
+        name: string;
+        email: string;
+    };
+    roomId: {
+        id: string;
+        name: string;
+        roomType: string;
+    };
+    rating: number;
+    comment?: string;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+export interface AdminReviewsListResponse {
+    reviews: AdminReviewResponse[];
+    total: number;
+    currentPage: number;
+    pageSize: number;
+}

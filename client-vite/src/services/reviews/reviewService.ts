@@ -5,7 +5,10 @@ import {
     GetReviewsByRoomResponse,
     ReviewEligibility,
     RoomRating,
-    EligibleBooking
+    EligibleBooking,
+    AdminReview,
+    AdminReviewsListResponse,
+    GetAllReviewsParams
 } from '@/types/review';
 
 const createReview = async (data: CreateReviewInput): Promise<Review> => {
@@ -64,12 +67,35 @@ const getEligibleBookingsForReview = async (): Promise<EligibleBooking[]> => {
     }
 };
 
+// Admin methods
+const getAllReviews = async (params: GetAllReviewsParams = {}): Promise<AdminReviewsListResponse> => {
+    try {
+        const response = await api.get('/review/admin', { params });
+        return response.data.data;
+    } catch (error) {
+        console.error('Error getting all reviews:', error);
+        throw error;
+    }
+};
+
+const deleteReview = async (reviewId: string): Promise<void> => {
+    try {
+        await api.delete(`/review/admin/${reviewId}`);
+    } catch (error) {
+        console.error('Error deleting review:', error);
+        throw error;
+    }
+};
+
 const reviewService = {
     createReview,
     getReviewsByRoom,
     checkReviewEligibility,
     getRoomRating,
-    getEligibleBookingsForReview
+    getEligibleBookingsForReview,
+    // Admin
+    getAllReviews,
+    deleteReview
 };
 
 export default reviewService;
