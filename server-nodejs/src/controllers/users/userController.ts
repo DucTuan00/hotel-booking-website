@@ -27,7 +27,7 @@ export async function getUserById(req: Request, res: Response, next: NextFunctio
 
 export async function getAllUsers(req: Request, res: Response, next: NextFunction) {
     try {
-        const { page = 1, pageSize = 10, search, role, sortBy, sortOrder } = req.query;
+        const { page = 1, pageSize = 10, search, role, sortBy, sortOrder, excludeCurrentUser } = req.query;
         
         const users = await userService.getAllUsers({
             search: search as string,
@@ -35,7 +35,9 @@ export async function getAllUsers(req: Request, res: Response, next: NextFunctio
             sortBy: sortBy as any,
             sortOrder: sortOrder as any,
             page: parseInt(page as string), 
-            pageSize: parseInt(pageSize as string)
+            pageSize: parseInt(pageSize as string),
+            excludeCurrentUser: excludeCurrentUser === 'true',
+            currentUserId: req.user?.id
         });
         res.json(users);
     } catch (error: any) {

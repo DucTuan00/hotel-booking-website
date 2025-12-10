@@ -24,7 +24,7 @@ export async function getUserById(arg: UserIdInput) {
 };
 
 export async function getAllUsers(args: GetAllUsersInput) {
-    const { search, role, sortBy, sortOrder, page = 1, pageSize = 10 } = args;
+    const { search, role, sortBy, sortOrder, page = 1, pageSize = 10, excludeCurrentUser, currentUserId } = args;
 
     const buildQuery = () => {
         let query: any = { active: true };
@@ -39,6 +39,11 @@ export async function getAllUsers(args: GetAllUsersInput) {
 
         if (role) {
             query.role = role;
+        }
+
+        // Query to exclude current user
+        if (excludeCurrentUser && currentUserId) {
+            query._id = { $ne: currentUserId };
         }
 
         return query;

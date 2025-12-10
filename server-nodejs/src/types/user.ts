@@ -42,4 +42,6 @@ export interface GetAllUsersInput {
     sortOrder?: SortOrder;
     page?: number;
     pageSize?: number;
+    excludeCurrentUser?: boolean;
+    currentUserId?: string;
 }

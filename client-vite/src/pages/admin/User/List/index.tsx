@@ -35,6 +35,7 @@ const UserList: React.FC = () => {
             const params: any = { 
                 page: currentPage, 
                 pageSize: pageSize,
+                excludeCurrentUser: true,
                 ...currentSearchParams
             };
 
