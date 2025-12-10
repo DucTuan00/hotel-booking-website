@@ -1,17 +1,21 @@
 import React, { useState } from 'react';
-import { Modal, Form, Input, DatePicker, Radio, Button, message, Typography } from 'antd';
+import { Modal, Form, Input, DatePicker, Button, Typography } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
+import restaurantBookingService from '@/services/restaurants/restaurantBookingService';
+import authService from '@/services/auth/authService';
+import Notification from '@/components/Notification';
+import { Message } from '@/types/message';
 
 const { TextArea } = Input;
 const { Title } = Typography;
 
 interface BookingData {
-    title: 'anh' | 'chi';
     fullName: string;
     phone: string;
-    date: string;
-    message?: string;
+    bookingDate: dayjs.Dayjs;
+    content?: string;
 }
 
 interface BookingModalProps {
@@ -22,28 +26,59 @@ interface BookingModalProps {
 const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState<Message | null>(null);
+    const navigate = useNavigate();
 
     const handleClose = () => {
         onClose();
         form.resetFields();
+        setMessage(null);
     };
 
     const handleSubmit = async (values: BookingData) => {
-        setLoading(true);
+        // Check authentication first
         try {
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            console.log('Booking data:', {
-                ...values,
-                date: values.date ? dayjs(values.date).format('YYYY-MM-DD') : ''
+            await authService.verifyToken();
+        } catch {
+            setMessage({
+                type: 'error',
+                text: 'Vui lòng đăng nhập để tiếp tục đặt bàn'
             });
             
-            message.success('Đặt bàn thành công! Chúng tôi sẽ liên hệ với bạn sớm nhất.');
-            onClose();
-            form.resetFields();
-        } catch {
-            message.error('Có lỗi xảy ra. Vui lòng thử lại!');
+            setTimeout(() => {
+                handleClose();
+                navigate('/login', { 
+                    state: { 
+                        from: window.location.pathname,
+                        returnUrl: window.location.pathname + window.location.search
+                    } 
+                });
+            }, 2000);
+            return;
+        }
+
+        setLoading(true);
+        try {
+            await restaurantBookingService.createRestaurantBooking({
+                fullName: values.fullName,
+                phone: values.phone,
+                bookingDate: values.bookingDate.format('YYYY-MM-DD'),
+                content: values.content
+            });
+            
+            setMessage({
+                type: 'success',
+                text: 'Đặt bàn thành công! Chúng tôi sẽ liên hệ với bạn sớm nhất.'
+            });
+            
+            setTimeout(() => {
+                handleClose();
+            }, 1000);
+        } catch (error: any) {
+            setMessage({
+                type: 'error',
+                text: error.response?.data?.message || 'Có lỗi xảy ra. Vui lòng thử lại!'
+            });
         } finally {
             setLoading(false);
         }
@@ -77,44 +112,35 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
                 }
             }}
         >
+            {message && (
+                <Notification
+                    message={message}
+                    onClose={() => setMessage(null)}
+                />
+            )}
+            
             <Form
                 form={form}
                 layout="vertical"
                 onFinish={handleSubmit}
                 initialValues={{
-                    title: 'anh',
-                    date: dayjs()
+                    bookingDate: dayjs()
                 }}
                 className="pt-6"
             >
                 <Form.Item
+                    name="fullName"
                     label="Họ và tên"
-                    className="mb-4"
+                    rules={[
+                        { required: true, message: 'Vui lòng nhập họ và tên!' },
+                        { min: 2, message: 'Họ tên phải có ít nhất 2 ký tự!' }
+                    ]}
                 >
-                    <Form.Item 
-                        name="title" 
-                        className="!mb-2"
-                        rules={[{ required: true }]}
-                    >
-                        <Radio.Group className="w-full">
-                            <Radio value="anh" className="mr-6">Anh</Radio>
-                            <Radio value="chi">Chị</Radio>
-                        </Radio.Group>
-                    </Form.Item>
-                    <Form.Item 
-                        name="fullName" 
-                        className="!mb-0"
-                        rules={[
-                            { required: true, message: 'Vui lòng nhập họ và tên!' },
-                            { min: 2, message: 'Họ tên phải có ít nhất 2 ký tự!' }
-                        ]}
-                    >
-                        <Input 
-                            placeholder="Nhập họ và tên" 
-                            size="large"
-                            className="rounded-lg"
-                        />
-                    </Form.Item>
+                    <Input 
+                        placeholder="Nhập họ và tên" 
+                        size="large"
+                        className="rounded-lg"
+                    />
                 </Form.Item>
 
                 <Form.Item
@@ -133,7 +159,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
                 </Form.Item>
 
                 <Form.Item
-                    name="date"
+                    name="bookingDate"
                     label="Ngày đặt"
                     rules={[{ required: true, message: 'Vui lòng chọn ngày đặt!' }]}
                 >
@@ -147,7 +173,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
                 </Form.Item>
 
                 <Form.Item
-                    name="message"
+                    name="content"
                     label="Nội dung"
                 >
                     <TextArea 

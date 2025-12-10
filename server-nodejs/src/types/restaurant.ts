@@ -39,3 +39,40 @@ export interface RestaurantService {
     createdAt: Date;
     updatedAt: Date;
 }
+
+// MARK: Restaurant Booking Input
+export interface CreateRestaurantBookingInput {
+    fullName: string;
+    phone: string;
+    bookingDate: string; // ISO date string
+    content?: string;
+}
+
+export interface GetAllRestaurantBookingsInput {
+    page?: number;
+    pageSize?: number;
+}
+
+export interface RestaurantBookingIdInput {
+    id: string;
+}
+
+// MARK: Restaurant Booking Response
+export interface GetAllRestaurantBookingsResponse {
+    bookings: RestaurantBookingDetail[];
+    total: number;
+    currentPage: number;
+    pageSize: number;
+}
+
+// MARK: Restaurant Booking Interface
+export interface RestaurantBookingDetail {
+    id: string;
+    userId: string;
+    fullName: string;
+    phone: string;
+    bookingDate: Date;
+    content?: string;
+    createdAt: Date;
+    updatedAt: Date;
+}

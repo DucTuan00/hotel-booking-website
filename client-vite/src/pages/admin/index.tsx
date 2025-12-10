@@ -8,6 +8,7 @@ import RoomPricing from '@/pages/admin/Room/Pricing';
 import RestaurantEdit from '@/pages/admin/Restaurant/Edit';
 import RestaurantServices from '@/pages/admin/Restaurant/Services';
 import RestaurantImages from '@/pages/admin/Restaurant/Images';
+import RestaurantBookingList from '@/pages/admin/Restaurant/Bookings';
 import SpaEdit from '@/pages/admin/Spa/Edit';
 import SpaServices from '@/pages/admin/Spa/Services';
 import SpaImages from '@/pages/admin/Spa/Images';
@@ -25,6 +26,7 @@ export {
     RestaurantEdit,
     RestaurantServices,
     RestaurantImages,
+    RestaurantBookingList,
     SpaEdit,
     SpaServices,
     SpaImages,

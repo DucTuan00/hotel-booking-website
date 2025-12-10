@@ -100,6 +100,10 @@ const Sidebar: React.FC<SidebarProps> = ({
         {
           key: '/dashboard/restaurant/images',
           label: 'Hình ảnh nhà hàng'
+        },
+        {
+          key: '/dashboard/restaurant/bookings',
+          label: 'Đơn đặt bàn'
         }
       ]
     },

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import * as restaurantController from '@/controllers/restaurants/restaurantController';
 import * as restaurantServiceController from '@/controllers/restaurants/restaurantServiceController';
 import * as restaurantImageController from '@/controllers/restaurants/restaurantImageController';
+import * as restaurantBookingController from '@/controllers/restaurants/restaurantBookingController';
 import authMiddleware from '@/middlewares/authMiddleware';
 import { UserRole } from '@/types/user';
 
@@ -22,5 +23,10 @@ router.delete('/services/:id', authMiddleware([UserRole.ADMIN]), restaurantServi
 router.get('/images', restaurantImageController.getAllRestaurantImages);
 router.post('/images', authMiddleware([UserRole.ADMIN]), restaurantImageController.createRestaurantImage);
 router.delete('/images/:id', authMiddleware([UserRole.ADMIN]), restaurantImageController.deleteRestaurantImage);
+
+// Restaurant booking routes
+router.post('/bookings', authMiddleware(), restaurantBookingController.createRestaurantBooking);
+router.get('/bookings', authMiddleware([UserRole.ADMIN]), restaurantBookingController.getAllRestaurantBookings);
+router.get('/bookings/:id', authMiddleware([UserRole.ADMIN]), restaurantBookingController.getRestaurantBookingById);
 
 export default router;

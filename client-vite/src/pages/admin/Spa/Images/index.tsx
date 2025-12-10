@@ -126,7 +126,7 @@ const SpaImageList: React.FC = () => {
     const hasChanges = newImages.length > 0 || deletedImageIds.length > 0;
 
     return (
-        <div style={{ padding: '24px' }}>
+        <div style={{ padding: '4px' }}>
             <div style={{ 
                 display: 'flex', 
                 justifyContent: 'space-between', 

@@ -58,3 +58,29 @@ export interface RestaurantImage {
     createdAt: Date;
     updatedAt: Date;
 }
+
+// Restaurant Booking Types
+export interface CreateRestaurantBookingInput {
+    fullName: string;
+    phone: string;
+    bookingDate: string;
+    content?: string;
+}
+
+export interface RestaurantBooking {
+    id: string;
+    userId: string;
+    fullName: string;
+    phone: string;
+    bookingDate: Date;
+    content?: string;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+export interface GetAllRestaurantBookingsResponse {
+    bookings: RestaurantBooking[];
+    total: number;
+    currentPage: number;
+    pageSize: number;
+}
