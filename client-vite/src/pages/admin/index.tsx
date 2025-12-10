@@ -12,6 +12,7 @@ import RestaurantBookingList from '@/pages/admin/Restaurant/Bookings';
 import SpaEdit from '@/pages/admin/Spa/Edit';
 import SpaServices from '@/pages/admin/Spa/Services';
 import SpaImages from '@/pages/admin/Spa/Images';
+import SpaBookingList from '@/pages/admin/Spa/Bookings';
 import CelebrationItemList from '@/pages/admin/CelebrationItem';
 import ReviewList from '@/pages/admin/Review/List';
 
@@ -30,6 +31,7 @@ export {
     SpaEdit,
     SpaServices,
     SpaImages,
+    SpaBookingList,
     CelebrationItemList,
     ReviewList
 }

@@ -123,6 +123,10 @@ const Sidebar: React.FC<SidebarProps> = ({
         {
           key: '/dashboard/spa/images',
           label: 'Hình ảnh Spa'
+        },
+        {
+          key: '/dashboard/spa/bookings',
+          label: 'Đơn đặt lịch'
         }
       ]
     },

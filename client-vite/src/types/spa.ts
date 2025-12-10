@@ -58,3 +58,29 @@ export interface SpaImage {
     createdAt: Date;
     updatedAt: Date;
 }
+
+// Spa Booking Types
+export interface CreateSpaBookingInput {
+    fullName: string;
+    phone: string;
+    bookingDate: string;
+    content?: string;
+}
+
+export interface SpaBooking {
+    id: string;
+    userId: string;
+    fullName: string;
+    phone: string;
+    bookingDate: Date;
+    content?: string;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+export interface GetAllSpaBookingsResponse {
+    bookings: SpaBooking[];
+    total: number;
+    currentPage: number;
+    pageSize: number;
+}

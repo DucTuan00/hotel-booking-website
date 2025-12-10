@@ -2,6 +2,7 @@ import { Router } from 'express';
 import * as spaController from '@/controllers/spa/spaController';
 import * as spaServiceController from '@/controllers/spa/spaServiceController';
 import * as spaImageController from '@/controllers/spa/spaImageController';
+import * as spaBookingController from '@/controllers/spa/spaBookingController';
 import authMiddleware from '@/middlewares/authMiddleware';
 import { UserRole } from '@/types/user';
 
@@ -22,5 +23,10 @@ router.delete('/services/:id', authMiddleware([UserRole.ADMIN]), spaServiceContr
 router.get('/images', spaImageController.getAllSpaImages);
 router.post('/images', authMiddleware([UserRole.ADMIN]), spaImageController.createSpaImage);
 router.delete('/images/:id', authMiddleware([UserRole.ADMIN]), spaImageController.deleteSpaImage);
+
+// Spa booking routes
+router.post('/bookings', authMiddleware(), spaBookingController.createSpaBooking);
+router.get('/bookings', authMiddleware([UserRole.ADMIN]), spaBookingController.getAllSpaBookings);
+router.get('/bookings/:id', authMiddleware([UserRole.ADMIN]), spaBookingController.getSpaBookingById);
 
 export default router;
