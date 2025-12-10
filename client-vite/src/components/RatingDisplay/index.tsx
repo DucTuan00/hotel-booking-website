@@ -24,7 +24,6 @@ const RatingDisplay: React.FC<RatingDisplayProps> = ({
         <div className="flex items-center gap-2">
             <Rate
                 disabled
-                allowHalf
                 value={rating}
                 style={{ fontSize: sizeMap[size], color: '#D4902A' }}
             />

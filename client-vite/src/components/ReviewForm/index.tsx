@@ -76,7 +76,6 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                         rules={[{ required: true, message: 'Vui lòng chọn số sao!' }]}
                     >
                         <Rate
-                            allowHalf
                             style={{ fontSize: 32, color: '#D4902A' }}
                         />
                     </Form.Item>
