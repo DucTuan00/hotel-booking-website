@@ -17,8 +17,8 @@ export async function addFavorite(args: FavoriteInput) {
     }
 
     const newFavorite = new Favorite({
-        user: userId,
-        room: roomId,
+        userId: userId,
+        roomId: roomId,
     });
 
     await newFavorite.save();
@@ -33,7 +33,7 @@ export async function getFavorites(arg: GetFavoritesInput) {
         throw new ApiError('Invalid userId', 400);
     }
 
-    const favorites = await Favorite.find({ user: userId }).populate('room');
+    const favorites = await Favorite.find({ userId: userId }).populate('room');
     return favorites;
 };
 
@@ -48,7 +48,7 @@ export async function deleteFavorite(args: FavoriteInput) {
         throw new ApiError('Invalid roomId', 400);
     }
 
-    const deletedFavorite = await Favorite.deleteOne({ user: userId, room: roomId });
+    const deletedFavorite = await Favorite.deleteOne({ userId: userId, roomId: roomId });
     
     if (deletedFavorite.deletedCount === 0) {
         throw new ApiError('Favorite not found to delete', 404);
