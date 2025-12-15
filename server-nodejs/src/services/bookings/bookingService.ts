@@ -247,18 +247,69 @@ export async function getBookingById(arg: BookingIdInput) {
 /**
  * Get all bookings for a specific user
  */
-export async function getBookingsByUserId(arg: UserIdInput & { page?: number; pageSize?: number }) {
-    const { userId, page = 1, pageSize = 10 } = arg;
+export async function getBookingsByUserId(arg: UserIdInput & { search?: string; status?: string; paymentStatus?: string; page?: number; pageSize?: number }) {
+    const { userId, search, status, paymentStatus, page = 1, pageSize = 10 } = arg;
 
+    const buildQuery = () => {
+        let query: any = { userId: userId };
+
+        if (search) {
+            const searchText = search.trim();
+            
+            // Search by booking ID or room name
+            if (mongoose.Types.ObjectId.isValid(searchText) && searchText.length === 24) {
+                query._id = searchText;
+            } else {
+                query.searchText = searchText;
+            }
+        }
+
+        if (status) {
+            query.status = status;
+        }
+
+        if (paymentStatus) {
+            query.paymentStatus = paymentStatus;
+        }
+
+        return query;
+    };
+
+    const queryConditions = buildQuery();
+    const searchText = queryConditions.searchText;
+    delete queryConditions.searchText; 
+    
     const skip = (page - 1) * pageSize;
 
-    const [bookings, totalBookings] = await Promise.all([
-        Booking.find({ userId: userId })
+    // If searching by room name, we need to do a different approach
+    let bookings, totalBookings;
+    
+    if (searchText) {
+        // Get all room IDs that match the search text
+        const rooms = await Room.find({ 
+            name: new RegExp(searchText, 'i'),
+            deletedAt: null 
+        }).select('_id');
+        const roomIds = rooms.map(room => room._id);
+        
+        // Add room filter to query
+        if (roomIds.length > 0) {
+            queryConditions.$or = [
+                { _id: searchText }, 
+                { roomId: { $in: roomIds } } 
+            ];
+        } else {
+            queryConditions._id = searchText;
+        }
+    }
+
+    [bookings, totalBookings] = await Promise.all([
+        Booking.find(queryConditions)
             .populate({ path: 'roomId', select: 'name roomType price' })
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(pageSize),
-        Booking.countDocuments({ userId: userId })
+        Booking.countDocuments(queryConditions)
     ]);
 
     if (!bookings) {

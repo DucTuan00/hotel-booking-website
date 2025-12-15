@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Empty, Spin, Tag, Pagination, Button } from 'antd';
+import { Card, Empty, Spin, Tag, Pagination, Button, Input, Select, Space } from 'antd';
 import {
     CalendarOutlined,
     UserOutlined,
     EyeOutlined,
+    SearchOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import bookingService from '@/services/bookings/bookingService';
-import { Booking } from '@/types/booking';
+import { Booking, BookingStatus, PaymentStatus } from '@/types/booking';
 import Notification from '@/components/Notification';
 import { Message } from '@/types/message';
 import { COLORS, TYPOGRAPHY } from '@/config/constants';
 import { getStatusColor, getStatusText, getPaymentStatusColor, getPaymentStatusText } from '@/utils/status';
+
+const { Option } = Select;
 
 const UserBookings: React.FC = () => {
     const navigate = useNavigate();
@@ -21,15 +24,42 @@ const UserBookings: React.FC = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [total, setTotal] = useState(0);
     const pageSize = 5;
+    
+    // Search and filter states
+    const [searchText, setSearchText] = useState('');
+    const [statusFilter, setStatusFilter] = useState<BookingStatus | 'ALL'>('ALL');
+    const [paymentStatusFilter, setPaymentStatusFilter] = useState<PaymentStatus | 'ALL'>('ALL');
 
     useEffect(() => {
         fetchUserBookings(currentPage);
-    }, [currentPage]);
+    }, [currentPage, searchText, statusFilter, paymentStatusFilter]);
 
     const fetchUserBookings = async (page: number) => {
         try {
             setLoading(true);
-            const data = await bookingService.getUserBookings({ page, pageSize });
+            
+            // Build query params
+            const params: any = { 
+                page, 
+                pageSize 
+            };
+            
+            // Add search if not empty
+            if (searchText.trim()) {
+                params.search = searchText.trim();
+            }
+            
+            // Add status filter if not ALL
+            if (statusFilter !== 'ALL') {
+                params.status = statusFilter;
+            }
+            
+            // Add payment status filter if not ALL
+            if (paymentStatusFilter !== 'ALL') {
+                params.paymentStatus = paymentStatusFilter;
+            }
+            
+            const data = await bookingService.getUserBookings(params);
             setBookings(data.bookings);
             setTotal(data.total || 0);
         } catch (error) {
@@ -67,6 +97,28 @@ const UserBookings: React.FC = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchText(e.target.value);
+        setCurrentPage(1); // Reset to first page when searching
+    };
+
+    const handleStatusFilterChange = (value: BookingStatus | 'ALL') => {
+        setStatusFilter(value);
+        setCurrentPage(1); // Reset to first page when filter changes
+    };
+
+    const handlePaymentStatusFilterChange = (value: PaymentStatus | 'ALL') => {
+        setPaymentStatusFilter(value);
+        setCurrentPage(1); // Reset to first page when filter changes
+    };
+
+    const handleClearFilters = () => {
+        setSearchText('');
+        setStatusFilter('ALL');
+        setPaymentStatusFilter('ALL');
+        setCurrentPage(1);
+    };
+
     if (loading) {
         return (
             <div className="flex justify-center items-center min-h-screen">
@@ -93,6 +145,95 @@ const UserBookings: React.FC = () => {
                         </h1>
                         <p className="text-gray-600">Quản lý tất cả đơn đặt phòng của bạn</p>
                     </div>
+
+                    {/* Search and Filter Section */}
+                    <Card className="mb-4" style={{ borderRadius: '8px' }}>
+                        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+                            {/* Search Input */}
+                            <Input
+                                size="large"
+                                placeholder="Tìm kiếm theo mã đơn hoặc tên phòng..."
+                                prefix={<SearchOutlined style={{ color: COLORS.gray[400] }} />}
+                                value={searchText}
+                                onChange={handleSearchChange}
+                                allowClear
+                            />
+                            
+                            {/* Filter Row */}
+                            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                                <Space wrap>
+                                    {/* Booking Status Filter */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Trạng thái đơn
+                                        </label>
+                                        <Select
+                                            size="large"
+                                            value={statusFilter}
+                                            onChange={handleStatusFilterChange}
+                                            className="w-48"
+                                        >
+                                            <Option value="ALL">Tất cả</Option>
+                                            <Option value={BookingStatus.PENDING}>
+                                                {getStatusText(BookingStatus.PENDING)}
+                                            </Option>
+                                            <Option value={BookingStatus.CONFIRMED}>
+                                                {getStatusText(BookingStatus.CONFIRMED)}
+                                            </Option>
+                                            <Option value={BookingStatus.CHECKED_IN}>
+                                                {getStatusText(BookingStatus.CHECKED_IN)}
+                                            </Option>
+                                            <Option value={BookingStatus.CHECKED_OUT}>
+                                                {getStatusText(BookingStatus.CHECKED_OUT)}
+                                            </Option>
+                                            <Option value={BookingStatus.CANCELLED}>
+                                                {getStatusText(BookingStatus.CANCELLED)}
+                                            </Option>
+                                            <Option value={BookingStatus.REJECTED}>
+                                                {getStatusText(BookingStatus.REJECTED)}
+                                            </Option>
+                                        </Select>
+                                    </div>
+
+                                    {/* Payment Status Filter */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Trạng thái thanh toán
+                                        </label>
+                                        <Select
+                                            size="large"
+                                            value={paymentStatusFilter}
+                                            onChange={handlePaymentStatusFilterChange}
+                                            className="w-48"
+                                        >
+                                            <Option value="ALL">Tất cả</Option>
+                                            <Option value={PaymentStatus.PAID}>
+                                                {getPaymentStatusText(PaymentStatus.PAID)}
+                                            </Option>
+                                            <Option value={PaymentStatus.UNPAID}>
+                                                {getPaymentStatusText(PaymentStatus.UNPAID)}
+                                            </Option>
+                                            <Option value={PaymentStatus.REFUNDED}>
+                                                {getPaymentStatusText(PaymentStatus.REFUNDED)}
+                                            </Option>
+                                        </Select>
+                                    </div>
+                                </Space>
+
+                                {/* Clear Filters Button */}
+                                {(searchText || statusFilter !== 'ALL' || paymentStatusFilter !== 'ALL') && (
+                                    <Button onClick={handleClearFilters}>
+                                        Xóa bộ lọc
+                                    </Button>
+                                )}
+                            </div>
+
+                            {/* Result Count */}
+                            <div className="text-sm text-gray-600">
+                                Hiển thị {bookings.length} / {total} đơn đặt phòng
+                            </div>
+                        </Space>
+                    </Card>
 
                     {bookings.length === 0 ? (
                         <Card>

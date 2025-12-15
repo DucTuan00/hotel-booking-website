@@ -102,7 +102,13 @@ const cancelBooking = async (args: BookingIdInput): Promise<CancelBookingRespons
     }
 };
 
-const getUserBookings = async (params?: { page?: number; pageSize?: number }): Promise<GetAllBookingsResponse> => {
+const getUserBookings = async (params?: { 
+    page?: number; 
+    pageSize?: number;
+    search?: string;
+    status?: string;
+    paymentStatus?: string;
+}): Promise<GetAllBookingsResponse> => {
     try {
         const response = await api.get<GetAllBookingsResponse>('/booking/user', { params });
         return response.data;
