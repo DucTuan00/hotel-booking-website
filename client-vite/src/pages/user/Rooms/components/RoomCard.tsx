@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, Tag } from 'antd';
-import { EyeOutlined, UserOutlined, HomeOutlined } from '@ant-design/icons';
+import { EyeOutlined, UserOutlined } from '@ant-design/icons';
 import { Room } from "@/types/room";
 import { COLORS, TYPOGRAPHY } from '@/config/constants';
 import { formatPrice } from '@/pages/user/Rooms';
@@ -23,14 +23,6 @@ const RoomCard: React.FC<RoomCardProps> = ({
     ? room.images[0].path 
     : '/images/default-image.jpg';
 
-  // Get availability status based on quantity
-  const getAvailabilityStatus = () => {
-    if (room.quantity === 0) return { text: 'Hết phòng', color: '#ff4d4f' };
-    if (room.quantity <= 3) return { text: 'Sắp hết', color: '#faad14' };
-    return { text: 'Còn phòng', color: '#52c41a' };
-  };
-
-  const availability = getAvailabilityStatus();
   return (
     <Card
       className="room-card hover:shadow-xl transition-all duration-300 overflow-hidden"
@@ -46,14 +38,6 @@ const RoomCard: React.FC<RoomCardProps> = ({
             alt={room.name}
             className="w-full h-full object-cover transition-transform duration-300"
           />
-          <div className="absolute bottom-4 right-4">
-            <Tag 
-              color={availability.color}
-              className="font-medium"
-            >
-              {availability.text}
-            </Tag>
-          </div>
         </div>
       }
     >
@@ -107,9 +91,6 @@ const RoomCard: React.FC<RoomCardProps> = ({
           )}
           <span className="flex items-center gap-1">
             <UserOutlined className="text-base md:text-sm flex-shrink-0" /> {room.maxGuests} người
-          </span>
-          <span className="flex items-center gap-1">
-            <HomeOutlined className="text-base md:text-sm flex-shrink-0" /> {room.quantity} phòng
           </span>
         </div>
 

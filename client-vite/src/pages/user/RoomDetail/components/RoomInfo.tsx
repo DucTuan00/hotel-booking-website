@@ -1,6 +1,5 @@
 import React from "react";
-import { Tag } from "antd";
-import { UserOutlined, HomeOutlined } from "@ant-design/icons";
+import { UserOutlined } from "@ant-design/icons";
 import { Room } from "@/types/room";
 import { COLORS, TYPOGRAPHY } from "@/config/constants";
 import { formatPrice } from "@/utils/formatPrice";
@@ -9,14 +8,7 @@ interface RoomInfoProps {
     room: Room;
 }
 
-const getAvailabilityStatus = (quantity: number) => {
-    if (quantity === 0) return { text: "Hết phòng", color: "#ff4d4f" };
-    if (quantity <= 3) return { text: "Sắp hết", color: "#faad14" };
-    return { text: "Còn phòng", color: "#52c41a" };
-};
-
 const RoomInfo: React.FC<RoomInfoProps> = ({ room }) => {
-    const availability = getAvailabilityStatus(room.quantity);
 
     return (
         <div className="mb-6">
@@ -34,13 +26,6 @@ const RoomInfo: React.FC<RoomInfoProps> = ({ room }) => {
                     </h1>
                     <p className="text-gray-600 text-lg">{room.roomType}</p>
                 </div>
-                <Tag 
-                    color={availability.color} 
-                    className="text-lg px-4 py-1"
-                    style={{ fontSize: '16px', lineHeight: '28px', padding: '4px 16px' }}
-                >
-                    {availability.text}
-                </Tag>
             </div>
 
             <div className="border-solid border-b-1 border-gray-300 mb-6"></div>
@@ -62,10 +47,10 @@ const RoomInfo: React.FC<RoomInfoProps> = ({ room }) => {
                     </div>
                 </div>
                 <div className="flex items-center gap-2 text-gray-700">
-                    <HomeOutlined className="text-4xl w-10 h-10" />
+                    <img src="/images/breakfast.png" alt="Area" className="w-10 h-10" />
                     <div>
-                        <p className="font-semibold" style={{ marginBottom: '8px' }}>Số phòng</p>
-                        <p className="text-sm text-gray-500" style={{ margin: 0 }}>{room.quantity} phòng</p>
+                        <p className="font-semibold" style={{ marginBottom: '8px' }}>Dịch vụ</p>
+                        <p className="text-sm text-gray-500" style={{ margin: 0 }}>Bữa sáng miễn phí</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-2 text-gray-700">
