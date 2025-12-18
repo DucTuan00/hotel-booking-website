@@ -45,7 +45,7 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
     const grandTotal = pricePreview.totalPrice + celebrationTotal;
 
     return (
-        <div className="bg-white rounded-lg shadow-md p-6 sticky top-4">
+        <div className="bg-white rounded-lg border border-gray-200 p-6 sticky top-4">
             <h2 className="text-xl font-semibold mb-4">Tóm tắt đặt phòng</h2>
 
             {/* Room Image */}
