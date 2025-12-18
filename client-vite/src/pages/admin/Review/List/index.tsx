@@ -1,16 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Tag, Tooltip, Rate, Popconfirm, Button, Space, Select, Modal, Descriptions, Typography } from 'antd';
+import { Tag, Tooltip, Rate, Popconfirm, Button, Space, Select, Modal } from 'antd';
 import { EyeOutlined, DeleteOutlined } from '@ant-design/icons';
 import Notification from '@/components/Notification';
 import AdminTable from '@/components/AdminTable';
+import BaseDetail from '@/components/BaseDetail';
 import SearchTableAdmin, { SearchFilters } from '@/components/SearchTableAdmin';
 import reviewService from '@/services/reviews/reviewService';
 import moment from 'moment';
 import { AdminReview } from '@/types/review';
 import type { TableColumnsType } from 'antd';
 import { Message } from '@/types/message';
-
-const { Text } = Typography;
 
 const ReviewList: React.FC = () => {
     const [reviews, setReviews] = useState<AdminReview[]>([]);
@@ -112,12 +111,6 @@ const ReviewList: React.FC = () => {
         setCurrentPage(1);
     };
 
-    const getRatingColor = (rating: number) => {
-        if (rating >= 4) return 'green';
-        if (rating >= 3) return 'orange';
-        return 'red';
-    };
-
     const columns: TableColumnsType<AdminReview> = [
         {
             title: 'Khách hàng',
@@ -125,11 +118,8 @@ const ReviewList: React.FC = () => {
             width: 180,
             render: (_, review) => (
                 <div>
-                    <div style={{ fontWeight: 500 }}>
-                        {review.userId?.name || 'N/A'}
-                    </div>
-                    <div style={{ fontSize: '12px', color: '#888' }}>
-                        {review.userId?.email || 'N/A'}
+                    <div>
+                        {review.userId?.name || ''}
                     </div>
                 </div>
             ),
@@ -141,10 +131,7 @@ const ReviewList: React.FC = () => {
             render: (_, review) => (
                 <div>
                     <div style={{ fontWeight: 500 }}>
-                        {review.roomId?.name || 'N/A'}
-                    </div>
-                    <div style={{ fontSize: '12px', color: '#888' }}>
-                        {review.roomId?.roomType || 'N/A'}
+                        {review.roomId?.name || ''}
                     </div>
                 </div>
             ),
@@ -158,7 +145,7 @@ const ReviewList: React.FC = () => {
             render: (rating: number) => (
                 <div className="flex items-center gap-2">
                     <Rate disabled value={rating} style={{ fontSize: 14, color: '#D4902A' }} />
-                    <Tag color={getRatingColor(rating)}>{rating}/5</Tag>
+                    <span>{rating}/5</span>
                 </div>
             ),
         },
@@ -313,31 +300,34 @@ const ReviewList: React.FC = () => {
                             </Tag>
                         </div>
 
-                        <Descriptions column={1} bordered size="small">
-                            <Descriptions.Item label="Tên khách hàng">
-                                <Text strong>{selectedReview.userId?.name || 'N/A'}</Text>
-                            </Descriptions.Item>
-                            <Descriptions.Item label="ID khách hàng">
-                                <Text copyable={{ text: selectedReview.userId?.id }}>
-                                    {selectedReview.userId?.id || 'N/A'}
-                                </Text>
-                            </Descriptions.Item>
-                            <Descriptions.Item label="Tên phòng">
-                                <Text strong>{selectedReview.roomId?.name || 'N/A'}</Text>
-                            </Descriptions.Item>
-                            <Descriptions.Item label="ID phòng">
-                                <Text copyable={{ text: selectedReview.roomId?.id }}>
-                                    {selectedReview.roomId?.id || 'N/A'}
-                                </Text>
-                            </Descriptions.Item>
-                            <Descriptions.Item label="Nhận xét">
-                                {selectedReview.comment ? (
-                                    <Text italic>"{selectedReview.comment}"</Text>
-                                ) : (
-                                    <Text type="secondary" italic>Không có nhận xét</Text>
-                                )}
-                            </Descriptions.Item>
-                        </Descriptions>
+                        <div className="border border-gray-200 rounded">
+                            <BaseDetail 
+                                label="Tên khách hàng" 
+                                value={selectedReview.userId?.name || ''} 
+                            />
+                            <BaseDetail 
+                                label="ID khách hàng" 
+                                value={selectedReview.userId?.id || ''} 
+                            />
+                            <BaseDetail 
+                                label="Tên phòng" 
+                                value={selectedReview.roomId?.name || ''} 
+                            />
+                            <BaseDetail 
+                                label="ID phòng" 
+                                value={selectedReview.roomId?.id || ''} 
+                            />
+                            <BaseDetail 
+                                label="Nhận xét" 
+                                value={
+                                    selectedReview.comment ? (
+                                        <span className="">{selectedReview.comment}</span>
+                                    ) : (
+                                        <span className="text-gray-500 italic">Không có nhận xét</span>
+                                    )
+                                } 
+                            />
+                        </div>
                     </div>
                 )}
             </Modal>
