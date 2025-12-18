@@ -13,6 +13,12 @@ import {
 export async function register(args: RegisterInput) {
     const { email, password, name, phone, role } = args;
 
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+        throw new Error('Email đã được đăng ký');
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({
         email,
@@ -22,7 +28,15 @@ export async function register(args: RegisterInput) {
         role
     });
 
-    await newUser.save();
+    try {
+        await newUser.save();
+    } catch (error: any) {
+        // Handle MongoDB duplicate key error (race condition)
+        if (error.code === 11000) {
+            throw new Error('Email đã được đăng ký');
+        }
+        throw error;
+    }
 
     return {
         message: 'User register successfully'
@@ -35,13 +49,13 @@ export async function login(args: LoginInput) {
     const user = await User.findOne({ email });
 
     if (!user) {
-        throw new Error('Invalid credentials');
+        throw new Error('Tài khoản hoặc mật khẩu không đúng');
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-        throw new Error('Invalid credentials');
+        throw new Error('Sai mật khẩu');
     }
 
     const { accessToken, refreshToken } = generateToken({
