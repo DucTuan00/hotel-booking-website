@@ -1,4 +1,5 @@
 import * as userService from "@/services/users/userService";
+import { getUserLoyaltyInfo } from "@/services/loyalty/loyaltyService";
 import ApiError from '@/utils/apiError';
 import { Request, Response, NextFunction } from 'express';
 
@@ -108,6 +109,22 @@ export async function deleteUser(req: Request, res: Response, next: NextFunction
         const _id = req.params.id;
         const result = await userService.deleteUser(_id);
         res.json(result);
+    } catch (error: any) {
+        next(new ApiError(error.message, 400));
+    }
+};
+
+export async function getLoyaltyInfo(req: Request, res: Response, next: NextFunction) {
+    try {
+        const id = req.user?.id;
+        if (!id) {
+            throw new ApiError('User ID is required', 400);
+        }
+        const loyaltyInfo = await getUserLoyaltyInfo(id);
+        if (!loyaltyInfo) {
+            throw new ApiError('User not found', 404);
+        }
+        res.json(loyaltyInfo);
     } catch (error: any) {
         next(new ApiError(error.message, 400));
     }

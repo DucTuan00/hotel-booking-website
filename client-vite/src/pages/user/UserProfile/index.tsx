@@ -4,13 +4,15 @@ import { UserOutlined, MailOutlined, PhoneOutlined, LockOutlined } from '@ant-de
 import { useNavigate } from 'react-router-dom';
 import { COLORS, TYPOGRAPHY } from '@/config/constants';
 import userService from '@/services/users/userService';
-import { User, UpdateUserInput, UpdatePasswordInput } from '@/types/user';
+import { User, UpdateUserInput, UpdatePasswordInput, LoyaltyInfo } from '@/types/user';
 import Notification from '@/components/Notification';
+import LoyaltyCard from './LoyaltyCard';
 
 const UserProfile: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [currentUser, setCurrentUser] = useState<User | null>(null);
+    const [loyaltyInfo, setLoyaltyInfo] = useState<LoyaltyInfo | null>(null);
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
     const navigate = useNavigate();
 
@@ -23,8 +25,12 @@ const UserProfile: React.FC = () => {
     const fetchUserInfo = useCallback(async () => {
         try {
             setLoading(true);
-            const user = await userService.getUserInfo();
+            const [user, loyalty] = await Promise.all([
+                userService.getUserInfo(),
+                userService.getLoyaltyInfo()
+            ]);
             setCurrentUser(user);
+            setLoyaltyInfo(loyalty);
             profileForm.setFieldsValue({
                 name: user.name,
                 email: user.email,
@@ -131,6 +137,11 @@ const UserProfile: React.FC = () => {
                 </div>
 
                 <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                    {/* Loyalty Card */}
+                    {loyaltyInfo && (
+                        <LoyaltyCard loyaltyInfo={loyaltyInfo} />
+                    )}
+
                     {/* Profile Information Card */}
                     <Card
                         className="mb-6"

@@ -157,6 +157,13 @@ export interface Booking {
             celebrateItemsSubtotal: number;
             total: number;
         };
+        loyaltyDiscount?: {
+            tier: string;
+            discountPercent: number;
+            originalPrice: number;
+            discountAmount: number;
+            finalPrice: number;
+        };
         bookingDate: string;
     };
     celebrateItems?: BookingCelebrateItem[];

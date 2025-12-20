@@ -63,11 +63,28 @@ const PriceBreakdown: React.FC<PriceBreakdownProps> = ({ booking }) => {
                         value={`${formatPrice(snapshot.pricing.celebrateItemsSubtotal)}`}
                     />
                 )}
+                
+                {/* Loyalty Discount */}
+                {snapshot.loyaltyDiscount && snapshot.loyaltyDiscount.discountPercent > 0 && (
+                    <>
+                        <BaseDetailRow
+                            label="Tạm tính"
+                            value={formatPrice(snapshot.loyaltyDiscount.originalPrice)}
+                        />
+                        <BaseDetailRow
+                            label={`Giảm giá (-${snapshot.loyaltyDiscount.discountPercent}%)`}
+                            value={
+                                    `-${formatPrice(snapshot.loyaltyDiscount.discountAmount)}`
+                            }
+                        />
+                    </>
+                )}
+                
                 <BaseDetailRow
                     label="Tổng cộng"
                     value={
                         <span className="font-bold text-lg">
-                            {formatPrice(snapshot.pricing?.total) || 0}
+                            {formatPrice(booking.totalPrice)}
                         </span>
                     }
                 />

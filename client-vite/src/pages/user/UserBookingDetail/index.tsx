@@ -534,6 +534,31 @@ const UserBookingDetail: React.FC = () => {
                                                     )}
                                                 </div>
 
+                                                {/* Loyalty Discount */}
+                                                {booking.snapshot.loyaltyDiscount && booking.snapshot.loyaltyDiscount.discountPercent > 0 && (
+                                                    <>
+                                                        <Divider className="my-4" />
+                                                        <div className="space-y-2">
+                                                            <div className="flex justify-between text-sm">
+                                                                <span className="text-gray-600">
+                                                                    Tạm tính
+                                                                </span>
+                                                                <span className="font-medium text-gray-900">
+                                                                    {formatPrice(booking.snapshot.loyaltyDiscount.originalPrice)}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex justify-between text-sm">
+                                                                <span className="text-gray-600">
+                                                                    Giảm giá (-{booking.snapshot.loyaltyDiscount.discountPercent}%)
+                                                                </span>
+                                                                <span className="font-medium text-gray-900">
+                                                                    -{formatPrice(booking.snapshot.loyaltyDiscount.discountAmount)}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </>
+                                                )}
+
                                                 <Divider className="my-4" />
 
                                                 <div className="flex justify-between items-center">

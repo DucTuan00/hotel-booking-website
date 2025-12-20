@@ -24,6 +24,13 @@ import {
     calculateCancellationFee,
     createBookingSnapshot
 } from '@/utils/bookingHelpers';
+import {
+    getUserDiscount,
+    calculateDiscountAmount,
+    calculateFinalPrice,
+    incrementUserBookingStats,
+    updateUserLoyaltyTier
+} from '@/services/loyalty/loyaltyService';
 
 /**
  * Create a new booking with dynamic pricing, inventory management, and celebrate items
@@ -153,6 +160,21 @@ export async function createBooking(args: CreateBookingInput) {
     let bookingStatus = BookingStatus.PENDING;
     let paymentStatus = PaymentStatus.UNPAID;
 
+    // Get user's loyalty discount and calculate final price
+    const userDiscount = await getUserDiscount(userId);
+    const originalPrice = pricing.totalPrice;
+    const discountAmount = calculateDiscountAmount(originalPrice, userDiscount);
+    const finalPrice = calculateFinalPrice(originalPrice, userDiscount);
+
+    // Add loyalty discount info to snapshot for tracking
+    snapshot.loyaltyDiscount = {
+        tier: existUser.loyaltyTier || 'Bronze',
+        discountPercent: userDiscount,
+        originalPrice: originalPrice,
+        discountAmount: discountAmount,
+        finalPrice: finalPrice
+    };
+
     // Start MongoDB transaction
     const session = await mongoose.startSession();
     session.startTransaction();
@@ -165,7 +187,7 @@ export async function createBooking(args: CreateBookingInput) {
             checkOut: checkOutDate,
             guests: guests,
             quantity: quantity,
-            totalPrice: pricing.totalPrice,
+            totalPrice: finalPrice,
             status: bookingStatus,
             firstName,
             lastName,
@@ -552,6 +574,16 @@ export async function updateBooking(args: UpdateBookingInput) {
             if (!booking.checkedOutAt) {
                 booking.checkedOutAt = new Date();
             }
+
+            // Update user loyalty stats after successful checkout
+            const bookingAmount = booking.totalPrice;
+            await incrementUserBookingStats(
+                booking.userId.toString(),
+                bookingAmount
+            );
+
+            // Check and update user loyalty tier
+            await updateUserLoyaltyTier(booking.userId.toString());
         }
 
         await booking.save({ session });

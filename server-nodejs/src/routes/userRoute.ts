@@ -6,6 +6,7 @@ import { UserRole } from "@/types/user";
 const router = Router();
 
 router.get('/info', authMiddleware([UserRole.USER, UserRole.ADMIN]), userController.getUserInfo);
+router.get('/loyalty', authMiddleware([UserRole.USER, UserRole.ADMIN]), userController.getLoyaltyInfo);
 router.put('/password', authMiddleware([UserRole.USER, UserRole.ADMIN]), userController.updatePassword);
 router.get('/', authMiddleware([UserRole.ADMIN]), userController.getAllUsers);
 router.post('/', authMiddleware([UserRole.ADMIN]), userController.createUser);

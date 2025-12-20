@@ -5,7 +5,8 @@ import {
     UpdateUserInput,
     UpdatePasswordInput, 
     GetAllUsersInput, 
-    GetAllUsersResponse 
+    GetAllUsersResponse,
+    LoyaltyInfo
 } from '@/types/user';
 
 const getUserInfo = async (): Promise<User> => {
@@ -91,6 +92,16 @@ const deleteUser = async (userId: string): Promise<{ message: string }> => {
     }
 };
 
+const getLoyaltyInfo = async (): Promise<LoyaltyInfo> => {
+    try {
+        const response = await api.get('/user/loyalty');
+        return response.data;
+    } catch (error) {
+        console.error('Error getting loyalty info:', error);
+        throw error;
+    }
+};
+
 export default {
     getUserInfo,
     getAllUsers,
@@ -100,4 +111,5 @@ export default {
     updateUserProfile,
     updatePassword,
     deleteUser,
+    getLoyaltyInfo,
 };

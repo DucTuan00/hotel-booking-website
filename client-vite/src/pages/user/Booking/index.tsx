@@ -14,7 +14,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { Message } from '@/types/message';
 import { Room } from '@/types/room';
 import { PaymentMethod, PreviewPriceResponse } from '@/types/booking';
-import { User } from '@/types/user';
+import { User, LoyaltyInfo } from '@/types/user';
 import { CelebrateItem } from '@/types/celebrate';
 import GuestInfoForm from '@/pages/user/Booking/components/GuestInfoForm';
 import NoteForm from '@/pages/user/Booking/components/NoteForm';
@@ -36,6 +36,7 @@ const Booking: React.FC = () => {
     const [message, setMessage] = useState<Message | null>(null);
     const [celebrateItems, setCelebrateItems] = useState<CelebrateItem[]>([]);
     const [selectedCelebrateItems, setSelectedCelebrateItems] = useState<Map<string, number>>(new Map());
+    const [loyaltyInfo, setLoyaltyInfo] = useState<LoyaltyInfo | null>(null);
     
     const roomId = searchParams.get('roomId');
     const checkIn = searchParams.get('checkIn');
@@ -75,6 +76,15 @@ const Booking: React.FC = () => {
                     email: userData.email,
                     phoneNumber: userData.phone || '',
                 });
+
+                // Load loyalty info for discount preview
+                try {
+                    const loyalty = await userService.getLoyaltyInfo();
+                    setLoyaltyInfo(loyalty);
+                } catch {
+                    // User might not have loyalty info yet
+                    console.log('Could not load loyalty info');
+                }
             } catch {
                 // User not logged in, that's okay
                 console.log('User not logged in');
@@ -311,6 +321,7 @@ const Booking: React.FC = () => {
                             selectedCelebrationQuantities={selectedCelebrateItems}
                             onSubmit={() => form.submit()}
                             submitting={submitting}
+                            loyaltyInfo={loyaltyInfo}
                         />
                     </div>
                 </div>

@@ -5,6 +5,7 @@ import { COLORS } from '@/config/constants';
 import { Room } from '@/types/room';
 import { PreviewPriceResponse } from '@/types/booking';
 import { CelebrateItem } from '@/types/celebrate';
+import { LoyaltyInfo } from '@/types/user';
 import { formatPrice } from '@/utils/formatPrice';
 
 interface BookingSummaryProps {
@@ -19,6 +20,7 @@ interface BookingSummaryProps {
     selectedCelebrationQuantities: Map<string, number>;
     onSubmit: () => void;
     submitting: boolean;
+    loyaltyInfo?: LoyaltyInfo | null;
 }
 
 const BookingSummary: React.FC<BookingSummaryProps> = ({ 
@@ -32,7 +34,8 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
     selectedCelebrations,
     selectedCelebrationQuantities,
     onSubmit,
-    submitting
+    submitting,
+    loyaltyInfo
 }) => {
     const nights = dayjs(checkOut).diff(dayjs(checkIn), 'day');
     
@@ -42,7 +45,12 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
         return sum + (item.price * itemQuantity);
     }, 0);
     
-    const grandTotal = pricePreview.totalPrice + celebrationTotal;
+    const subtotal = pricePreview.totalPrice + celebrationTotal;
+    
+    // Calculate discount
+    const discountPercent = loyaltyInfo?.currentDiscount || 0;
+    const discountAmount = Math.floor(subtotal * discountPercent / 100);
+    const grandTotal = subtotal - discountAmount;
 
     return (
         <div className="bg-white rounded-lg border border-gray-200 p-6 sticky top-4">
@@ -154,6 +162,25 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
                     <span className="text-gray-600">Quà kỷ niệm:</span>
                     <span>{formatPrice(celebrationTotal)}</span>
                 </div>
+            )}
+
+            {/* Loyalty Discount */}
+            {loyaltyInfo && discountPercent > 0 && (
+                <>
+                    <Divider className="my-3" />
+                    <div className="flex justify-between text-sm mb-2">
+                        <span className="text-gray-600">Tạm tính:</span>
+                        <span>{formatPrice(subtotal)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm mb-2">
+                        <span className="text-gray-600">
+                            Giảm giá (-{discountPercent}%)
+                        </span>
+                        <span>
+                            -{formatPrice(discountAmount)}
+                        </span>
+                    </div>
+                </>
             )}
 
             <Divider className="my-3" />
