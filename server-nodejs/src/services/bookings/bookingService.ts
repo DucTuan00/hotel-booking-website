@@ -175,10 +175,6 @@ export async function createBooking(args: CreateBookingInput) {
         finalPrice: finalPrice
     };
 
-    // Start MongoDB transaction
-    const session = await mongoose.startSession();
-    session.startTransaction();
-
     try {
         const newBooking = new Booking({
             userId: existUser._id,
@@ -199,7 +195,7 @@ export async function createBooking(args: CreateBookingInput) {
             snapshot
         });
 
-        const savedBooking = await newBooking.save({ session });
+        const savedBooking = await newBooking.save();
 
         // Create booking items for celebrate items
         if (celebrateItemsData.length > 0) {
@@ -210,7 +206,7 @@ export async function createBooking(args: CreateBookingInput) {
                 priceSnapshot: celebrateData.price
             }));
 
-            await BookingItem.insertMany(bookingItemsToCreate, { session });
+            await BookingItem.insertMany(bookingItemsToCreate);
         }
 
         // Decrease inventory (lock rooms immediately when booking is PENDING)
@@ -219,19 +215,12 @@ export async function createBooking(args: CreateBookingInput) {
             checkInDate,
             checkOutDate,
             quantity,
-            'decrease',
-            session
+            'decrease'
         );
-
-        await session.commitTransaction();
 
         return mapId(savedBooking);
     } catch (error: any) {
-        // Rollback transaction on error
-        await session.abortTransaction();
         throw new ApiError(error.message || 'Failed to create booking', error.statusCode || 500);
-    } finally {
-        session.endSession();
     }
 }
 
@@ -374,10 +363,6 @@ export async function cancelBooking(arg: BookingIdInput) {
         throw new ApiError(cancellationInfo.reason || 'Cannot cancel this booking', 400);
     }
 
-    // Start transaction
-    const session = await mongoose.startSession();
-    session.startTransaction();
-
     try {
         // Update booking status
         booking.status = BookingStatus.CANCELLED;
@@ -386,8 +371,6 @@ export async function cancelBooking(arg: BookingIdInput) {
         booking.cancellationReason = cancellationReason || 
             `Cancelled. Fee: ${cancellationInfo.feePercentage}% (${cancellationInfo.fee} VND). Refund: ${cancellationInfo.refundAmount} VND.`;
 
-        await booking.save({ session });
-
         // Restore inventory if applicable
         if (cancellationInfo.restoreInventory) {
             await updateInventory(
@@ -395,8 +378,7 @@ export async function cancelBooking(arg: BookingIdInput) {
                 booking.checkIn,
                 booking.checkOut,
                 booking.quantity,
-                'increase',
-                session
+                'increase'
             );
         }
 
@@ -410,9 +392,7 @@ export async function cancelBooking(arg: BookingIdInput) {
             }
         }
 
-        await booking.save({ session });
-
-        await session.commitTransaction();
+        await booking.save();
 
         // Fetch the updated booking with populated references
         const updatedBooking = await Booking.findById(bookingId)
@@ -435,10 +415,7 @@ export async function cancelBooking(arg: BookingIdInput) {
             }
         };
     } catch (error: any) {
-        await session.abortTransaction();
         throw new ApiError(error.message || 'Failed to cancel booking', error.statusCode || 500);
-    } finally {
-        session.endSession();
     }
 }
 
@@ -528,9 +505,6 @@ export async function updateBooking(args: UpdateBookingInput) {
         throw new ApiError('Booking not found', 404);
     }
 
-    const session = await mongoose.startSession();
-    session.startTransaction();
-
     try {
         const oldStatus = booking.status;
 
@@ -549,8 +523,7 @@ export async function updateBooking(args: UpdateBookingInput) {
                 booking.checkIn,
                 booking.checkOut,
                 booking.quantity,
-                'increase',
-                session
+                'increase'
             );
         } else if (status === BookingStatus.CHECKED_IN) {
             // Validate can check in (must be confirmed first)
@@ -586,9 +559,7 @@ export async function updateBooking(args: UpdateBookingInput) {
             await updateUserLoyaltyTier(booking.userId.toString());
         }
 
-        await booking.save({ session });
-
-        await session.commitTransaction();
+        await booking.save();
 
         const updatedBooking = await Booking.findById(bookingId)
             .populate({ path: 'userId', select: 'name email' })
@@ -600,10 +571,7 @@ export async function updateBooking(args: UpdateBookingInput) {
 
         return mapId(updatedBooking);
     } catch (error: any) {
-        await session.abortTransaction();
         throw new ApiError(error.message || 'Failed to update booking', error.statusCode || 500);
-    } finally {
-        session.endSession();
     }
 }
 
