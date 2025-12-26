@@ -203,14 +203,54 @@ const AIPlanner: React.FC = () => {
                                     <Text strong className="block mb-2">
                                         Ngày đi
                                     </Text>
-                                    <RangePicker
-                                        className="w-full"
-                                        value={travelDates}
-                                        onChange={(dates) => setTravelDates(dates as [Dayjs, Dayjs])}
-                                        format="DD/MM/YYYY"
-                                        placeholder={['Ngày đến', 'Ngày về']}
-                                        disabledDate={(current) => current && current < dayjs().startOf('day')}
-                                    />
+                                    {/* Desktop - RangePicker */}
+                                    <div className="hidden md:block">
+                                        <RangePicker
+                                            className="w-full"
+                                            value={travelDates}
+                                            onChange={(dates) => setTravelDates(dates as [Dayjs, Dayjs])}
+                                            format="DD/MM/YYYY"
+                                            placeholder={['Ngày đến', 'Ngày về']}
+                                            disabledDate={(current) => current && current < dayjs().startOf('day')}
+                                        />
+                                    </div>
+                                    {/* Mobile - 2 separate DatePickers */}
+                                    <div className="md:hidden grid grid-cols-2 gap-2">
+                                        <DatePicker
+                                            className="w-full"
+                                            value={travelDates?.[0]}
+                                            onChange={(date) => {
+                                                if (date) {
+                                                    setTravelDates(prev => [date, prev?.[1] || null] as [Dayjs, Dayjs]);
+                                                } else {
+                                                    setTravelDates(prev => prev ? [null as unknown as Dayjs, prev[1]] : null);
+                                                }
+                                            }}
+                                            format="DD/MM/YYYY"
+                                            placeholder="Ngày đến"
+                                            disabledDate={(current) => current && current < dayjs().startOf('day')}
+                                            inputReadOnly
+                                        />
+                                        <DatePicker
+                                            className="w-full"
+                                            value={travelDates?.[1]}
+                                            onChange={(date) => {
+                                                if (date) {
+                                                    setTravelDates(prev => [prev?.[0] || null, date] as [Dayjs, Dayjs]);
+                                                } else {
+                                                    setTravelDates(prev => prev ? [prev[0], null as unknown as Dayjs] : null);
+                                                }
+                                            }}
+                                            format="DD/MM/YYYY"
+                                            placeholder="Ngày về"
+                                            disabledDate={(current) => {
+                                                if (current && current < dayjs().startOf('day')) return true;
+                                                if (travelDates?.[0] && current.isBefore(travelDates[0], 'day')) return true;
+                                                return false;
+                                            }}
+                                            inputReadOnly
+                                        />
+                                    </div>
                                 </div>
 
                                 <PreferenceSelector
