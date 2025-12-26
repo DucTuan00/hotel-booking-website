@@ -41,6 +41,14 @@ html {
     background-size: cover;
 }
 
+/* Capacitor/Mobile Optimization: Disable fixed background on touch devices/mobile 
+   to prevent jittering and performance issues in WebViews */
+@media (max-width: 1024px) {
+    .hero-background {
+        background-attachment: scroll !important;
+    }
+}
+
 /* Animation classes */
 .fade-in-up {
     opacity: 0;
@@ -330,4 +338,22 @@ html {
     .section-padding {
         padding: 3rem 0;
     }
+}
+
+/* Custom Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fadeIn {
+    animation-name: fadeIn;
+    animation-duration: 0.8s;
+    animation-timing-function: ease-out;
 }
