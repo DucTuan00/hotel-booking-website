@@ -142,6 +142,8 @@ export interface SearchRoomsInput {
     minPrice?: number;
     maxPrice?: number;
     amenities?: string[];
+    sortBy?: RoomSortField;
+    sortOrder?: SortOrder;
     page?: number;
     pageSize?: number;
 }

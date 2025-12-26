@@ -14,6 +14,8 @@ export async function searchAvailableRooms(req: Request, res: Response, next: Ne
             minPrice,
             maxPrice,
             amenities,
+            sortBy,
+            sortOrder,
             page = 1,
             pageSize = 10
         } = req.query;
@@ -60,6 +62,8 @@ export async function searchAvailableRooms(req: Request, res: Response, next: Ne
             minPrice: minPrice ? parseFloat(minPrice as string) : undefined,
             maxPrice: maxPrice ? parseFloat(maxPrice as string) : undefined,
             amenities: amenities ? (amenities as string).split(',') : undefined,
+            sortBy: sortBy as any,
+            sortOrder: sortOrder as any,
             page: parseInt(page as string),
             pageSize: parseInt(pageSize as string)
         });

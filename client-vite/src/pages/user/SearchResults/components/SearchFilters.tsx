@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { Button, Slider, Checkbox, Select, Input, Form } from 'antd';
+import { CloseOutlined } from '@ant-design/icons';
 import { COLORS, TYPOGRAPHY } from '@/config/constants';
 import { formatPrice } from '@/utils/formatPrice';
 import { RoomType } from '@/types/room';
@@ -19,6 +20,7 @@ interface SearchFiltersProps {
   onAmenitiesChange: (value: string[]) => void;
   onSortChange: (value: string) => void;
   onClearFilters: () => void;
+  onCloseMobileFilter: () => void;
 }
 
 const SearchFilters: React.FC<SearchFiltersProps> = ({
@@ -33,6 +35,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
   onAmenitiesChange,
   onSortChange,
   onClearFilters,
+  onCloseMobileFilter,
 }) => {
   const [form] = Form.useForm();
 
@@ -59,24 +62,48 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
   };
 
   return (
-    <div className={`lg:w-80 ${showMobileFilter ? 'block' : 'hidden'} lg:block`}>
-      <div className="bg-white p-6 rounded-lg sticky top-4 border border-gray-200">
-        <div className="flex justify-between items-center mb-6">
-          <h3
-            className="text-lg font-bold text-gray-900"
-            style={{ fontFamily: TYPOGRAPHY.fontFamily.primary }}
-          >
-            Bộ lọc
-          </h3>
-          <Button
-            type="text"
-            size="small"
-            onClick={onClearFilters}
-            style={{ color: COLORS.primary }}
-          >
-            Xóa bộ lọc
-          </Button>
-        </div>
+    <>
+      {/* Mobile Overlay */}
+      {showMobileFilter && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={onCloseMobileFilter}
+        />
+      )}
+      
+      {/* Filter Panel */}
+      <div className={`
+        lg:w-80 lg:block lg:relative lg:z-auto
+        ${showMobileFilter ? 'fixed inset-0 z-50 bg-white overflow-y-auto' : 'hidden'}
+      `}>
+        <div className="bg-white p-6 rounded-lg lg:sticky lg:top-4 lg:border lg:border-gray-200 h-full lg:h-auto">
+          {/* Mobile Header with Close Button */}
+          <div className="flex justify-between items-center mb-6">
+            <h3
+              className="text-lg font-bold text-gray-900"
+              style={{ fontFamily: TYPOGRAPHY.fontFamily.primary }}
+            >
+              Bộ lọc
+            </h3>
+            <div className="flex items-center gap-2">
+              <Button
+                type="text"
+                size="small"
+                onClick={onClearFilters}
+                style={{ color: COLORS.primary }}
+              >
+                Xóa bộ lọc
+              </Button>
+              {/* Close button for mobile */}
+              <Button
+                type="text"
+                icon={<CloseOutlined />}
+                onClick={onCloseMobileFilter}
+                className="hidden lg:!hidden" 
+                style={{ color: '#666', display: showMobileFilter ? 'inline-flex' : 'none' }}
+              />
+            </div>
+          </div>
 
         {/* Price Range */}
         <div className="mb-6">
@@ -199,20 +226,35 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
         </div>
 
         {/* Sort Options */}
-        <div>
+        <div className="mb-6 lg:mb-0">
           <h4 className="font-medium text-gray-900 mb-3">Sắp xếp theo</h4>
           <Select
             value={sortBy}
             onChange={onSortChange}
             className="w-full"
           >
+            <Option value="newest">Mới nhất</Option>
             <Option value="price-asc">Giá thấp đến cao</Option>
             <Option value="price-desc">Giá cao đến thấp</Option>
             <Option value="name">Tên A-Z</Option>
           </Select>
         </div>
+
+          {/* Mobile Apply Button */}
+          <div className="lg:hidden pt-4 border-t border-gray-200 mt-6 pb-8">
+            <Button
+              type="primary"
+              block
+              size="large"
+              onClick={onCloseMobileFilter}
+              style={{ backgroundColor: COLORS.primary, borderColor: COLORS.primary }}
+            >
+              Áp dụng bộ lọc
+            </Button>
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

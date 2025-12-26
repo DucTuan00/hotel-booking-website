@@ -8,6 +8,9 @@ import ApiError from '@/utils/apiError';
 import mongoose from 'mongoose';
 import { RoomType } from '@/types/room';
 
+type RoomSortField = 'createdAt' | 'price' | 'name';
+type SortOrder = 'asc' | 'desc';
+
 interface SearchAvailableRoomsInput {
     checkIn?: Date;
     checkOut?: Date;
@@ -18,6 +21,8 @@ interface SearchAvailableRoomsInput {
     minPrice?: number;
     maxPrice?: number;
     amenities?: string[];
+    sortBy?: RoomSortField;
+    sortOrder?: SortOrder;
     page: number;
     pageSize: number;
 }
@@ -33,6 +38,8 @@ export async function searchAvailableRooms(input: SearchAvailableRoomsInput) {
         minPrice,
         maxPrice,
         amenities,
+        sortBy = 'createdAt',
+        sortOrder = 'desc',
         page = 1,
         pageSize = 10
     } = input;
@@ -139,6 +146,25 @@ export async function searchAvailableRooms(input: SearchAvailableRoomsInput) {
             });
         }
 
+        // Sort filtered rooms
+        filteredRooms.sort((a: any, b: any) => {
+            let comparison = 0;
+            switch (sortBy) {
+                case 'price':
+                    comparison = a.searchPrice - b.searchPrice;
+                    break;
+                case 'name':
+                    comparison = a.name.localeCompare(b.name);
+                    break;
+                case 'createdAt':
+                default:
+                    // Compare by createdAt - ascending means oldest first
+                    comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+                    break;
+            }
+            return sortOrder === 'desc' ? -comparison : comparison;
+        });
+
         // Pagination
         const total = filteredRooms.length;
         const skip = (page - 1) * pageSize;
@@ -235,6 +261,25 @@ export async function searchAvailableRooms(input: SearchAvailableRoomsInput) {
             return true;
         });
     }
+
+    // Sort filtered rooms
+    filteredRooms.sort((a: any, b: any) => {
+        let comparison = 0;
+        switch (sortBy) {
+            case 'price':
+                comparison = a.price - b.price;
+                break;
+            case 'name':
+                comparison = a.name.localeCompare(b.name);
+                break;
+            case 'createdAt':
+            default:
+                // Compare by createdAt - ascending means oldest first
+                comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+                break;
+        }
+        return sortOrder === 'desc' ? -comparison : comparison;
+    });
 
     // Pagination
     const total = filteredRooms.length;

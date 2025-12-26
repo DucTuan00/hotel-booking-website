@@ -5,11 +5,11 @@ import SearchFilters from "@/pages/user/SearchResults/components/SearchFilters";
 import SearchResultsList from "@/pages/user/SearchResults/components/SearchResultsList";
 import roomService from "@/services/rooms/roomService";
 import amenityService from "@/services/amenities/amenityService";
-import { Room } from "@/types/room";
+import { Room, RoomSortField, SortOrder } from "@/types/room";
 import { Amenity } from "@/types/amenity";
 import "@/pages/user/SearchResults/SearchResults.css";
 
-export type SortOption = "price-asc" | "price-desc" | "name";
+export type SortOption = "newest" | "price-asc" | "price-desc" | "name";
 
 const SearchResults: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -23,7 +23,7 @@ const SearchResults: React.FC = () => {
     const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000000]);
     const [selectedRoomTypes, setSelectedRoomTypes] = useState<string[]>([]);
     const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
-    const [sortBy, setSortBy] = useState<SortOption>("price-asc");
+    const [sortBy, setSortBy] = useState<SortOption>("newest");
     const [isLoading, setIsLoading] = useState(false);
     
     // Debounce ref for price filter
@@ -60,6 +60,29 @@ const SearchResults: React.FC = () => {
         const searchRooms = async () => {
             setIsLoading(true);
             try {
+                // Convert sortBy to API format
+                let sortByField: RoomSortField | undefined;
+                let sortOrderValue: SortOrder | undefined;
+
+                switch (sortBy) {
+                    case "newest":
+                        sortByField = 'createdAt';
+                        sortOrderValue = 'desc';
+                        break;
+                    case "price-asc":
+                        sortByField = 'price';
+                        sortOrderValue = 'asc';
+                        break;
+                    case "price-desc":
+                        sortByField = 'price';
+                        sortOrderValue = 'desc';
+                        break;
+                    case "name":
+                        sortByField = 'name';
+                        sortOrderValue = 'asc';
+                        break;
+                }
+
                 const response = await roomService.searchRooms({
                     checkIn: checkIn || undefined,
                     checkOut: checkOut || undefined,
@@ -69,6 +92,8 @@ const SearchResults: React.FC = () => {
                     minPrice: priceRange[0],
                     maxPrice: priceRange[1],
                     amenities: selectedAmenities,
+                    sortBy: sortByField,
+                    sortOrder: sortOrderValue,
                     page: currentPage,
                     pageSize,
                 });
@@ -85,7 +110,7 @@ const SearchResults: React.FC = () => {
         };
 
         searchRooms();
-    }, [checkIn, checkOut, adults, children, selectedRoomTypes, priceRange, selectedAmenities, currentPage, pageSize]);
+    }, [checkIn, checkOut, adults, children, selectedRoomTypes, priceRange, selectedAmenities, sortBy, currentPage, pageSize]);
 
     // Cleanup debounce on unmount
     useEffect(() => {
@@ -167,6 +192,7 @@ const SearchResults: React.FC = () => {
                         onAmenitiesChange={handleAmenitiesChange}
                         onSortChange={handleSortChange}
                         onClearFilters={handleClearFilters}
+                        onCloseMobileFilter={() => setShowMobileFilter(false)}
                     />
 
                     <SearchResultsList
