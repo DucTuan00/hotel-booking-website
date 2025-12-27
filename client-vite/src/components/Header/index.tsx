@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Button, Drawer, Layout, Dropdown, Space } from 'antd';
+import { Button, Drawer, Layout, Dropdown, Avatar } from 'antd';
 import { MenuOutlined, CloseOutlined, UserOutlined, LogoutOutlined, DownOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -24,12 +24,12 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
     const location = useLocation();
 
     const menuItems = [
-        { name: 'GIỚI THIỆU', path: '/#about' },
-        { name: 'PHÒNG', path: '/rooms' },
-        { name: 'NHÀ HÀNG & SKY BAR', path: '/restaurant' },
-        { name: 'SPA & TẮM BIA', path: '/spa' },
-        { name: 'AI PLANNER', path: '/ai-planner' },
-        { name: 'LIÊN HỆ', path: '/#contact' },
+        { name: 'Giới thiệu', path: '/#about' },
+        { name: 'Phòng', path: '/rooms' },
+        { name: 'Nhà hàng', path: '/restaurant' },
+        { name: 'Spa', path: '/spa' },
+        { name: 'AI planner', path: '/ai-planner' },
+        { name: 'Liên hệ', path: '/#contact' },
     ];
 
     const fetchUserInfo = useCallback(async () => {
@@ -122,6 +122,13 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
         setMobileMenuOpen(false);
     };
 
+    const isActive = (path: string) => {
+        if (path.startsWith('/#')) {
+            return location.pathname === '/' && location.hash === path.substring(1);
+        }
+        return location.pathname.startsWith(path);
+    };
+
     return (
         <>
             <AntHeader
@@ -132,12 +139,14 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
                     width: "100%",
                     alignItems: "center",
                     background: "#fff",
-                    borderBottom: "1px solid #f0f0f0",
+                    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
+                    borderBottom: "none",
+                    // borderBottom: "1px solid #f0f0f0"
                 }}
             >
-                <div className="max-w-7xl mx-auto px-3 sm:px-4 h-full flex items-center justify-between">
+                <div className="max-w-7xl mx-auto px-3 sm:px-4 h-full flex items-center">
                     {/* Logo */}
-                    <div className="flex items-center mr-8 lg:mr-12">
+                    <div className="flex items-center">
                         <div
                             className="text-lg sm:text-xl lg:text-2xl font-bold cursor-pointer"
                             onClick={() => navigate('/')}
@@ -152,33 +161,40 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
                         </div>
                     </div>
 
-                    {/* Desktop Navigation - Hidden on mobile */}
-                    <nav className="hidden lg:flex items-center space-x-6 xl:space-x-8">
-                        {menuItems.map((item) => (
-                            <button
-                                key={item.name}
-                                onClick={() => handleNavigation(item.path)}
-                                className="text-sm font-semibold transition-opacity whitespace-nowrap bg-transparent border-none cursor-pointer px-4"
-                                style={{
-                                    color: transparent
-                                        ? COLORS.white
-                                        : COLORS.gray[700],
-                                    fontFamily: TYPOGRAPHY.fontFamily.secondary,
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.color = COLORS.primary;
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.color = transparent ? COLORS.white : COLORS.gray[700];
-                                }}
-                            >
-                                {item.name}
-                            </button>
-                        ))}
+                    {/* Desktop Navigation - Hidden on mobile - Moved to right with ml-auto */}
+                    <nav className="hidden lg:flex items-center space-x-6 xl:space-x-8 ml-auto">
+                        {menuItems.map((item) => {
+                            const active = isActive(item.path);
+                            return (
+                                <button
+                                    key={item.name}
+                                    onClick={() => handleNavigation(item.path)}
+                                    className="group relative text-sm font-semibold transition-opacity whitespace-nowrap bg-transparent border-none cursor-pointer px-4 py-2"
+                                    style={{
+                                        color: active 
+                                            ? COLORS.primary 
+                                            : (transparent ? COLORS.white : COLORS.gray[700]),
+                                        fontFamily: TYPOGRAPHY.fontFamily.secondary,
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        if (!active) e.currentTarget.style.color = COLORS.primary;
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        if (!active) e.currentTarget.style.color = transparent ? COLORS.white : COLORS.gray[700];
+                                    }}
+                                >
+                                    {item.name}
+                                    <span 
+                                        className={`absolute bottom-4 left-0 h-[2px] transition-all duration-300 ease-out ${active ? 'w-full' : 'w-0 group-hover:w-full'}`}
+                                        style={{ backgroundColor: COLORS.primary }}
+                                    />
+                                </button>
+                            );
+                        })}
                     </nav>
 
                     {/* Right Side - User Menu or Login Button, Mobile Menu */}
-                    <div className="flex items-center space-x-2 sm:space-x-3">
+                    <div className="flex items-center space-x-2 sm:space-x-3 ml-auto lg:ml-8">
                         {/* Desktop - User Menu or Login Button */}
                         {!loading && (
                             currentUser ? (
@@ -187,24 +203,34 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
                                     placement="bottomRight"
                                     trigger={['click']}
                                 >
-                                    <Space
-                                        className="hidden sm:flex cursor-pointer hover:opacity-75 transition-opacity"
-                                        style={{
-                                            fontFamily: TYPOGRAPHY.fontFamily.secondary,
-                                            fontWeight: TYPOGRAPHY.fontWeight.medium,
-                                            color: transparent ? COLORS.white : COLORS.gray[700],
-                                            paddingBottom: '4px',
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.color = COLORS.primary;
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.color = transparent ? COLORS.white : COLORS.gray[700];
-                                        }}
+                                    <div 
+                                        className="hidden sm:flex items-center gap-2 cursor-pointer hover:bg-gray-100 py-1.5 px-3 rounded-full transition-colors"
                                     >
-                                        {currentUser.name}
-                                        <DownOutlined style={{ fontSize: '10px' }} />
-                                    </Space>
+                                        <Avatar 
+                                            size="small" 
+                                            icon={<UserOutlined />} 
+                                            style={{ 
+                                                backgroundColor: transparent ? 'rgba(255,255,255,0.2)' : 'white',
+                                                color: COLORS.primary,
+                                                border: `1px solid ${COLORS.primary}`
+                                            }} 
+                                        />
+                                        <span 
+                                            className="font-medium text-sm"
+                                            style={{
+                                                fontFamily: TYPOGRAPHY.fontFamily.secondary,
+                                                color: transparent ? COLORS.white : COLORS.gray[700],
+                                            }}
+                                        >
+                                            {currentUser.name}
+                                        </span>
+                                        <DownOutlined 
+                                            style={{ 
+                                                fontSize: '10px', 
+                                                color: transparent ? COLORS.white : COLORS.gray[500] 
+                                            }} 
+                                        />
+                                    </div>
                                 </Dropdown>
                             ) : (
                                 <Button
@@ -309,6 +335,7 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
                                     style={{
                                         fontFamily: TYPOGRAPHY.fontFamily.secondary,
                                         height: '48px',
+                                        marginBottom: '8px',
                                     }}
                                 >
                                     Hồ sơ
@@ -324,6 +351,7 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
                                     style={{
                                         fontFamily: TYPOGRAPHY.fontFamily.secondary,
                                         height: '48px',
+                                        marginBottom: '8px',
                                     }}
                                 >
                                     Đơn đặt phòng
