@@ -147,7 +147,13 @@ const UserBookings: React.FC = () => {
                     </div>
 
                     {/* Search and Filter Section */}
-                    <Card className="mb-4" style={{ borderRadius: '8px' }}>
+                    <Card 
+                        className="mb-4" 
+                        style={{ 
+                            borderRadius: '8px',
+                            marginBottom: '14px', 
+                        }}
+                    >
                         <Space direction="vertical" style={{ width: '100%' }} size="middle">
                             {/* Search Input */}
                             <Input
