@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Card, Button, Typography, DatePicker, Spin, List, Segmented, Collapse } from 'antd';
-import { StarOutlined, CalendarOutlined, HistoryOutlined, FormOutlined, FileTextOutlined } from '@ant-design/icons';
+import { Card, Button, Typography, DatePicker, List, Segmented, Collapse, Skeleton } from 'antd';
+import { StarOutlined, CalendarOutlined, HistoryOutlined, FormOutlined, FileTextOutlined, RocketOutlined } from '@ant-design/icons';
 import PreferenceSelector from './components/PreferenceSelector';
 import ItineraryDisplay from './components/ItineraryDisplay';
 import aiPlannerService from '@/services/aiPlanner/aiPlannerService';
@@ -10,10 +10,20 @@ import Notification from '@/components/Notification';
 import dayjs, { Dayjs } from 'dayjs';
 import authService from '@/services/auth/authService';
 import { useNavigate } from 'react-router-dom';
+import '@/pages/user/AIPlanner/AIPlanner.css';
 
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
+
+// Loading messages to cycle through
+const loadingMessages = [
+    'Đang phân tích sở thích của bạn...',
+    'Đang tìm kiếm địa điểm phù hợp...',
+    'Đang lên lịch trình chi tiết...',
+    'Đang tính toán chi phí...',
+    'Sắp hoàn thành rồi...',
+];
 
 const AIPlanner: React.FC = () => {
     const navigate = useNavigate();
@@ -21,7 +31,13 @@ const AIPlanner: React.FC = () => {
     const [userPlans, setUserPlans] = useState<TravelPlan[]>([]);
     const [loading, setLoading] = useState(false);
     const [loadingPlans, setLoadingPlans] = useState(false);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const [hasMorePlans, setHasMorePlans] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const PLANS_PER_PAGE = 10;
     const [message, setMessage] = useState<Message | null>(null);
+    const [isNewPlan, setIsNewPlan] = useState(false); // Track if plan is newly generated
+    const [loadingMessage, setLoadingMessage] = useState(loadingMessages[0]);
     
     // Mobile tab state
     const [mobileTab, setMobileTab] = useState<string>('preferences');
@@ -40,8 +56,10 @@ const AIPlanner: React.FC = () => {
         const fetchUserPlans = async () => {
             setLoadingPlans(true);
             try {
-                const response = await aiPlannerService.getUserPlans({ limit: 10 });
+                const response = await aiPlannerService.getUserPlans({ limit: PLANS_PER_PAGE, page: 1 });
                 setUserPlans(response.plans);
+                setHasMorePlans(response.plans.length === PLANS_PER_PAGE && response.pagination.total > PLANS_PER_PAGE);
+                setCurrentPage(1);
             } catch (error) {
                 console.error('Error fetching user plans:', error);
             } finally {
@@ -52,8 +70,27 @@ const AIPlanner: React.FC = () => {
         fetchUserPlans();
     }, []);
 
+    // Load more plans handler
+    const handleLoadMorePlans = async () => {
+        if (loadingMore || !hasMorePlans) return;
+        
+        setLoadingMore(true);
+        try {
+            const nextPage = currentPage + 1;
+            const response = await aiPlannerService.getUserPlans({ limit: PLANS_PER_PAGE, page: nextPage });
+            setUserPlans(prev => [...prev, ...response.plans]);
+            setCurrentPage(nextPage);
+            setHasMorePlans(response.plans.length === PLANS_PER_PAGE && (nextPage * PLANS_PER_PAGE) < response.pagination.total);
+        } catch (error) {
+            console.error('Error loading more plans:', error);
+        } finally {
+            setLoadingMore(false);
+        }
+    };
+
     const handleViewPlan = (existingPlan: TravelPlan) => {
         setPlan(existingPlan);
+        setIsNewPlan(false); // Not a new plan, no animation
         
         // Populate form with plan's preferences
         if (existingPlan.preferences.travelDates) {
@@ -104,6 +141,16 @@ const AIPlanner: React.FC = () => {
         }
 
         setLoading(true);
+        // On mobile, switch to plan tab immediately to show loading
+        setMobileTab('plan');
+        
+        // Start cycling loading messages
+        let messageIndex = 0;
+        const messageInterval = setInterval(() => {
+            messageIndex = (messageIndex + 1) % loadingMessages.length;
+            setLoadingMessage(loadingMessages[messageIndex]);
+        }, 2500);
+
         try {
             const preferences: UserPreferences = {
                 travelDates: {
@@ -120,26 +167,30 @@ const AIPlanner: React.FC = () => {
             const generatedPlan = await aiPlannerService.generatePlan({
                 preferences,
             });
+            
+            clearInterval(messageInterval);
+            setIsNewPlan(true); // Enable progressive animation
             setPlan(generatedPlan);
             
-            // Refresh plans list
-            const response = await aiPlannerService.getUserPlans({ limit: 10 });
+            // Refresh plans list and reset pagination
+            const response = await aiPlannerService.getUserPlans({ limit: PLANS_PER_PAGE, page: 1 });
             setUserPlans(response.plans);
-            
-            // On mobile, auto-switch to plan tab after generation
-            setMobileTab('plan');
+            setCurrentPage(1);
+            setHasMorePlans(response.plans.length === PLANS_PER_PAGE && response.pagination.total > PLANS_PER_PAGE);
             
             setMessage({
                 type: 'success',
                 text: 'Kế hoạch đã được tạo thành công!',
             });
         } catch (error: any) {
+            clearInterval(messageInterval);
             setMessage({
                 type: 'error',
                 text: error.response?.data?.message || 'Không thể tạo kế hoạch',
             });
         } finally {
             setLoading(false);
+            setLoadingMessage(loadingMessages[0]);
         }
     };
 
@@ -280,78 +331,128 @@ const AIPlanner: React.FC = () => {
 
     // Helper to render previous plans list
     const renderPreviousPlans = () => (
-        <List
-            loading={loadingPlans}
-            dataSource={userPlans}
-            locale={{ emptyText: 'Chưa có kế hoạch nào' }}
-            renderItem={(item) => {
-                const checkIn = item.preferences.travelDates?.checkIn 
-                    ? dayjs(item.preferences.travelDates.checkIn).format('DD/MM/YYYY')
-                    : 'N/A';
-                const checkOut = item.preferences.travelDates?.checkOut
-                    ? dayjs(item.preferences.travelDates.checkOut).format('DD/MM/YYYY')
-                    : 'N/A';
-                
-                // Format group type display
-                let groupDisplay = '';
-                if (item.preferences.groupType) {
-                    const size = item.preferences.groupSize || 1;
-                    switch(item.preferences.groupType) {
-                        case 'solo':
-                            groupDisplay = 'Một mình';
-                            break;
-                        case 'couple':
-                            groupDisplay = 'Cặp đôi';
-                            break;
-                        case 'family':
-                            groupDisplay = `Gia đình (${size} người)`;
-                            break;
-                        case 'friends':
-                            groupDisplay = `Bạn bè (${size} người)`;
-                            break;
+        <div className="max-h-[400px] overflow-y-auto pr-1 custom-scrollbar">
+            <List
+                loading={loadingPlans}
+                dataSource={userPlans}
+                locale={{ emptyText: 'Chưa có kế hoạch nào' }}
+                renderItem={(item) => {
+                    const checkIn = item.preferences.travelDates?.checkIn 
+                        ? dayjs(item.preferences.travelDates.checkIn).format('DD/MM/YYYY')
+                        : 'N/A';
+                    const checkOut = item.preferences.travelDates?.checkOut
+                        ? dayjs(item.preferences.travelDates.checkOut).format('DD/MM/YYYY')
+                        : 'N/A';
+                    
+                    // Format group type display
+                    let groupDisplay = '';
+                    if (item.preferences.groupType) {
+                        const size = item.preferences.groupSize || 1;
+                        switch(item.preferences.groupType) {
+                            case 'solo':
+                                groupDisplay = 'Một mình';
+                                break;
+                            case 'couple':
+                                groupDisplay = 'Cặp đôi';
+                                break;
+                            case 'family':
+                                groupDisplay = `Gia đình (${size} người)`;
+                                break;
+                            case 'friends':
+                                groupDisplay = `Bạn bè (${size} người)`;
+                                break;
+                        }
                     }
-                }
 
-                // Check if this plan is currently being viewed
-                const isActive = plan?.id === item.id;
-                
-                return (
-                    <List.Item
-                        className={`!px-2 cursor-pointer rounded transition-colors ${
-                            isActive 
-                                ? 'bg-[#D4902A]/10 border-l-2 border-[#D4902A] !pl-2' 
-                                : 'hover:bg-gray-50'
-                        }`}
-                        onClick={() => handleViewPlan(item)}
-                    >
-                        <div className="flex items-start gap-2 w-full">
-                            <div className="flex-1">
-                                <Text strong className={`block text-sm ${isActive ? 'text-[#D4902A]' : ''}`}>
-                                    {checkIn} - {checkOut}
-                                </Text>
-                                <Text type="secondary" className="text-xs">
-                                    {groupDisplay}
-                                </Text>
+                    // Check if this plan is currently being viewed
+                    const isActive = plan?.id === item.id;
+                    
+                    return (
+                        <List.Item
+                            className={`!px-2 cursor-pointer rounded transition-colors ${
+                                isActive 
+                                    ? 'bg-[#D4902A]/10 border-l-2 border-[#D4902A] !pl-2' 
+                                    : 'hover:bg-gray-50'
+                            }`}
+                            onClick={() => handleViewPlan(item)}
+                        >
+                            <div className="flex items-start gap-2 w-full">
+                                <div className="flex-1">
+                                    <Text strong className={`block text-sm ${isActive ? 'text-[#D4902A]' : ''}`}>
+                                        {checkIn} - {checkOut}
+                                    </Text>
+                                    <Text type="secondary" className="text-xs">
+                                        {groupDisplay}
+                                    </Text>
+                                </div>
+                                {item.isFavorite && (
+                                    <StarOutlined className="text-base !text-[#D4902A] my-auto" />
+                                )}
                             </div>
-                            {item.isFavorite && (
-                                <StarOutlined className="text-base !text-[#D4902A] my-auto" />
-                            )}
-                        </div>
-                    </List.Item>
-                );
-            }}
-        />
+                        </List.Item>
+                    );
+                }}
+            />
+            {hasMorePlans && (
+                <div className="text-center mt-3 sticky bottom-0 bg-white py-2">
+                    <Button
+                        type="link"
+                        onClick={handleLoadMorePlans}
+                        loading={loadingMore}
+                        className="text-[#D4902A] hover:text-[#bf8125]"
+                    >
+                        Xem thêm
+                    </Button>
+                </div>
+            )}
+        </div>
     );
 
     // Helper to render plan display content
     const renderPlanDisplay = () => (
         <>
             {loading ? (
-                <div className="flex flex-col items-center justify-center py-20">
-                    <Spin size="large" />
-                    <Text className="mt-4 text-lg text-gray-600">
-                        Đang tạo kế hoạch cho bạn...
-                    </Text>
+                <div className="space-y-6">
+                    {/* Animated loading header */}
+                    <div className="text-center py-8">
+                        <div className="inline-flex items-center justify-center w-16 h-16 mb-4 animate-pulse">
+                            <RocketOutlined className="text-3xl text-white animate-bounce" />
+                        </div>
+                        <Title level={4} className="text-gray-700 mb-2">
+                            AI đang lên kế hoạch cho bạn
+                        </Title>
+                        <Text className="text-gray-500 animate-pulse">
+                            {loadingMessage}
+                        </Text>
+                    </div>
+                    
+                    {/* Skeleton cards */}
+                    <div className="space-y-4">
+                        {[1, 2, 3].map((i) => (
+                            <div 
+                                key={i} 
+                                className="border rounded-lg p-4 animate-pulse"
+                                style={{ animationDelay: `${i * 200}ms` }}
+                            >
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+                                    <div className="h-5 bg-gray-200 rounded w-40"></div>
+                                </div>
+                                <Skeleton active paragraph={{ rows: 2 }} />
+                            </div>
+                        ))}
+                    </div>
+                    
+                    {/* Progress indicator */}
+                    <div className="flex justify-center gap-2 pt-4">
+                        {[0, 1, 2, 3, 4].map((i) => (
+                            <div
+                                key={i}
+                                className="w-2 h-2 rounded-full bg-[#D4902A] animate-bounce"
+                                style={{ animationDelay: `${i * 150}ms` }}
+                            ></div>
+                        ))}
+                    </div>
                 </div>
             ) : plan && plan.generatedPlan ? (
                 <div ref={planDisplayRef}>
@@ -370,7 +471,7 @@ const AIPlanner: React.FC = () => {
                             {plan.isFavorite ? 'Yêu thích' : 'Yêu thích'}
                         </Button>
                     </div>
-                    <ItineraryDisplay plan={plan.generatedPlan} />
+                    <ItineraryDisplay plan={plan.generatedPlan} isNewPlan={isNewPlan} />
                 </div>
             ) : (
                 <div className="flex flex-col items-center justify-center py-20 text-center">

@@ -1,5 +1,5 @@
-import React from 'react';
-import { Timeline, Tag, Collapse, Divider } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Timeline, Tag, Collapse, Divider, Skeleton } from 'antd';
 import {
     ClockCircleOutlined,
     EnvironmentOutlined,
@@ -8,9 +8,11 @@ import {
 } from '@ant-design/icons';
 import { GeneratedPlan, ActivityCategory } from '@/types/aiPlanner';
 import { formatPrice } from '@/utils/formatPrice';
+import '@/pages/user/AIPlanner/AIPlanner.css';
 
 interface ItineraryDisplayProps {
     plan: GeneratedPlan;
+    isNewPlan?: boolean; // Flag to trigger progressive animation
 }
 
 const categoryColors: Record<ActivityCategory, string> = {
@@ -24,7 +26,61 @@ const categoryColors: Record<ActivityCategory, string> = {
     [ActivityCategory.RELAXATION]: '#10b981',
 };
 
-const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ plan }) => {
+const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ plan, isNewPlan = false }) => {
+    // Progressive reveal state
+    const [visibleDays, setVisibleDays] = useState<number>(isNewPlan ? 0 : plan.days.length);
+    const [showSummary, setShowSummary] = useState<boolean>(!isNewPlan);
+    const [showSuggestions, setShowSuggestions] = useState<boolean>(!isNewPlan);
+    const [showHanoiTips, setShowHanoiTips] = useState<boolean>(!isNewPlan);
+
+    // Progressive animation effect
+    useEffect(() => {
+        if (!isNewPlan) {
+            setVisibleDays(plan.days.length);
+            setShowSummary(true);
+            setShowSuggestions(true);
+            setShowHanoiTips(true);
+            return;
+        }
+
+        // Reset for new plan
+        setVisibleDays(0);
+        setShowSummary(false);
+        setShowSuggestions(false);
+        setShowHanoiTips(false);
+
+        // Reveal days one by one
+        const dayTimers: NodeJS.Timeout[] = [];
+        plan.days.forEach((_, index) => {
+            const timer = setTimeout(() => {
+                setVisibleDays(index + 1);
+            }, (index + 1) * 600); // 600ms delay between each day
+            dayTimers.push(timer);
+        });
+
+        // Show summary after all days
+        const summaryTimer = setTimeout(() => {
+            setShowSummary(true);
+        }, (plan.days.length + 1) * 600);
+
+        // Show suggestions
+        const suggestionsTimer = setTimeout(() => {
+            setShowSuggestions(true);
+        }, (plan.days.length + 1.5) * 600);
+
+        // Show Hanoi tips
+        const hanoiTipsTimer = setTimeout(() => {
+            setShowHanoiTips(true);
+        }, (plan.days.length + 2) * 600);
+
+        return () => {
+            dayTimers.forEach(clearTimeout);
+            clearTimeout(summaryTimer);
+            clearTimeout(suggestionsTimer);
+            clearTimeout(hanoiTipsTimer);
+        };
+    }, [plan, isNewPlan]);
+
     const formatDate = (date: Date) => {
         return new Date(date).toLocaleDateString('vi-VN', {
             weekday: 'long',
@@ -47,10 +103,17 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ plan }) => {
         return labels[category];
     };
 
-    const items = plan.days.map((day) => ({
+    // Only show visible days
+    const visiblePlanDays = plan.days.slice(0, visibleDays);
+
+    // Animation class helper - only animate for new plans
+    const animateFadeIn = isNewPlan ? 'ai-planner-animate-fadeIn' : '';
+    const animateSlideIn = isNewPlan ? 'ai-planner-animate-slideIn' : '';
+
+    const items = visiblePlanDays.map((day) => ({
         key: day.dayNumber,
         label: (
-            <div className="font-semibold text-lg">
+            <div className={`font-semibold text-lg ${animateFadeIn}`}>
                 Ngày {day.dayNumber} - {formatDate(day.date)}
             </div>
         ),
@@ -59,7 +122,7 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ plan }) => {
                 items={day.activities.map((activity) => ({
                     color: categoryColors[activity.category],
                     children: (
-                        <div className="mb-4">
+                        <div className={`mb-4 ${animateSlideIn}`}>
                             <div className="flex items-center gap-2 mb-2">
                                 <ClockCircleOutlined className="text-gray-500" />
                                 <span className="font-semibold">{activity.time}</span>
@@ -89,48 +152,75 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ plan }) => {
         ),
     }));
 
+    // Skeleton for upcoming days
+    const skeletonDays = isNewPlan && visibleDays < plan.days.length ? (
+        <div className="mt-4 space-y-4">
+            {Array.from({ length: Math.min(2, plan.days.length - visibleDays) }).map((_, i) => (
+                <div key={`skeleton-${i}`} className="border rounded-lg p-4">
+                    <Skeleton active paragraph={{ rows: 3 }} />
+                </div>
+            ))}
+        </div>
+    ) : null;
+
     return (
         <div className="space-y-4">
-            <Collapse items={items} defaultActiveKey={[1]} accordion={false} />
+            {items.length > 0 && (
+                <Collapse 
+                    items={items} 
+                    defaultActiveKey={visiblePlanDays.map(d => d.dayNumber)} 
+                    accordion={false} 
+                />
+            )}
+            
+            {skeletonDays}
 
-            <Divider />
-
-            <div className="p-4 rounded-lg mb-4">
-                <div className="flex items-center justify-between">
-                    <span className="text-xl font-semibold text-gray-800">
-                        Tổng Chi Phí Ước Tính
-                    </span>
-                    <span className="text-xl font-bold">
-                        {formatPrice(plan.totalEstimatedCost)}
-                    </span>
-                </div>
-            </div>
-
-            <Divider />
-
-            {plan.suggestions && plan.suggestions.length > 0 && (
-                <div className="mb-4">
-                    <p className="font-semibold text-lg !mb-2 flex items-center gap-2">
-                        <InfoCircleOutlined className="text-[#D4902A]" />
-                        Lời Khuyên Chung
-                    </p>
-                    <ul className="list-disc list-inside space-y-1 text-gray-700">
-                        {plan.suggestions.map((tip, index) => (
-                            <li key={index}>{tip}</li>
-                        ))}
-                    </ul>
-                </div>
+            {showSummary && (
+                <>
+                    <Divider className={animateFadeIn} />
+                    <div className={`p-4 mb-4 ${animateFadeIn}`}>
+                        <div className="flex items-center justify-between">
+                            <span className="text-xl font-semibold text-gray-800">
+                                Tổng Chi Phí Ước Tính
+                            </span>
+                            <span className="text-xl font-bold">
+                                {formatPrice(plan.totalEstimatedCost)}
+                            </span>
+                        </div>
+                    </div>
+                </>
             )}
 
-            {plan.hanoiTips && plan.hanoiTips.length > 0 && (
-                <div>
+            {showSuggestions && plan.suggestions && plan.suggestions.length > 0 && (
+                <>
+                    <Divider className={animateFadeIn} />
+                    <div className={`mb-4 ${animateFadeIn}`}>
+                        <p className="font-semibold text-lg !mb-2 flex items-center gap-2">
+                            <InfoCircleOutlined />
+                            Lời Khuyên Chung
+                        </p>
+                        <ul className="list-disc list-inside space-y-1 text-gray-700">
+                            {plan.suggestions.map((tip, index) => (
+                                <li key={index} className={animateSlideIn} style={isNewPlan ? { animationDelay: `${index * 100}ms` } : undefined}>
+                                    {tip}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                </>
+            )}
+
+            {showHanoiTips && plan.hanoiTips && plan.hanoiTips.length > 0 && (
+                <div className={animateFadeIn}>
                     <p className="font-semibold text-lg !mb-2 flex items-center gap-2">
-                        <InfoCircleOutlined className="text-[#8B1A1A]" />
+                        <InfoCircleOutlined />
                         Lời Khuyên Về Hà Nội
                     </p>
                     <ul className="list-disc list-inside space-y-1 text-gray-700">
                         {plan.hanoiTips.map((tip, index) => (
-                            <li key={index}>{tip}</li>
+                            <li key={index} className={animateSlideIn} style={isNewPlan ? { animationDelay: `${index * 100}ms` } : undefined}>
+                                {tip}
+                            </li>
                         ))}
                     </ul>
                 </div>

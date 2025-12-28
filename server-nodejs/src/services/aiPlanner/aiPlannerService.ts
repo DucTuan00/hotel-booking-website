@@ -32,40 +32,110 @@ function mapCategoryToEnglish(category: string): string {
 }
 
 /**
+ * Remove markdown bold formatting from text
+ */
+function removeBoldFormatting(text: string): string {
+    return text.replace(/\*\*(.*?)\*\*/g, '$1');
+}
+
+/**
+ * Clean text fields in plan data to remove markdown formatting
+ */
+function cleanPlanTextFields(planData: any): any {
+    if (planData.days) {
+        planData.days.forEach((day: any) => {
+            if (day.activities) {
+                day.activities.forEach((activity: any) => {
+                    if (activity.title) activity.title = removeBoldFormatting(activity.title);
+                    if (activity.description) activity.description = removeBoldFormatting(activity.description);
+                    if (activity.location) activity.location = removeBoldFormatting(activity.location);
+                });
+            }
+        });
+    }
+    if (planData.suggestions) {
+        planData.suggestions = planData.suggestions.map((s: string) => removeBoldFormatting(s));
+    }
+    if (planData.hanoiTips) {
+        planData.hanoiTips = planData.hanoiTips.map((t: string) => removeBoldFormatting(t));
+    }
+    return planData;
+}
+
+/**
+ * Attempt to fix and parse potentially malformed JSON from AI response
+ */
+function parseAIResponse(text: string): any {
+    // Clean up markdown code blocks if present
+    let cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    
+    // Try direct parse first
+    try {
+        const parsed = JSON.parse(cleaned);
+        return cleanPlanTextFields(parsed);
+    } catch (e) {
+        // If failed, try to fix common issues
+    }
+    
+    // Try to fix trailing commas (common AI mistake)
+    cleaned = cleaned.replace(/,\s*}/g, '}').replace(/,\s*]/g, ']');
+    
+    // Try to fix unquoted property names
+    cleaned = cleaned.replace(/(\{|\,)\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":');
+    
+    // Try to fix single quotes to double quotes
+    cleaned = cleaned.replace(/'/g, '"');
+    
+    try {
+        const parsed = JSON.parse(cleaned);
+        return cleanPlanTextFields(parsed);
+    } catch (e) {
+        // If still failed, try to extract valid JSON object
+        const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+            try {
+                const parsed = JSON.parse(jsonMatch[0]);
+                return cleanPlanTextFields(parsed);
+            } catch (innerError) {
+                throw new Error('AI response is not valid JSON. Please try again.');
+            }
+        }
+        throw new Error('AI response is not valid JSON. Please try again.');
+    }
+}
+
+/**
  * Generate AI travel plan based on user preferences
  */
 export async function generatePlan(
     input: GeneratePlanInput
 ): Promise<PlanResponse> {
+    const { userId, preferences } = input;
+    
+    // Variables to track AI response for metadata
+    let aiResponse: any = null;
+    let planData: any = null;
+
     try {
-        const { userId, preferences } = input;
-
-        // Create plan document
-        const plan = await AITravelPlanner.create({
-            userId,
-            preferences,
-            aiGenerationMetadata: {
-                model: 'gemini-2.5-flash',
-            },
-            status: 'active',
-        });
-
-        // Generate itinerary using Gemini
+        // Step 1: Generate itinerary using Gemini FIRST (before creating DB record)
         const systemPrompt = buildSystemPrompt();
         const itineraryPrompt = buildItineraryPrompt(preferences);
         const fullPrompt = `${systemPrompt}\n\n${itineraryPrompt}`;
 
         const result = await geminiModel.generateContent(fullPrompt);
-        const response = result.response;
-        let text = response.text();
+        aiResponse = result.response;
+        const text = aiResponse.text();
 
-        // Clean up markdown if present
-        text = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+        // Step 2: Parse and validate AI response
+        planData = parseAIResponse(text);
+        
+        // Validate required structure
+        if (!planData.days || !Array.isArray(planData.days)) {
+            throw new Error('AI response missing required "days" array. Please try again.');
+        }
 
-        const planData = JSON.parse(text);
-
-        // Build allowed categories based on user's selected interests
-        const allowedCategories = new Set<string>(['dining', 'hotel']); // Always allow dining and hotel
+        // Build allowed categories based on user's selected interests ONLY
+        const allowedCategories = new Set<string>();
         if (preferences.interests) {
             preferences.interests.forEach(interest => {
                 const interestLower = interest.toLowerCase().trim();
@@ -105,7 +175,6 @@ export async function generatePlan(
         if (preferences.travelDates) {
             // Parse YYYY-MM-DD without timezone conversion
             const [year, month, dayOfMonth] = preferences.travelDates.checkIn.split('-').map(Number);
-            const checkInDate = new Date(year, month - 1, dayOfMonth); // month is 0-indexed
             
             planData.days = planData.days.map((dayPlan: any, index: number) => {
                 const dayDate = new Date(year, month - 1, dayOfMonth + index);
@@ -116,24 +185,24 @@ export async function generatePlan(
             });
         }
 
-        // Save generated plan
-        plan.generatedPlan = {
-            days: planData.days || [],
-            suggestions: planData.suggestions || [],
-            hanoiTips: planData.hanoiTips || [],
-            totalEstimatedCost: totalCost,
-        };
-
-        plan.status = 'completed';
-
-        // Update AI metadata
-        if (response.usageMetadata) {
-            plan.aiGenerationMetadata.promptTokens = response.usageMetadata.promptTokenCount || 0;
-            plan.aiGenerationMetadata.completionTokens = response.usageMetadata.candidatesTokenCount || 0;
-        }
-        plan.aiGenerationMetadata.lastGeneratedAt = new Date();
-
-        await plan.save();
+        // Step 3: Only create DB record AFTER successful AI generation and parsing
+        const plan = await AITravelPlanner.create({
+            userId,
+            preferences,
+            aiGenerationMetadata: {
+                model: 'gemini-2.5-flash',
+                promptTokens: aiResponse.usageMetadata?.promptTokenCount || 0,
+                completionTokens: aiResponse.usageMetadata?.candidatesTokenCount || 0,
+                lastGeneratedAt: new Date(),
+            },
+            status: 'completed',
+            generatedPlan: {
+                days: planData.days || [],
+                suggestions: planData.suggestions || [],
+                hanoiTips: planData.hanoiTips || [],
+                totalEstimatedCost: totalCost,
+            },
+        });
 
         return mapPlanToResponse(plan);
     } catch (error: any) {

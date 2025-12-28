@@ -60,6 +60,10 @@ const PreferenceSelector: React.FC<PreferenceSelectorProps> = ({
     const toggleInterest = (value: string) => {
         if (interests.includes(value)) {
             onInterestsChange(interests.filter((i) => i !== value));
+            // Clear dietary restrictions if "ẩm thực" is deselected
+            if (value === 'ẩm thực' && dietaryRestrictions.length > 0) {
+                onDietaryRestrictionsChange([]);
+            }
         } else {
             onInterestsChange([...interests, value]);
         }
@@ -72,6 +76,9 @@ const PreferenceSelector: React.FC<PreferenceSelectorProps> = ({
             onDietaryRestrictionsChange([...dietaryRestrictions, value]);
         }
     };
+
+    // Check if "ẩm thực" is selected
+    const isFoodSelected = interests.includes('ẩm thực');
 
     return (
         <div className="space-y-4">
@@ -146,7 +153,7 @@ const PreferenceSelector: React.FC<PreferenceSelectorProps> = ({
 
             <Divider className="my-4" />
 
-            <div>
+            <div className={!isFoodSelected ? 'opacity-50' : ''}>
                 <Text strong className="block mb-2">
                     Hạn chế ăn uống (tùy chọn)
                 </Text>
@@ -155,8 +162,8 @@ const PreferenceSelector: React.FC<PreferenceSelectorProps> = ({
                         <Tag.CheckableTag
                             key={option.value}
                             checked={dietaryRestrictions.includes(option.value)}
-                            onChange={() => toggleDietary(option.value)}
-                            className="px-3 py-1 text-sm cursor-pointer"
+                            onChange={() => isFoodSelected && toggleDietary(option.value)}
+                            className={`px-3 py-1 text-sm ${isFoodSelected ? 'cursor-pointer' : 'cursor-not-allowed'}`}
                             style={{
                                 backgroundColor: dietaryRestrictions.includes(option.value) ? '#8B1A1A' : undefined,
                                 borderColor: dietaryRestrictions.includes(option.value) ? '#8B1A1A' : undefined,

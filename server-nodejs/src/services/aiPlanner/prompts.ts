@@ -209,9 +209,9 @@ Tạo phản hồi JSON với cấu trúc CHÍNH XÁC sau (chỉ trả về JSON
 **Yêu cầu BẮT BUỘC**:
 
 1. **HOẠT ĐỘNG CHO PHÉP**:
-   - Luôn bao gồm: Bữa sáng, trưa, tối (category: "dining") + Nghỉ tại khách sạn (category: "hotel")
-   - CHỈ tạo hoạt động giải trí/vui chơi TỪ các sở thích khách CHỌN ở phần " SỞ THÍCH KHÁCH ĐÃ CHỌN"
-   - **VÍ DỤ**: Nếu khách chỉ chọn "ẩm thực, giải trí, mua sắm" → CHỈ được dùng dining + shopping + nightlife. KHÔNG ĐƯỢC thêm sightseeing/relaxation/spa!
+   - CHỈ tạo hoạt động TỪ các sở thích khách ĐÃ CHỌN ở phần "SỞ THÍCH KHÁCH ĐÃ CHỌN"
+   - KHÔNG tự động thêm bữa ăn (dining) nếu khách KHÔNG chọn "ẩm thực"
+   - VÍ DỤ: Nếu khách chỉ chọn "mua sắm, thư giãn" → CHỈ được dùng shopping + relaxation. KHÔNG ĐƯỢC thêm dining/sightseeing/nightlife!
 
 2. **MAPPING SỞ THÍCH → CATEGORY**:
    - "ẩm thực" → category: "dining" 
@@ -221,10 +221,13 @@ Tạo phản hồi JSON với cấu trúc CHÍNH XÁC sau (chỉ trả về JSON
    - "thư giãn" → category: "relaxation" (spa, massage, dạo công viên - KHÔNG phải bar/club)
 
 3. **QUY TẮC TUYỆT ĐỐI**:
+   - Nếu khách KHÔNG chọn "ẩm thực" → KHÔNG tạo activity có category "dining"
    - Nếu khách KHÔNG chọn "tham quan" → KHÔNG tạo activity có category "sightseeing"
    - Nếu khách KHÔNG chọn "thư giãn" → KHÔNG tạo activity có category "relaxation"
    - Nếu khách KHÔNG chọn "giải trí" → KHÔNG tạo activity có category "nightlife"
+   - Nếu khách KHÔNG chọn "mua sắm" → KHÔNG tạo activity có category "shopping"
    - Chỉ dùng địa điểm từ section tương ứng với sở thích đã chọn
+   - Lên kế hoạch đầy đủ cho cả ngày với các hoạt động từ sở thích đã chọn
 
 4. **THỜI GIAN & CHI PHÍ**:
 - Bắt đầu ngày lúc 8-9 giờ sáng, kết thúc lúc 9-10 giờ tối
@@ -235,6 +238,11 @@ Tạo phản hồi JSON với cấu trúc CHÍNH XÁC sau (chỉ trả về JSON
 - Phù hợp với mức ngân sách (tiết kiệm/trung bình/sang trọng)
 - Cung cấp 3-5 gợi ý chung
 - Cung cấp 3-5 lời khuyên về Hà Nội
+
+5. **ĐỊNH DẠNG VĂN BẢN**:
+- KHÔNG sử dụng bold text (** **) trong bất kỳ trường nào
+- KHÔNG sử dụng markdown formatting trong description, suggestions, hanoiTips
+- Viết văn bản thuần túy, không có ký tự đặc biệt định dạng
 
 Chỉ trả về đối tượng JSON, không có văn bản hoặc định dạng markdown bổ sung.`;
 
