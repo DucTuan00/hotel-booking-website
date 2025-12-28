@@ -35,10 +35,10 @@ const ServiceIntroduction: React.FC<ServiceIntroductionProps> = ({ information, 
                                             <img 
                                                 src={images[0]?.imagePath || '/images/default-image.jpg'} 
                                                 alt={images[0]?.title || 'Spa Image'} 
-                                                className="h-48 object-cover"
+                                                className="!h-48 object-cover"
                                             />
                                         }
-                                        className="overflow-hidden hover:shadow-lg transition-shadow duration-300"
+                                        className="overflow-hidden h-48 hover:shadow-lg transition-shadow duration-300"
                                         styles={{
                                             body: {
                                                 padding: 0 
@@ -53,10 +53,10 @@ const ServiceIntroduction: React.FC<ServiceIntroductionProps> = ({ information, 
                                                 <img 
                                                     src={images[1]?.imagePath || '/images/default-image.jpg'} 
                                                     alt={images[1]?.title || 'Spa Image'} 
-                                                    className="h-48 object-cover"
+                                                    className="!h-48 object-cover"
                                                 />
                                             }
-                                            className="overflow-hidden hover:shadow-lg transition-shadow duration-300"
+                                            className="overflow-hidden h-48 hover:shadow-lg transition-shadow duration-300"
                                             styles={{
                                             body: {
                                                 padding: 0 

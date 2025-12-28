@@ -81,10 +81,6 @@
 
 /* Responsive Adjustments */
 @media (max-width: 768px) {
-  .search-results-page {
-    padding-top: 60px;
-  }
-  
   .room-card {
     margin-bottom: 1rem;
   }

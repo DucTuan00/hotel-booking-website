@@ -36,7 +36,7 @@ const RoomCard: React.FC<RoomCardProps> = ({
           <img
             src={firstImage}
             alt={room.name}
-            className="w-full h-full object-cover transition-transform duration-300"
+            className="w-full !h-full object-cover transition-transform duration-300"
           />
         </div>
       }

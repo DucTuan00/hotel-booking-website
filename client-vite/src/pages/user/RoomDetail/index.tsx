@@ -95,7 +95,7 @@ const RoomDetail: React.FC = () => {
         <img
           src={room.images && room.images.length > 0 ? room.images[0].path : "/images/default-image.jpg"}
           alt={room.name}
-          className="w-full h-full object-cover"
+          className="w-full !h-full object-cover"
         />
         
         <div className="absolute inset-0 flex items-center justify-center">
