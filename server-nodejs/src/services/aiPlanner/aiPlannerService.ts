@@ -105,6 +105,54 @@ function parseAIResponse(text: string): any {
 }
 
 /**
+ * Call Gemini API with retry logic for JSON parsing errors
+ * @param fullPrompt - The complete prompt to send to Gemini
+ * @param maxRetries - Maximum number of retries (default: 2)
+ * @returns Parsed plan data and AI response metadata
+ */
+async function callGeminiWithRetry(
+    fullPrompt: string,
+    maxRetries: number = 2
+): Promise<{ planData: any; aiResponse: any }> {
+    let lastError: Error | null = null;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            const result = await geminiModel.generateContent(fullPrompt);
+            const aiResponse = result.response;
+            const text = aiResponse.text();
+            
+            // Parse and validate AI response
+            const planData = parseAIResponse(text);
+            
+            // Validate required structure
+            if (!planData.days || !Array.isArray(planData.days)) {
+                throw new Error('AI response missing required "days" array.');
+            }
+            
+            // Success - return data
+            return { planData, aiResponse };
+        } catch (error: any) {
+            lastError = error;
+            console.warn(`[AI Planner] Attempt ${attempt}/${maxRetries} failed: ${error.message}`);
+            
+            // Don't retry if it's not a JSON parsing error
+            if (!error.message.includes('JSON') && !error.message.includes('days')) {
+                throw error;
+            }
+            
+            // If we have more retries, continue
+            if (attempt < maxRetries) {
+                console.log(`[AI Planner] Retrying...`);
+            }
+        }
+    }
+    
+    // All retries exhausted
+    throw new Error(lastError?.message || 'Failed to generate valid AI response after retries.');
+}
+
+/**
  * Generate AI travel plan based on user preferences
  */
 export async function generatePlan(
@@ -117,22 +165,15 @@ export async function generatePlan(
     let planData: any = null;
 
     try {
-        // Step 1: Generate itinerary using Gemini FIRST (before creating DB record)
+        // Step 1: Generate itinerary using Gemini with retry logic
         const systemPrompt = buildSystemPrompt();
         const itineraryPrompt = buildItineraryPrompt(preferences);
         const fullPrompt = `${systemPrompt}\n\n${itineraryPrompt}`;
 
-        const result = await geminiModel.generateContent(fullPrompt);
-        aiResponse = result.response;
-        const text = aiResponse.text();
-
-        // Step 2: Parse and validate AI response
-        planData = parseAIResponse(text);
-        
-        // Validate required structure
-        if (!planData.days || !Array.isArray(planData.days)) {
-            throw new Error('AI response missing required "days" array. Please try again.');
-        }
+        // Call Gemini with retry (max 2 attempts)
+        const result = await callGeminiWithRetry(fullPrompt, 2);
+        aiResponse = result.aiResponse;
+        planData = result.planData;
 
         // Build allowed categories based on user's selected interests ONLY
         const allowedCategories = new Set<string>();
