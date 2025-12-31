@@ -15,6 +15,7 @@ import SpaImages from '@/pages/admin/Spa/Images';
 import SpaBookingList from '@/pages/admin/Spa/Bookings';
 import CelebrationItemList from '@/pages/admin/CelebrationItem';
 import ReviewList from '@/pages/admin/Review/List';
+import AdminProfile from '@/pages/admin/Profile';
 
 export {
     DashboardPage,
@@ -33,5 +34,6 @@ export {
     SpaImages,
     SpaBookingList,
     CelebrationItemList,
-    ReviewList
+    ReviewList,
+    AdminProfile
 }

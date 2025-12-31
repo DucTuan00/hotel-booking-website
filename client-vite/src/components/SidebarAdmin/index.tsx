@@ -1,19 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Layout, Menu, Button, Typography, Drawer } from 'antd';
+import { Layout, Menu, Typography, Drawer } from 'antd';
 import {
   DashboardOutlined,
   UserOutlined,
   HomeOutlined,
   CalendarOutlined,
   TagOutlined,
-  LogoutOutlined,
   CoffeeOutlined,
   MoonOutlined,
   GiftOutlined,
   StarOutlined
 } from '@ant-design/icons';
-import authService from '@/services/auth/authService';
 
 const { Sider } = Layout;
 const { Text } = Typography;
@@ -29,7 +27,6 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
   // Check if screen is mobile size
@@ -137,21 +134,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     },
   ];
 
-  const handleLogout = async () => {
-    setIsLoading(true);
-    try {
-      await authService.logout();
-      localStorage.removeItem('isAuthenticated');
-      navigate('/login');
-    } catch (error) {
-      console.error('Lỗi khi logout:', error);
-      localStorage.removeItem('isAuthenticated');
-      navigate('/login');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleMenuClick = ({ key }: { key: string }) => {
     // Direct navigation for simple keys that are paths
     if (key.startsWith('/dashboard')) {
@@ -213,33 +195,6 @@ const Sidebar: React.FC<SidebarProps> = ({
             items={menuItems}
           />
         </div>
-      </div>
-
-      {/* Logout Section */}
-      <div style={{ 
-        padding: '16px',
-        borderTop: '1px solid #f0f0f0',
-        background: '#fafafa',
-        flexShrink: 0,
-      }}>
-        <Button
-          type="text"
-          danger
-          icon={<LogoutOutlined />}
-          onClick={handleLogout}
-          loading={isLoading}
-          style={{
-            width: '100%',
-            height: '48px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'flex-start',
-            borderRadius: '8px',
-            fontWeight: 500,
-          }}
-        >
-          Đăng xuất
-        </Button>
       </div>
     </div>
   );
