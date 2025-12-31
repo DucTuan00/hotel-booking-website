@@ -4,4 +4,6 @@
     <string name="title_activity_main"> Hotel Boutique</string>
     <string name="package_name">com.ductuan.hotelboutique</string>
     <string name="custom_url_scheme">com.ductuan.hotelboutique</string>
+    <!-- Google Sign-In Web Client ID (from Google Cloud Console) -->
+    <string name="server_client_id">309905678875-n3uaf5tdgqbrmg6bd4o09ar55s8cqegl.apps.googleusercontent.com</string>
 </resources>

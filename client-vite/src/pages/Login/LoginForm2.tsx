@@ -13,9 +13,12 @@ import {
     PhoneOutlined,
     MailOutlined,
 } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 import { COLORS, TYPOGRAPHY } from "@/config/constants";
 import Notification from "@/components/Notification";
 import { Message } from '@/types/message';
+import { isMobile } from '@/utils/auth';
+import { signInWithGoogle } from '@/services/auth/googleAuthService';
 
 const { Text } = Typography;
 const { TabPane } = Tabs;
@@ -47,7 +50,9 @@ const LoginForm2: React.FC<LoginFormProps> = ({
     error,
 }) => {
     const [loading, setLoading] = useState(false);
+    const [googleLoading, setGoogleLoading] = useState(false);
     const [message, setMessage] = useState<Message | null>(null);
+    const navigate = useNavigate();
 
     const handleFormSubmit = (type: "login" | "register") => {
         return (e: React.FormEvent<HTMLFormElement>) => {
@@ -62,10 +67,35 @@ const LoginForm2: React.FC<LoginFormProps> = ({
         };
     };
 
-    const handleGoogleLogin = () => {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
-        const backendUrl = apiBaseUrl.replace('/api', ''); 
-        window.location.href = `${backendUrl}/api/auth/google`;
+    const handleGoogleLogin = async () => {
+        // Check if on mobile - use native Google Sign-In
+        if (isMobile()) {
+            setGoogleLoading(true);
+            try {
+                const result = await signInWithGoogle();
+                console.log('Google login success:', result);
+                
+                // Navigate based on role
+                if (result.role === 'admin') {
+                    navigate('/dashboard?auth=success');
+                } else {
+                    navigate('/?auth=success');
+                }
+            } catch (err: any) {
+                console.error('Google login error:', err);
+                setMessage({ 
+                    type: 'error', 
+                    text: err.message || 'Đăng nhập Google thất bại' 
+                });
+            } finally {
+                setGoogleLoading(false);
+            }
+        } else {
+            // Web: use existing OAuth redirect flow
+            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+            const backendUrl = apiBaseUrl.replace('/api', ''); 
+            window.location.href = `${backendUrl}/api/auth/google`;
+        }
     };
 
     return (
@@ -357,6 +387,8 @@ const LoginForm2: React.FC<LoginFormProps> = ({
                         <Button
                             className="w-full h-14 rounded-full border-2 hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-3"
                             size="large"
+                            loading={googleLoading}
+                            disabled={googleLoading}
                             style={{
                                 borderColor: '#dadce0',
                                 backgroundColor: '#fff',
@@ -367,16 +399,18 @@ const LoginForm2: React.FC<LoginFormProps> = ({
                             }}
                             onClick={handleGoogleLogin}
                         >
-                            <img 
-                                src="/images/google.png" 
-                                alt="Google" 
-                                style={{ 
-                                    width: '20px', 
-                                    height: '20px',
-                                    objectFit: 'contain'
-                                }} 
-                            />
-                            <span>Đăng nhập bằng Google</span>
+                            {!googleLoading && (
+                                <img 
+                                    src="/images/google.png" 
+                                    alt="Google" 
+                                    style={{ 
+                                        width: '20px', 
+                                        height: '20px',
+                                        objectFit: 'contain'
+                                    }} 
+                                />
+                            )}
+                            <span>{googleLoading ? 'Đang đăng nhập...' : 'Đăng nhập bằng Google'}</span>
                         </Button>
                     </Card>
                 </div>

@@ -154,3 +154,31 @@ export async function googleCallback(req: Request, res: Response, next: NextFunc
         res.redirect(`${process.env.FRONTEND_URL}/login?error=server_error`);
     }
 };
+
+/**
+ * Handle Google Sign-In from mobile app (Native)
+ * Receives idToken from Google Sign-In SDK, verifies it, and returns JWT tokens
+ */
+export async function googleMobileLogin(req: Request, res: Response, next: NextFunction) {
+    try {
+        const { idToken } = req.body;
+
+        if (!idToken) {
+            return next(new ApiError('Google idToken is required', 400));
+        }
+
+        const result = await authService.verifyGoogleIdToken(idToken);
+
+        // For mobile, return tokens in response body (not cookies)
+        // because mobile apps handle tokens via localStorage
+        res.json({
+            message: 'Google login successful',
+            accessToken: result.accessToken,
+            refreshToken: result.refreshToken,
+            role: result.role,
+        });
+    } catch (error: any) {
+        console.error('Google mobile login error:', error);
+        next(new ApiError(error.message || 'Google authentication failed', 401));
+    }
+};

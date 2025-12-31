@@ -3,12 +3,16 @@ import User from '@/models/User';
 import generateToken from '@/utils/generateToken';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import jwtConfig from '@/config/jwt';
+import { OAuth2Client } from 'google-auth-library';
 import {
     RegisterInput,
     LoginInput,
     UserIdInput,
     AccessTokenInput
 } from '@/types/auth';
+
+// Initialize Google OAuth2 Client for verifying idToken
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 export async function register(args: RegisterInput) {
     const { email, password, name, phone, role } = args;
@@ -145,4 +149,59 @@ export async function generateTokensForUser(user: any) {
         id: user._id,
         role: user.role,
     };
+};
+/**
+ * Verify Google idToken from mobile native sign-in
+ * and return user with generated JWT tokens
+ */
+export async function verifyGoogleIdToken(idToken: string) {
+    // Verify the idToken with Google
+    const ticket = await googleClient.verifyIdToken({
+        idToken,
+        audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    if (!payload) {
+        throw new Error('Invalid Google token payload');
+    }
+
+    const { sub: googleId, email, name, picture } = payload;
+
+    if (!email) {
+        throw new Error('Email not provided by Google');
+    }
+
+    // Find or create user (same logic as passport.ts)
+    let user = await User.findOne({ googleId });
+
+    if (user) {
+        // Update name if changed
+        if (name && user.name !== name) {
+            user.name = name;
+            await user.save();
+        }
+    } else {
+        // Check if user exists with same email
+        user = await User.findOne({ email });
+
+        if (user) {
+            // Link Google account to existing user
+            user.googleId = googleId;
+            await user.save();
+        } else {
+            // Create new user
+            user = new User({
+                googleId,
+                name: name || '',
+                email,
+                phone: '',
+                password: '',
+            });
+            await user.save();
+        }
+    }
+
+    // Generate JWT tokens
+    return generateTokensForUser(user);
 };

@@ -19,6 +19,12 @@ const config: CapacitorConfig = {
     },
     App: {
       launchUrl: 'hotelboutique://'
+    },
+    GoogleAuth: {
+      scopes: ['profile', 'email'],
+      // Web Client ID from Google Cloud Console (NOT Android Client ID)
+      serverClientId: process.env.VITE_GOOGLE_CLIENT_ID || '',
+      forceCodeForRefreshToken: true
     }
   }
 };
