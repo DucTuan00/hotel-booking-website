@@ -20,7 +20,8 @@ export async function register(req: Request, res: Response, next: NextFunction) 
 const cookieOptions: CookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    // Use 'none' for cross-domain (Vercel frontend + Render backend)
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
 };
 
