@@ -80,9 +80,15 @@ export async function logout(req: Request, res: Response, next: NextFunction) {
         }
         const result = await authService.logout({ userId });
 
-        // Delete accessToken in cookie when logout
-        res.clearCookie('accessToken');
-        res.clearCookie('refreshToken');
+        // CRITICAL: Clear cookies with SAME options used when setting them
+        const clearOptions: CookieOptions = {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        };
+        
+        res.clearCookie('accessToken', clearOptions);
+        res.clearCookie('refreshToken', clearOptions);
         res.json(result);
     } catch (error: any) {
         next(new ApiError(error.message, 400));
