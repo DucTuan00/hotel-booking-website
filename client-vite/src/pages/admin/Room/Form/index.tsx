@@ -28,7 +28,10 @@ const RoomForm: React.FC<RoomFormProps> = ({ visible, onCancel, onSubmit, initia
     useEffect(() => {
         const fetchAmenities = async () => {
             try {
-                const data = await amenityService.getAllAmenities({});
+                const data = await amenityService.getAllAmenities({
+                    page: 1,
+                    pageSize: 100,
+                });
                 setAvailableAmenities(data.amenities);
             } catch (error) {
                 console.error("Could not fetch amenities:", error);
