@@ -14,14 +14,14 @@ import {
   CalendarOutlined,
   DollarCircleOutlined,
 } from '@ant-design/icons';
-import { LineChart, Line, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, ResponsiveContainer, Legend } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, ResponsiveContainer, Legend, CartesianGrid } from 'recharts';
 import { useLocation } from 'react-router-dom';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import userService from '@/services/users/userService';
 import roomService from '@/services/rooms/roomService';
 import bookingService from '@/services/bookings/bookingService';
 import { Booking as ApiBooking, BookingStatus } from '@/types/booking';
-import { getStatusText, getStatusColor } from '@/utils/status';
+import { getStatusText, getStatusColor } from '@/utils/status'; 
 
 const { Title } = Typography;
 
@@ -34,6 +34,21 @@ interface StatusChartData {
   name: string;
   value: number;
 }
+
+// Map Ant Design color names to hex colors for Pie chart
+const STATUS_COLOR_MAP: { [key: string]: string } = {
+  green: '#52c41a',
+  orange: '#faad14',
+  red: '#f5222d',
+  blue: '#1890ff',
+  default: '#d9d9d9',
+};
+
+// Get hex color for a booking status
+const getStatusHexColor = (status: BookingStatus): string => {
+  const colorName = getStatusColor(status);
+  return STATUS_COLOR_MAP[colorName] || STATUS_COLOR_MAP.default;
+};
 
 // Helper to get user display name from userId field
 function getUserName(userId: ApiBooking['userId']): string {
@@ -59,8 +74,6 @@ const DashboardPage: React.FC = () => {
   const [revenueData, setRevenueData] = useState<RevenueChartData[]>([]);
   const [statusData, setStatusData] = useState<StatusChartData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
   // Clean up URL after successful login
   useEffect(() => {
@@ -100,31 +113,32 @@ const DashboardPage: React.FC = () => {
       );
       setActualRevenue(totalRevenue);
 
-      // Create data for revenue chart (group by month from checkOut date)
-      const revenueByMonth: { [key: string]: { revenue: number; date: Date } } = {};
-      completedBookings.forEach((booking) => {
+      // Create data for revenue chart (group by month from checkOut date - current year only)
+      const currentYear = new Date().getFullYear();
+      const currentYearBookings = completedBookings.filter((booking) => {
         const checkOutDate = new Date(booking.checkOut);
-        const monthKey = checkOutDate.toLocaleString('vi-VN', { month: 'short', year: 'numeric' });
-        
-        if (!revenueByMonth[monthKey]) {
-          // Store first day of month for sorting
-          revenueByMonth[monthKey] = {
-            revenue: 0,
-            date: new Date(checkOutDate.getFullYear(), checkOutDate.getMonth(), 1)
-          };
-        }
-        revenueByMonth[monthKey].revenue += booking.totalPrice;
+        return checkOutDate.getFullYear() === currentYear;
       });
       
-      // Convert to array and sort by date (oldest to newest)
-      const revenueChartData: RevenueChartData[] = Object.entries(revenueByMonth)
-        .map(([name, data]) => ({
-          name,
-          revenue: Number(data.revenue),
-          sortDate: data.date
-        }))
-        .sort((a, b) => a.sortDate.getTime() - b.sortDate.getTime())
-        .map(({ name, revenue }) => ({ name, revenue }));
+      // Initialize all 12 months with 0 revenue
+      const monthNames = ['Th1', 'Th2', 'Th3', 'Th4', 'Th5', 'Th6', 'Th7', 'Th8', 'Th9', 'Th10', 'Th11', 'Th12'];
+      const revenueByMonth: { [key: number]: number } = {};
+      for (let i = 0; i < 12; i++) {
+        revenueByMonth[i] = 0;
+      }
+      
+      // Sum revenue by month
+      currentYearBookings.forEach((booking) => {
+        const checkOutDate = new Date(booking.checkOut);
+        const month = checkOutDate.getMonth();
+        revenueByMonth[month] += booking.totalPrice;
+      });
+      
+      // Convert to array for chart
+      const revenueChartData: RevenueChartData[] = monthNames.map((name, index) => ({
+        name,
+        revenue: revenueByMonth[index],
+      }));
       
       setRevenueData(revenueChartData);
 
@@ -256,14 +270,50 @@ const DashboardPage: React.FC = () => {
       <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
         {/* Revenue Chart */}
         <Col xs={24} lg={12}>
-          <Card title="Doanh thu theo tháng" style={{ height: '400px' }}>
+          <Card 
+            title={`Doanh thu năm ${new Date().getFullYear()}`} 
+            style={{ height: '400px' }}
+          >
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={revenueData}>
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip formatter={(value) => [`${Number(value).toLocaleString('vi-VN')} đ`, 'Doanh thu']} />
-                <Line type="monotone" dataKey="revenue" stroke="#1890ff" strokeWidth={2} />
-              </LineChart>
+              <AreaChart data={revenueData}>
+                <defs>
+                  <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#1890ff" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#1890ff" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis 
+                  dataKey="name" 
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: '#8c8c8c', fontSize: 12 }}
+                />
+                <YAxis 
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: '#8c8c8c', fontSize: 12 }}
+                  tickFormatter={(value) => value >= 1000000 ? `${(value / 1000000).toFixed(0)}M` : value >= 1000 ? `${(value / 1000).toFixed(0)}K` : value}
+                />
+                <Tooltip 
+                  formatter={(value) => [`${Number(value).toLocaleString('vi-VN')} đ`, 'Doanh thu']}
+                  contentStyle={{ 
+                    backgroundColor: '#fff', 
+                    border: '1px solid #e8e8e8',
+                    borderRadius: '8px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+                  }}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="revenue" 
+                  stroke="#1890ff" 
+                  strokeWidth={2}
+                  fill="url(#revenueGradient)"
+                  dot={{ fill: '#1890ff', strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 6, fill: '#1890ff', stroke: '#fff', strokeWidth: 2 }}
+                />
+              </AreaChart>
             </ResponsiveContainer>
           </Card>
         </Col>
@@ -278,17 +328,51 @@ const DashboardPage: React.FC = () => {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  label={({ name, percent, cx, cy, midAngle, outerRadius }) => {
+                    const RADIAN = Math.PI / 180;
+                    const radius = outerRadius * 1.35;
+                    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+                    const statusText = getStatusText(name as BookingStatus);
+                    // Use black text for CHECKED_OUT (gray fill), otherwise use the status color
+                    const textColor = name === BookingStatus.CHECKED_OUT 
+                      ? '#000000' 
+                      : getStatusHexColor(name as BookingStatus);
+                    
+                    return (
+                      <text
+                        x={x}
+                        y={y}
+                        fill={textColor}
+                        textAnchor={x > cx ? 'start' : 'end'}
+                        dominantBaseline="central"
+                        fontSize={12}
+                      >
+                        {`${statusText} ${(percent * 100).toFixed(0)}%`}
+                      </text>
+                    );
+                  }}
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {statusData.map((_entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  {statusData.map((entry) => (
+                    <Cell 
+                      key={`cell-${entry.name}`} 
+                      fill={getStatusHexColor(entry.name as BookingStatus)} 
+                    />
                   ))}
                 </Pie>
-                <Tooltip />
-                <Legend />
+                <Tooltip 
+                  formatter={(value, name) => [value, getStatusText(name as BookingStatus)]}
+                />
+                <Legend 
+                  formatter={(value) => (
+                    <span style={{ color: '#000000' }}>
+                      {getStatusText(value as BookingStatus)}
+                    </span>
+                  )}
+                />
               </PieChart>
             </ResponsiveContainer>
           </Card>

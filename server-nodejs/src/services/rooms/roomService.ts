@@ -251,7 +251,8 @@ export async function getAllRooms(args: GetAllRoomsInput): Promise<GetAllRoomsRe
 };
 
 export async function getAllRoomsWithoutPagination() {
-    const rooms = await Room.find({ deletedAt: null });
+    const rooms = await Room.find({ deletedAt: null })
+        .sort({ createdAt: -1 });
         
     if (!rooms) {
         throw new ApiError('Failed to get rooms', 500);
