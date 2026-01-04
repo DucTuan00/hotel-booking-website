@@ -5,18 +5,28 @@ declare global {
 }
 
 /**
- * Detect if running on mobile (native app OR mobile browser)
+ * Detect if running on NATIVE mobile app (Capacitor)
+ * Use for: deep links, native Google login, BottomNavigation, etc.
+ * Does NOT include mobile browsers
  */
-export const isMobile = (): boolean => {
-    // Check if native mobile app (Capacitor)
-    if (typeof window !== 'undefined' &&
+export const isNativeMobile = (): boolean => {
+    return typeof window !== 'undefined' &&
         window.Capacitor &&
         window.Capacitor.getPlatform &&
-        (window.Capacitor.getPlatform() === 'android' || window.Capacitor.getPlatform() === 'ios')) {
-        return true;
+        (window.Capacitor.getPlatform() === 'android' || window.Capacitor.getPlatform() === 'ios');
+};
+
+/**
+ * Detect if running on mobile browser (Safari, Chrome mobile, etc.)
+ * Does NOT include native apps
+ */
+export const isMobileBrowser = (): boolean => {
+    // If native app, return false
+    if (isNativeMobile()) {
+        return false;
     }
 
-    // Check if mobile browser (Safari, Chrome mobile, etc.)
+    // Check if mobile browser
     if (typeof window !== 'undefined' && typeof navigator !== 'undefined') {
         const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
         
@@ -31,12 +41,21 @@ export const isMobile = (): boolean => {
         }
         
         // Additional mobile browser detection
-        if (/Mobile|mini|Fennec|Windows\sPhone|Android|iP(ad|od|hone)|webOS|BlackBerry|BB|PlayBook|IEMobile|Opera\sMini/i.test(userAgent)) {
+        if (/Mobile|mini|Fennec|Windows\sPhone|webOS|BlackBerry|BB|PlayBook|IEMobile|Opera\sMini/i.test(userAgent)) {
             return true;
         }
     }
 
     return false;
+};
+
+/**
+ * Detect if running on mobile (native app OR mobile browser)
+ * Use for: auth token storage (localStorage vs cookie)
+ * Mobile browsers have strict cookie policies, so need localStorage + Authorization header
+ */
+export const isMobile = (): boolean => {
+    return isNativeMobile() || isMobileBrowser();
 };
 
 export const setAuthToken = (token: string): void => {

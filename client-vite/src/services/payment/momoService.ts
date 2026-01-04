@@ -1,6 +1,6 @@
 import api from '@/services/api';
 import { CreatePaymentUrlRequest, CreateMomoPaymentUrlResponse } from '@/types/payment';
-import { isMobile } from '@/utils/auth';
+import { isNativeMobile } from '@/utils/auth';
 
 export const createMoMoPaymentUrl = async (
     data: CreatePaymentUrlRequest
@@ -9,7 +9,7 @@ export const createMoMoPaymentUrl = async (
         '/momo/create-payment-url',
         {
             ...data,
-            platform: isMobile() ? 'mobile' : 'web',
+            platform: isNativeMobile() ? 'mobile' : 'web', // Deep link only for native app
         }
     );
     return response.data;

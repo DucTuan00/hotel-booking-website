@@ -1,6 +1,6 @@
 import { GoogleAuth } from '@southdevs/capacitor-google-auth';
 import api from '@/services/api';
-import { isMobile, setAuthToken } from '@/utils/auth';
+import { isNativeMobile, setAuthToken } from '@/utils/auth';
 
 interface GoogleLoginResponse {
     message: string;
@@ -13,7 +13,7 @@ interface GoogleLoginResponse {
  * Initialize Google Auth plugin (call once on app start for mobile)
  */
 export const initGoogleAuth = async (): Promise<void> => {
-    if (!isMobile()) return;
+    if (!isNativeMobile()) return;
 
     try {
         await GoogleAuth.initialize({
@@ -33,8 +33,10 @@ export const initGoogleAuth = async (): Promise<void> => {
  */
 export const signInWithGoogle = async (): Promise<GoogleLoginResponse> => {
     try {
-        // Trigger native Google Sign-In
-        const googleUser = await GoogleAuth.signIn();
+        // Trigger native Google Sign-In with options
+        const googleUser = await GoogleAuth.signIn({
+            scopes: ['profile', 'email'],
+        });
         
         console.log('Google Sign-In result:', googleUser);
 
@@ -74,7 +76,7 @@ export const signInWithGoogle = async (): Promise<GoogleLoginResponse> => {
  * Sign out from Google (mobile only)
  */
 export const signOutFromGoogle = async (): Promise<void> => {
-    if (!isMobile()) return;
+    if (!isNativeMobile()) return;
 
     try {
         await GoogleAuth.signOut();
@@ -88,7 +90,7 @@ export const signOutFromGoogle = async (): Promise<void> => {
  * Check if user is already signed in with Google
  */
 export const isGoogleSignedIn = async (): Promise<boolean> => {
-    if (!isMobile()) return false;
+    if (!isNativeMobile()) return false;
 
     try {
         // Try to refresh token silently

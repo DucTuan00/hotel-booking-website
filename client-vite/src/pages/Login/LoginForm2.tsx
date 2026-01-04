@@ -17,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 import { COLORS, TYPOGRAPHY } from "@/config/constants";
 import Notification from "@/components/Notification";
 import { Message } from '@/types/message';
-import { isMobile } from '@/utils/auth';
+import { isNativeMobile } from '@/utils/auth';
 import { signInWithGoogle } from '@/services/auth/googleAuthService';
 
 const { Text } = Typography;
@@ -68,8 +68,9 @@ const LoginForm2: React.FC<LoginFormProps> = ({
     };
 
     const handleGoogleLogin = async () => {
-        // Check if on mobile - use native Google Sign-In
-        if (isMobile()) {
+        // Check if on NATIVE mobile app - use native Google Sign-In SDK
+        // Mobile browsers use OAuth redirect flow (same as web)
+        if (isNativeMobile()) {
             setGoogleLoading(true);
             try {
                 const result = await signInWithGoogle();

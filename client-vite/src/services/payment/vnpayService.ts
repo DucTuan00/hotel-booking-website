@@ -1,6 +1,6 @@
 import api from '@/services/api';
 import { CreatePaymentUrlRequest, CreateVNPayPaymentUrlResponse } from '@/types/payment';
-import { isMobile } from '@/utils/auth';
+import { isNativeMobile } from '@/utils/auth';
 
 /**
  * Create VNPay payment URL
@@ -12,7 +12,7 @@ export const createVNPayPaymentUrl = async (
         '/vnpay/create-payment-url',
         {
             ...data,
-            platform: isMobile() ? 'mobile' : 'web', // Auto-detect platform
+            platform: isNativeMobile() ? 'mobile' : 'web', // Auto-detect platform (deep link only for native app)
         }
     );
     return response.data;

@@ -4,7 +4,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import BottomNavigation from '@/components/BottomNavigation';
 import Notification from '@/components/Notification';
-import { isMobile } from '@/utils/auth';
+import { isNativeMobile } from '@/utils/auth';
 import { Message } from '@/types/message';
 
 interface UserLayoutProps {
@@ -16,7 +16,7 @@ const UserLayout: React.FC<UserLayoutProps> = ({
     children,
     headerTransparent = false
 }) => {
-    const isNativeApp = isMobile();
+    const isNativeApp = isNativeMobile();
     const location = useLocation();
     const [message, setMessage] = useState<Message | null>(null);
 
