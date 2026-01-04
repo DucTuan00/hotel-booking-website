@@ -65,14 +65,15 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
           </div>
 
           {/* Mobile Filter Button */}
-          <Button
-            icon={<FilterOutlined />}
-            onClick={onToggleMobileFilter}
-            className="lg:hidden"
-            style={{ borderColor: COLORS.primary, color: COLORS.primary }}
-          >
-            Bộ lọc
-          </Button>
+          <div className="lg:hidden">
+            <Button
+              icon={<FilterOutlined />}
+              onClick={onToggleMobileFilter}
+              style={{ borderColor: COLORS.primary, color: COLORS.primary }}
+            >
+              Bộ lọc
+            </Button>
+          </div>
         </div>
       </div>
     </div>
