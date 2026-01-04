@@ -4,11 +4,39 @@ declare global {
     }
 }
 
+/**
+ * Detect if running on mobile (native app OR mobile browser)
+ */
 export const isMobile = (): boolean => {
-    return typeof window !== 'undefined' &&
+    // Check if native mobile app (Capacitor)
+    if (typeof window !== 'undefined' &&
         window.Capacitor &&
         window.Capacitor.getPlatform &&
-        (window.Capacitor.getPlatform() === 'android' || window.Capacitor.getPlatform() === 'ios');
+        (window.Capacitor.getPlatform() === 'android' || window.Capacitor.getPlatform() === 'ios')) {
+        return true;
+    }
+
+    // Check if mobile browser (Safari, Chrome mobile, etc.)
+    if (typeof window !== 'undefined' && typeof navigator !== 'undefined') {
+        const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+        
+        // iOS detection (iPhone, iPad, iPod)
+        if (/iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream) {
+            return true;
+        }
+        
+        // Android detection
+        if (/android/i.test(userAgent)) {
+            return true;
+        }
+        
+        // Additional mobile browser detection
+        if (/Mobile|mini|Fennec|Windows\sPhone|Android|iP(ad|od|hone)|webOS|BlackBerry|BB|PlayBook|IEMobile|Opera\sMini/i.test(userAgent)) {
+            return true;
+        }
+    }
+
+    return false;
 };
 
 export const setAuthToken = (token: string): void => {
