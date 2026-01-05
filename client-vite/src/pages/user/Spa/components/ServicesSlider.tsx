@@ -4,6 +4,7 @@ import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import type { CarouselRef } from 'antd/es/carousel';
 import { SpaService } from '@/types/spa';
 import { formatPrice } from '@/utils/formatPrice';
+import { TYPOGRAPHY } from '@/config/constants';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -88,7 +89,7 @@ const ServicesSlider: React.FC<ServicesSliderProps> = ({ services, onBookingClic
                                                 }
                                             }}
                                         >
-                                            <Title level={4} className="!mb-3" style={{ fontFamily: 'Playfair Display, serif' }}>
+                                            <Title level={4} className="!mb-3" style={{ fontFamily: TYPOGRAPHY.fontFamily.secondary }}>
                                                 {service.title}
                                             </Title>
                                             <Paragraph 

@@ -34,12 +34,12 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({ room }) => {
           <div className="flex flex-col h-full">
             <div className="flex-1">
               <div className="flex justify-between items-start mb-2">
-                <h3
-                  className="text-xl font-bold text-gray-900"
-                  style={{ fontFamily: TYPOGRAPHY.fontFamily.primary }}
+                <p
+                  className="text-xl font-bold text-gray-900 !mb-0"
+                  style={{ fontFamily: TYPOGRAPHY.fontFamily.secondary }}
                 >
                   {room.name}
-                </h3>
+                </p>
               </div>
 
               <p className="text-gray-600 mb-2">

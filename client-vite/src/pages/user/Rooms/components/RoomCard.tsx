@@ -45,15 +45,15 @@ const RoomCard: React.FC<RoomCardProps> = ({
         <div className="mb-3">
           <div className="flex items-start justify-between mb-2">
             <div>
-              <p className="text-xl font-semibold mb-1 line-clamp-2"
+              <p className="text-xl font-semibold !mb-1 line-clamp-2"
                 style={{ 
-                  fontFamily: TYPOGRAPHY.fontFamily.primary,
+                  fontFamily: TYPOGRAPHY.fontFamily.secondary,
                   color: COLORS.gray[900],
                 }}
               >
                 {room.name}
               </p>
-              <p className="text-gray-600 text-sm md:text-sm">{room.roomType}</p>
+              <p className="text-gray-600 text-sm md:text-sm !mb-0">{room.roomType}</p>
             </div>
           </div>
         </div>

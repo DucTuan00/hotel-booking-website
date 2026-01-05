@@ -15,15 +15,15 @@ const RoomInfo: React.FC<RoomInfoProps> = ({ room }) => {
             {/* Title and type */}
             <div className="flex items-start justify-between mb-4">
                 <div>
-                    <h1
-                        className="text-3xl font-bold mb-2"
+                    <p
+                        className="text-3xl font-bold !mb-2"
                         style={{
-                            fontFamily: TYPOGRAPHY.fontFamily.primary,
+                            fontFamily: TYPOGRAPHY.fontFamily.secondary,
                             color: COLORS.gray[900],
                         }}
                     >
                         {room.name}
-                    </h1>
+                    </p>
                     <p className="text-gray-600 text-lg">{room.roomType}</p>
                 </div>
             </div>
@@ -65,7 +65,7 @@ const RoomInfo: React.FC<RoomInfoProps> = ({ room }) => {
             {/* Description */}
             {room.description && (
                 <div className="mb-6">
-                    <h2 className="text-2xl font-semibold mb-3">Mô tả</h2>
+                    <p className="text-2xl font-semibold !mb-3">Mô tả</p>
                     <p className="text-gray-600 leading-relaxed whitespace-pre-line">
                         {room.description}
                     </p>
@@ -75,7 +75,7 @@ const RoomInfo: React.FC<RoomInfoProps> = ({ room }) => {
             {/* Amenities */}
             {room.amenities && room.amenities.length > 0 && (
                 <div>
-                    <h2 className="text-2xl font-semibold mb-4">Tiện nghi phòng</h2>
+                    <p className="text-2xl font-semibold !mb-4">Tiện nghi phòng</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {room.amenities.map((amenity) => (
                             <div

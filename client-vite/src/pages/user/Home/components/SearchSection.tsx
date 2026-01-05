@@ -208,7 +208,7 @@ const SearchSection: React.FC = () => {
 
             {/* Guest Selection Modal */}
             <Modal
-                title="Chọn khách"
+                // title="Chọn khách"
                 open={isGuestModalOpen}
                 onCancel={() => setIsGuestModalOpen(false)}
                 footer={[
@@ -218,7 +218,7 @@ const SearchSection: React.FC = () => {
                 ]}
                 centered
             >
-                <div className="space-y-6">
+                <div className="space-y-6 pt-12">
                     {/* Adults */}
                     <div className="flex items-center justify-between">
                         <div>

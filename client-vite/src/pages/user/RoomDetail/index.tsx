@@ -128,7 +128,7 @@ const RoomDetail: React.FC = () => {
 
             {/* Reviews Section */}
             <div className="">
-              <h2 className="text-2xl font-bold mb-6">Đánh giá của khách hàng</h2>
+              <p className="text-2xl font-bold !mb-6">Đánh giá của khách hàng</p>
               <ReviewList roomId={room.id} />
             </div>
           </div>

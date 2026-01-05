@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, Empty, Spin, Tag, Pagination, Button, Input, Select, Space } from 'antd';
 import {
     CalendarOutlined,
@@ -16,6 +16,26 @@ import { getStatusColor, getStatusText, getPaymentStatusColor, getPaymentStatusT
 
 const { Option } = Select;
 
+// Debounce hook
+const useDebounce = (callback: (...args: any[]) => void, delay: number) => {
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    const debouncedCallback = useCallback((...args: any[]) => {
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+        }
+        timeoutRef.current = setTimeout(() => callback(...args), delay);
+    }, [callback, delay]);
+
+    const cancel = useCallback(() => {
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+        }
+    }, []);
+
+    return { debouncedCallback, cancel };
+};
+
 const UserBookings: React.FC = () => {
     const navigate = useNavigate();
     const [bookings, setBookings] = useState<Booking[]>([]);
@@ -27,12 +47,22 @@ const UserBookings: React.FC = () => {
     
     // Search and filter states
     const [searchText, setSearchText] = useState('');
+    const [debouncedSearchText, setDebouncedSearchText] = useState('');
     const [statusFilter, setStatusFilter] = useState<BookingStatus | 'ALL'>('ALL');
     const [paymentStatusFilter, setPaymentStatusFilter] = useState<PaymentStatus | 'ALL'>('ALL');
 
+    // Debounce search text with 500ms delay
+    const { debouncedCallback: debouncedSearch } = useDebounce(
+        (text: string) => {
+            setDebouncedSearchText(text);
+            setCurrentPage(1); // Reset to first page when searching
+        },
+        500
+    );
+
     useEffect(() => {
         fetchUserBookings(currentPage);
-    }, [currentPage, searchText, statusFilter, paymentStatusFilter]);
+    }, [currentPage, debouncedSearchText, statusFilter, paymentStatusFilter]);
 
     const fetchUserBookings = async (page: number) => {
         try {
@@ -45,8 +75,8 @@ const UserBookings: React.FC = () => {
             };
             
             // Add search if not empty
-            if (searchText.trim()) {
-                params.search = searchText.trim();
+            if (debouncedSearchText.trim()) {
+                params.search = debouncedSearchText.trim();
             }
             
             // Add status filter if not ALL
@@ -64,7 +94,6 @@ const UserBookings: React.FC = () => {
             setTotal(data.total || 0);
         } catch (error) {
             console.error('Error fetching user bookings:', error);
-            setMessage({ type: 'error', text: 'Không thể tải danh sách đơn đặt phòng' });
         } finally {
             setLoading(false);
         }
@@ -98,8 +127,9 @@ const UserBookings: React.FC = () => {
     };
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchText(e.target.value);
-        setCurrentPage(1); // Reset to first page when searching
+        const value = e.target.value;
+        setSearchText(value);
+        debouncedSearch(value);
     };
 
     const handleStatusFilterChange = (value: BookingStatus | 'ALL') => {
@@ -114,6 +144,7 @@ const UserBookings: React.FC = () => {
 
     const handleClearFilters = () => {
         setSearchText('');
+        setDebouncedSearchText('');
         setStatusFilter('ALL');
         setPaymentStatusFilter('ALL');
         setCurrentPage(1);
@@ -158,7 +189,7 @@ const UserBookings: React.FC = () => {
                             {/* Search Input */}
                             <Input
                                 size="large"
-                                placeholder="Tìm kiếm theo mã đơn hoặc tên phòng..."
+                                placeholder="Tìm kiếm theo mã đơn"
                                 prefix={<SearchOutlined style={{ color: COLORS.gray[400] }} />}
                                 value={searchText}
                                 onChange={handleSearchChange}
@@ -243,7 +274,7 @@ const UserBookings: React.FC = () => {
 
                     {bookings.length === 0 ? (
                         <Card>
-                            <Empty description="Bạn chưa có đơn đặt phòng nào" />
+                            <Empty description="Không có đơn đặt phòng nào" />
                         </Card>
                     ) : (
                         <>

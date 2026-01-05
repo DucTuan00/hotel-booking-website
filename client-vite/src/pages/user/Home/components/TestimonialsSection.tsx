@@ -11,17 +11,24 @@ const TestimonialsSection: React.FC = () => {
     const testimonials = [
         {
             id: 1,
-            name: 'Nguyễn Văn A',
+            name: 'Nguyễn Mạnh An',
+            avatarLetter: 'A',
             rating: 5,
             comment: 'Khách sạn tuyệt vời với dịch vụ chuyên nghiệp. Nhân viên rất thân thiện và phòng ốc sạch sẽ, thoải mái. Tôi sẽ quay lại lần sau.',
-            avatar: '/images/default-image.jpg',
         },
         {
             id: 2,
             name: 'Trần Văn Nam',
+            avatarLetter: 'N',
             rating: 5,
             comment: 'Vị trí tuyệt vời, gần biển và các điểm tham quan. Spa ở đây rất tuyệt, giúp tôi thư giãn hoàn toàn sau những ngày làm việc căng thẳng.',
-            avatar: '/images/default-image.jpg',
+        },
+        {
+            id: 3,
+            name: 'Lê Hoàng',
+            avatarLetter: 'H',
+            rating: 5,
+            comment: 'Không gian sang trọng, ấm cúng. Đồ ăn sáng rất ngon và đa dạng. Chắc chắn sẽ giới thiệu cho bạn bè.',
         },
     ];
 
@@ -73,11 +80,9 @@ const TestimonialsSection: React.FC = () => {
                             style={{ transitionDelay: `${index * 150}ms` }}
                         >
                             <div className="flex items-center gap-4 mb-6">
-                                <img
-                                    src={testimonial.avatar}
-                                    alt={testimonial.name}
-                                    className="w-14 h-14 rounded-full object-cover border-2 border-[#D4902A]/50"
-                                />
+                                <div className="w-14 h-14 rounded-full bg-[#D4902A]/20 flex items-center justify-center text-[#D4902A] font-bold text-xl border-2 border-[#D4902A]/50">
+                                    {testimonial.avatarLetter}
+                                </div>
                                 <div>
                                     <h4
                                         className="text-white font-bold text-lg"
@@ -104,41 +109,6 @@ const TestimonialsSection: React.FC = () => {
                             </div>
                         </div>
                     ))}
-
-                    {/* Add a fake 3rd testimonial for better grid balance if needed, or keep 2 centered */}
-                    <div
-                        className={`bg-white/10 backdrop-blur-md border border-white/10 p-8 rounded-2xl transition-all duration-700 transform hover:-translate-y-2 hover:bg-white/15 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-                            }`}
-                        style={{ transitionDelay: '300ms' }}
-                    >
-                        <div className="flex items-center gap-4 mb-6">
-                            <div className="w-14 h-14 rounded-full bg-[#D4902A]/20 flex items-center justify-center text-[#D4902A] font-bold text-xl border-2 border-[#D4902A]/50">
-                                L
-                            </div>
-                            <div>
-                                <h4
-                                    className="text-white font-bold text-lg"
-                                    style={{ fontFamily: TYPOGRAPHY.fontFamily.primary }}
-                                >
-                                    Le Hoang
-                                </h4>
-                                <Rate
-                                    disabled
-                                    defaultValue={5}
-                                    className="text-[#E6B655] text-sm"
-                                />
-                            </div>
-                        </div>
-                        <div className="relative">
-                            <span className="absolute -top-4 -left-2 text-6xl text-[#D4902A]/20 font-serif leading-none">"</span>
-                            <p
-                                className="text-gray-300 text-base leading-relaxed relative z-10 italic"
-                                style={{ fontFamily: TYPOGRAPHY.fontFamily.secondary }}
-                            >
-                                Không gian sang trọng, ấm cúng. Đồ ăn sáng rất ngon và đa dạng. Chắc chắn sẽ giới thiệu cho bạn bè.
-                            </p>
-                        </div>
-                    </div>
                 </div>
             </div>
         </section>

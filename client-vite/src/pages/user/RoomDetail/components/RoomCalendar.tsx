@@ -112,7 +112,7 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({ roomId, defaultPrice, maxRo
     return (
         <div className="mb-6">
             <div className="flex items-center gap-2">
-                <h2 className="text-2xl font-semibold m-0">Giá phòng (hiển thị giá trong khoảng thời gian 30 ngày)</h2>
+                <p className="text-2xl font-semibold !mb-1">Giá phòng (hiển thị giá trong khoảng thời gian 30 ngày)</p>
             </div>
 
             <div 

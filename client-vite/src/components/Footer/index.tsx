@@ -35,9 +35,9 @@ const Footer: React.FC = () => {
             <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Liên kết nhanh</h3>
             <ul className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-gray-300">
               <li><a href="#" className="hover:text-white transition-colors">Về chúng tôi</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Phòng & Giá</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Dịch vụ</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Ẩm thực</a></li>
+              <li><a href="/rooms" className="hover:text-white transition-colors">Phòng & Giá</a></li>
+              <li><a href="/spa" className="hover:text-white transition-colors">Spa</a></li>
+              <li><a href="/restaurant" className="hover:text-white transition-colors">Ẩm thực</a></li>
               <li><a href="#" className="hover:text-white transition-colors">Liên hệ</a></li>
             </ul>
           </div>
@@ -67,8 +67,8 @@ const Footer: React.FC = () => {
           <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4">
             <span className="text-xs sm:text-sm text-gray-300">Thanh toán:</span>
             <div className="flex space-x-1 sm:space-x-2">
-              <div className="w-6 sm:w-8 h-4 sm:h-5 bg-blue-600 rounded text-xs text-white flex items-center justify-center">VNPAY</div>
-              <div className="w-6 sm:w-8 h-4 sm:h-5 bg-red-600 rounded text-xs text-white flex items-center justify-center">Momo</div>
+              <div className="w-6 sm:w-8 h-4 sm:h-5 rounded text-xs text-white flex items-center justify-center">VNPAY,</div>
+              <div className="w-6 sm:w-8 h-4 sm:h-5 rounded text-xs text-white flex items-center justify-center">MoMo</div>
             </div>
           </div>
         </div>
@@ -76,7 +76,7 @@ const Footer: React.FC = () => {
         {/* Copyright */}
         <div className="border-t border-gray-800 mt-6 sm:mt-8 pt-6 sm:pt-8 text-center">
           <p className="text-xs sm:text-sm text-gray-400">
-            Copyright © 2025 Lion Lion Boutique Hotel & Spa Ha Noi and all rights reserved.
+            Copyright © 2025 Lion Boutique Hotel and all rights reserved.
           </p>
         </div>
       </div>

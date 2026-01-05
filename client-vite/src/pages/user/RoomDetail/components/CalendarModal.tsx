@@ -10,6 +10,7 @@ import authService from '@/services/auth/authService';
 import Notification from '@/components/Notification';
 import { Message } from '@/types/message';
 import { COLORS } from '@/config/constants';
+import { TYPOGRAPHY } from '@/config/constants';
 
 dayjs.extend(isBetween);
 dayjs.locale('vi');
@@ -464,8 +465,8 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
             footer={null}
             width={700}
             title={
-                <div className="text-xl font-semibold">
-                    Chọn ngày nhận phòng và trả phòng
+                <div className="text-xl font-semibold" style={{ fontFamily: TYPOGRAPHY.fontFamily.secondary }}>
+                    Chọn ngày nhận và trả phòng
                 </div>
             }
             styles={{
@@ -483,7 +484,7 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
                 <div className="py-4 px-2">
                     {/* Booking Details Form */}
                     <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                        <h3 className="font-semibold text-base mb-4">Chi tiết đặt phòng</h3>
+                        <p className="font-semibold text-base !mb-4">Chi tiết đặt phòng</p>
                         
                         <div className="grid grid-cols-3 gap-4">
                             {/* Quantity */}
@@ -560,7 +561,7 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
                             ← Tháng trước
                         </Button>
                         <div className="text-lg font-semibold">
-                            Tháng {currentMonth.month() + 1}, {currentMonth.year()}
+                            T{currentMonth.month() + 1}, {currentMonth.year()}
                         </div>
                         <Button 
                             onClick={() => setCurrentMonth(currentMonth.add(1, 'month'))}

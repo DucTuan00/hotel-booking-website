@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Button, Slider, Checkbox, Select, Input, Form } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
-import { COLORS, TYPOGRAPHY } from '@/config/constants';
+import { COLORS } from '@/config/constants';
 import { formatPrice } from '@/utils/formatPrice';
 import { RoomType } from '@/types/room';
 import { Amenity } from '@/types/amenity';
@@ -79,12 +79,11 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
         <div className="bg-white p-6 rounded-lg lg:sticky lg:top-4 lg:border lg:border-gray-200 h-full lg:h-auto">
           {/* Mobile Header with Close Button */}
           <div className="flex justify-between items-center mb-6 pt-4">
-            <h3
-              className="text-lg font-bold text-gray-900"
-              style={{ fontFamily: TYPOGRAPHY.fontFamily.primary }}
+            <p
+              className="text-lg font-bold text-gray-900 !mb-0"
             >
               Bộ lọc
-            </h3>
+            </p>
             <div className="flex items-center gap-2">
               <Button
                 type="text"
@@ -107,7 +106,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
 
           {/* Price Range */}
           <div className="mb-6">
-            <h4 className="font-medium text-gray-900 mb-3">Giá phòng (VNĐ/đêm)</h4>
+            <p className="font-medium text-gray-900 !mb-3">Giá phòng (VNĐ/đêm)</p>
             <Slider
               range
               min={0}
@@ -193,11 +192,11 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
 
           {/* Sort Options */}
           <div className="mb-6 lg:mb-0">
-            <h4 className="font-medium text-gray-900 mb-3">Sắp xếp theo</h4>
+            <p className="font-medium text-gray-900 !mb-3">Sắp xếp theo</p>
             <Select
               value={sortBy}
               onChange={onSortChange}
-              className="w-full"
+              className="w-full !mb-4"
             >
               <Option value="newest">Mới nhất</Option>
               <Option value="price-asc">Giá thấp đến cao</Option>
@@ -208,7 +207,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
 
           {/* Room Type */}
           <div className="mb-6">
-            <h4 className="font-medium text-gray-900 mb-3">Loại phòng</h4>
+            <p className="font-medium text-gray-900 !mb-3">Loại phòng</p>
             <Checkbox.Group
               value={selectedRoomTypes}
               onChange={(values) => onRoomTypesChange(values as string[])}
@@ -225,7 +224,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
 
           {/* Amenities */}
           <div className="mb-6">
-            <h4 className="font-medium text-gray-900 mb-3">Tiện ích</h4>
+            <p className="font-medium text-gray-900 !mb-3">Tiện ích</p>
             <Checkbox.Group
               value={selectedAmenities}
               onChange={(values) => onAmenitiesChange(values as string[])}
