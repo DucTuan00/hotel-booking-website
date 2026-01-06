@@ -16,6 +16,7 @@ import amenityService from '@/services/amenities/amenityService';
 import { Amenity } from '@/types/amenity';
 import Notification from '@/components/Notification';
 import { Message } from '@/types/message';
+import { TYPOGRAPHY } from '@/config/constants';
 
 const AmenityList: React.FC = () => {
     const [amenities, setAmenities] = useState<Amenity[]>([]);
@@ -180,7 +181,11 @@ const AmenityList: React.FC = () => {
                 loading={loading}
                 onAdd={showModal}
                 addButtonText="Thêm tiện nghi mới"
-                modalTitle={editingAmenity ? 'Cập nhật tiện nghi' : 'Thêm tiện nghi mới'}
+                modalTitle={(
+                    <div style={{ fontFamily: TYPOGRAPHY.fontFamily.secondary }}>
+                        {editingAmenity ? 'Cập nhật tiện nghi' : 'Thêm tiện nghi mới'}
+                    </div>
+                ) as unknown as string}
                 modalVisible={isModalVisible}
                 onModalCancel={handleCancel}
                 pagination={{

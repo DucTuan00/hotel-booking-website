@@ -5,6 +5,7 @@ import type { UploadFile } from 'antd';
 import { SpaService, CreateSpaServiceInput, UpdateSpaServiceInput } from '@/types/spa';
 import spaServiceService from '@/services/spa/spaServiceService';
 import uploadService from '@/services/upload/uploadService';
+import { TYPOGRAPHY } from '@/config/constants';
 
 interface SpaServiceFormProps {
     visible: boolean;
@@ -110,7 +111,11 @@ const SpaServiceForm: React.FC<SpaServiceFormProps> = ({
 
     return (
         <Modal
-            title={editingService ? 'Chỉnh sửa dịch vụ spa' : 'Thêm dịch vụ spa'}
+            title={
+                <div style={{ fontFamily: TYPOGRAPHY.fontFamily.secondary }}>
+                    {editingService ? 'Chỉnh sửa dịch vụ spa' : 'Thêm dịch vụ spa'}
+                </div>
+            }
             open={visible}
             onCancel={handleCancel}
             footer={null}

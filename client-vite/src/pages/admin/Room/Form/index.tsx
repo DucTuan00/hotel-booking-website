@@ -7,6 +7,7 @@ import uploadService from '@/services/upload/uploadService';
 import { Amenity } from '@/types/amenity';
 import { Room, RoomType, CreateRoomInput, UpdateRoomInput } from '@/types/room';
 import ImageItems from '@/pages/admin/Room/Form/ImageItems';
+import { TYPOGRAPHY } from '@/config/constants';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -169,7 +170,11 @@ const RoomForm: React.FC<RoomFormProps> = ({ visible, onCancel, onSubmit, initia
 
     return (
         <Modal
-            title={isEditing ? 'Sửa thông tin phòng' : 'Thêm phòng mới'}
+            title={
+                <div style={{ fontFamily: TYPOGRAPHY.fontFamily.secondary }}>
+                    {isEditing ? 'Sửa thông tin phòng' : 'Thêm phòng mới'}
+                </div>
+            }
             open={visible}
             onCancel={handleCancel}
             footer={null}

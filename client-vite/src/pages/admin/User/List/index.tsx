@@ -9,6 +9,7 @@ import userService from '@/services/users/userService';
 import Notification from '@/components/Notification';
 import { UserRole } from '@/types/user';
 import { Message } from '@/types/message';
+import { TYPOGRAPHY } from '@/config/constants';
 
 interface User {
     id: string;
@@ -230,7 +231,11 @@ const UserList: React.FC = () => {
                 loading={loading}
                 onAdd={showModal}
                 addButtonText="Thêm người dùng mới"
-                modalTitle={editingUser ? 'Cập nhật người dùng' : 'Thêm người dùng mới'}
+                modalTitle={(
+                    <div style={{ fontFamily: TYPOGRAPHY.fontFamily.secondary }}>
+                        {editingUser ? 'Cập nhật người dùng' : 'Thêm người dùng mới'}
+                    </div>
+                ) as unknown as string}
                 modalVisible={isModalVisible}
                 onModalCancel={handleCancel}
                 pagination={{

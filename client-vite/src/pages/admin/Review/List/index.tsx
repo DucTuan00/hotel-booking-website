@@ -10,6 +10,7 @@ import moment from 'moment';
 import { AdminReview } from '@/types/review';
 import type { TableColumnsType } from 'antd';
 import { Message } from '@/types/message';
+import { TYPOGRAPHY } from '@/config/constants';
 
 const ReviewList: React.FC = () => {
     const [reviews, setReviews] = useState<AdminReview[]>([]);
@@ -261,7 +262,11 @@ const ReviewList: React.FC = () => {
 
             {/* Review Detail Modal */}
             <Modal
-                title="Chi tiết đánh giá"
+                title={
+                    <div style={{ fontFamily: TYPOGRAPHY.fontFamily.secondary }}>
+                        Chi tiết đánh giá
+                    </div>
+                }
                 open={isModalVisible}
                 onCancel={handleCloseModal}
                 footer={[

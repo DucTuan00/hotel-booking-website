@@ -5,6 +5,7 @@ import type { UploadFile } from 'antd';
 import { RestaurantService, CreateRestaurantServiceInput, UpdateRestaurantServiceInput } from '@/types/restaurant';
 import restaurantServiceService from '@/services/restaurants/restaurantServiceService';
 import uploadService from '@/services/upload/uploadService';
+import { TYPOGRAPHY } from '@/config/constants';
 
 interface RestaurantServiceFormProps {
     visible: boolean;
@@ -110,7 +111,11 @@ const RestaurantServiceForm: React.FC<RestaurantServiceFormProps> = ({
 
     return (
         <Modal
-            title={editingService ? 'Chỉnh sửa dịch vụ nhà hàng' : 'Thêm dịch vụ nhà hàng'}
+            title={
+                <div style={{ fontFamily: TYPOGRAPHY.fontFamily.secondary }}>
+                    {editingService ? 'Chỉnh sửa dịch vụ nhà hàng' : 'Thêm dịch vụ nhà hàng'}
+                </div>
+            }
             open={visible}
             onCancel={handleCancel}
             footer={null}

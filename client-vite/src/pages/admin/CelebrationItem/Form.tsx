@@ -5,6 +5,7 @@ import type { UploadFile } from 'antd';
 import { CelebrateItem, CreateCelebrateItemInput, UpdateCelebrateItemInput } from '@/types/celebrate';
 import celebrateItemService from '@/services/celebrations/celebrateItemService';
 import uploadService from '@/services/upload/uploadService';
+import { TYPOGRAPHY } from '@/config/constants';
 
 interface CelebrateItemFormProps {
     visible: boolean;
@@ -110,7 +111,11 @@ const CelebrateItemForm: React.FC<CelebrateItemFormProps> = ({
 
     return (
         <Modal
-            title={editingItem ? 'Chỉnh sửa Celebration Item' : 'Thêm Celebration Item'}
+            title={
+                <div style={{ fontFamily: TYPOGRAPHY.fontFamily.secondary }}>
+                    {editingItem ? 'Chỉnh sửa quà kỷ niệm' : 'Thêm quà kỷ niệm'}
+                </div>
+            }
             open={visible}
             onCancel={handleCancel}
             footer={null}
