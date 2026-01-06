@@ -24,12 +24,12 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
     const location = useLocation();
 
     const menuItems = [
-        { name: 'Giới thiệu', path: '/#about' },
+        { name: 'Giới thiệu', path: '/introduction' },
         { name: 'Phòng', path: '/rooms' },
         { name: 'Nhà hàng', path: '/restaurant' },
         { name: 'Spa', path: '/spa' },
         { name: 'AI planner', path: '/ai-planner' },
-        { name: 'Liên hệ', path: '/#contact' },
+        { name: 'Liên hệ', path: '/contact' },
     ];
 
     const fetchUserInfo = useCallback(async () => {

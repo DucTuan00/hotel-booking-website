@@ -12,6 +12,8 @@ import UserBookingDetail from '@/pages/user/UserBookingDetail';
 import AIPlanner from '@/pages/user/AIPlanner';
 import MobileCategory from '@/pages/user/MobileCategory';
 import MobileAccount from '@/pages/user/MobileAccount';
+import Introduction from '@/pages/user/Introduction';
+import Contact from '@/pages/user/Contact';
 
 export {
     Home,
@@ -28,4 +30,6 @@ export {
     AIPlanner,
     MobileCategory,
     MobileAccount,
+    Introduction,
+    Contact,
 }

@@ -6,7 +6,6 @@ import {
     ReviewEligibility,
     RoomRating,
     EligibleBooking,
-    AdminReview,
     AdminReviewsListResponse,
     GetAllReviewsParams
 } from '@/types/review';

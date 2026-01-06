@@ -34,11 +34,11 @@ const Footer: React.FC = () => {
           <div>
             <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Liên kết nhanh</h3>
             <ul className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-gray-300">
-              <li><a href="#" className="hover:text-white transition-colors">Về chúng tôi</a></li>
+              <li><a href="/introduction" className="hover:text-white transition-colors">Về chúng tôi</a></li>
               <li><a href="/rooms" className="hover:text-white transition-colors">Phòng & Giá</a></li>
               <li><a href="/spa" className="hover:text-white transition-colors">Spa</a></li>
               <li><a href="/restaurant" className="hover:text-white transition-colors">Ẩm thực</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Liên hệ</a></li>
+              <li><a href="/contact" className="hover:text-white transition-colors">Liên hệ</a></li>
             </ul>
           </div>
 
@@ -50,11 +50,11 @@ const Footer: React.FC = () => {
                 src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d14896.08017375022!2d105.846336!3d21.031884!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ab47c98c2919%3A0xa0d1de04eb7d5313!2sHanoi%20Lion%20Boutique%20Hotel%20%26%20Spa!5e0!3m2!1svi!2sus!4v1761245560624!5m2!1svi!2sus" 
                 width="600" 
                 height="450" 
-                allowfullscreen="" 
+                allowFullScreen 
                 loading="lazy"
                 title="Lion Hotel Boutique"
                 className="w-full h-50 sm:h-50 object-cover" 
-                referrerpolicy="no-referrer-when-downgrade">
+                referrerPolicy="no-referrer-when-downgrade">
               </iframe>
             </div>
           </div>
