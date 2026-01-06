@@ -220,6 +220,7 @@ const LoginForm2: React.FC<LoginFormProps> = ({
                                                 type="link"
                                                 className="p-0 text-sm"
                                                 style={{ color: COLORS.gray[500] }}
+                                                onClick={() => navigate('/forgot-password')}
                                             >
                                                 Quên mật khẩu?
                                             </Button>

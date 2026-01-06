@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import * as Admin from '@/pages/admin';
 import * as User from '@/pages/user';
 import Login from '@/pages/Login';
+import ForgotPassword from '@/pages/ForgotPassword';
 import AdminLayout from '@/layouts/AdminLayout';
 import AdminRoute from '@/routes/AdminRoute';
 import UserLayout from '@/layouts/UserLayout';
@@ -26,6 +27,7 @@ const AppRoutes: React.FC = () => (
             <Route path="/mobile/category" element={<User.MobileCategory />} />
             <Route path="/mobile/account" element={<User.MobileAccount />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
         </Route>
 
         <Route element={<AdminRoute />}>
