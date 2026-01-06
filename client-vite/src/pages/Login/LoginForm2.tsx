@@ -211,7 +211,7 @@ const LoginForm2: React.FC<LoginFormProps> = ({
 
                                         {!isRegister && error && (
                                             <div className="text-red-500 text-sm mt-2">
-                                                {error}
+                                                Email hoặc mật khẩu không đúng
                                             </div>
                                         )}
 
