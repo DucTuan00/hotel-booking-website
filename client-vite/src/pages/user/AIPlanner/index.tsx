@@ -11,6 +11,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import authService from '@/services/auth/authService';
 import { useNavigate } from 'react-router-dom';
 import '@/pages/user/AIPlanner/AIPlanner.css';
+import { TYPOGRAPHY } from '@/config/constants';
 
 
 const { Title, Text } = Typography;
@@ -494,12 +495,18 @@ const AIPlanner: React.FC = () => {
 
             <div className="max-w-7xl mx-auto">
                 <div className="mb-6 text-center">
-                    <Title level={2} className="mb-2 text-[#8B1A1A]">
+                    <h2
+                        className="text-3xl lg:text-3xl font-bold text-gray-900 mb-4"
+                        style={{ fontFamily: TYPOGRAPHY.fontFamily.primary }}
+                    >
                         Lập kế hoạch du lịch bằng AI Planner
-                    </Title>
-                    <Text type="secondary" className="text-lg">
-                        Tạo lịch trình khám phá Hà Nội được cá nhân hóa cho bạn
-                    </Text>
+                    </h2>
+                    <p
+                        className="text-sm text-gray-600 max-w-2xl mx-auto"
+                        style={{ fontFamily: TYPOGRAPHY.fontFamily.secondary }}
+                    >
+                        Tạo lịch trình khám phá Hà Nội được cá nhân hóa
+                    </p>
                 </div>
 
                 {/* Mobile Layout - Tabs */}
