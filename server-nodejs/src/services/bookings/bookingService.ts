@@ -31,6 +31,7 @@ import {
     incrementUserBookingStats,
     updateUserLoyaltyTier
 } from '@/services/loyalty/loyaltyService';
+import { sendBookingConfirmationEmail } from '@/services/bookings/bookingEmailService';
 
 /**
  * Create a new booking with dynamic pricing, inventory management, and celebrate items
@@ -224,6 +225,42 @@ export async function createBooking(args: CreateBookingInput) {
         );
 
         await session.commitTransaction();
+
+        // Send confirmation email (non-blocking)
+        // Calculate number of nights
+        const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
+        
+        // Prepare celebrate items for email
+        const celebrateItemsForEmail = celebrateItemsData.map(item => ({
+            name: item.item.name,
+            quantity: item.quantity,
+            price: item.price * item.quantity,
+        }));
+
+        // Send email asynchronously
+        sendBookingConfirmationEmail({
+            bookingId: (savedBooking._id as any).toString(),
+            customerName: `${firstName} ${lastName}`,
+            customerEmail: email,
+            roomName: existRoom.name,
+            roomType: existRoom.roomType,
+            checkIn: checkInDate,
+            checkOut: checkOutDate,
+            nights: nights,
+            quantity: quantity,
+            guests: guests,
+            totalPrice: finalPrice,
+            paymentMethod: paymentMethod,
+            celebrateItems: celebrateItemsForEmail.length > 0 ? celebrateItemsForEmail : undefined,
+            discount: userDiscount > 0 ? {
+                tier: existUser.loyaltyTier || 'Bronze',
+                percent: userDiscount,
+                amount: discountAmount,
+            } : undefined,
+        }).catch(error => {
+            // Log email error but don't fail the booking
+            console.error('Failed to send booking confirmation email:', error);
+        });
 
         return mapId(savedBooking);
     } catch (error: any) {
