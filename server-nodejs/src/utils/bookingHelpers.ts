@@ -168,6 +168,7 @@ export async function updateInventory(
     checkOut: Date,
     quantity: number,
     operation: 'decrease' | 'increase',
+    session?: mongoose.ClientSession
 ): Promise<void> {
     const bookingDates = getBookingDates(checkIn, checkOut);
 
@@ -183,6 +184,7 @@ export async function updateInventory(
                     inventory: { $gte: quantity } // Ensure enough inventory
                 },
                 { $inc: { inventory: -quantity } },
+                { session }
             );
 
             if (result.modifiedCount === 0) {
@@ -196,6 +198,7 @@ export async function updateInventory(
                     date: normalizedDate
                 },
                 { $inc: { inventory: quantity } },
+                { session }
             );
         }
     }
