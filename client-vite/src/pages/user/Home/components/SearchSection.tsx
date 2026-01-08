@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Button, DatePicker, Modal } from 'antd';
+import React, { useState, useRef, useEffect } from 'react';
+import { Button, DatePicker } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { COLORS, TYPOGRAPHY } from '@/config/constants';
 import { MinusOutlined, PlusOutlined } from '@ant-design/icons';
@@ -17,9 +17,27 @@ const SearchSection: React.FC = () => {
     const navigate = useNavigate();
     const [dateRange, setDateRange] = useState<[Dayjs, Dayjs] | null>(null);
     const [guests, setGuests] = useState<GuestCounts>({ adults: 2, children: 0 });
-    const [isGuestModalOpen, setIsGuestModalOpen] = useState(false);
+    const [isGuestDropdownOpen, setIsGuestDropdownOpen] = useState(false);
+    const guestDropdownRef = useRef<HTMLDivElement>(null);
     const MAX_ADULTS = 5;
     const MAX_TOTAL_BONUS = 2;
+
+    // Handle click outside to close dropdown
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (guestDropdownRef.current && !guestDropdownRef.current.contains(event.target as Node)) {
+                setIsGuestDropdownOpen(false);
+            }
+        };
+
+        if (isGuestDropdownOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isGuestDropdownOpen]);
 
     // Disable dates: past dates and dates beyond 30 days from today
     const disabledDate = (current: Dayjs) => {
@@ -167,14 +185,14 @@ const SearchSection: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Guest Selector Modal */}
-                        <div className="md:col-span-4">
+                        {/* Guest Selector Dropdown */}
+                        <div className="md:col-span-4 relative" ref={guestDropdownRef}>
                             <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
                                 Khách
                             </label>
                             <button
-                                onClick={() => setIsGuestModalOpen(true)}
-                                className="w-full px-4 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg text-left text-gray-700 transition-colors flex items-center justify-between group"
+                                onClick={() => setIsGuestDropdownOpen(!isGuestDropdownOpen)}
+                                className="w-full px-4 py-1.5 border border-gray-200 hover:bg-gray-100 rounded-lg text-left text-gray-700 transition-colors flex items-center justify-between group"
                             >
                                 <span className="font-medium">{getGuestLabel()}</span>
                                 <span className="text-gray-400 group-hover:text-gray-600">
@@ -183,6 +201,79 @@ const SearchSection: React.FC = () => {
                                     </svg>
                                 </span>
                             </button>
+
+                            {/* Custom Dropdown */}
+                            {isGuestDropdownOpen && (
+                                <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-lg shadow-2xl border border-gray-200 p-6 z-50">
+                                    <div className="space-y-3">
+                                        {/* Adults */}
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-base font-semibold text-gray-700 !mb-0">Người lớn</p>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <button
+                                                    onClick={handleRemoveAdult}
+                                                    disabled={guests.adults <= 1}
+                                                    className="w-8 h-8 flex items-center justify-center border-2 border-gray-300 rounded-full hover:border-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                                                >
+                                                    <MinusOutlined className="text-sm" />
+                                                </button>
+                                                <span className="text-lg font-semibold w-8 text-center text-gray-800">{guests.adults}</span>
+                                                <button
+                                                    onClick={handleAddAdult}
+                                                    disabled={guests.adults >= MAX_ADULTS || guests.adults + guests.children >= MAX_ADULTS + MAX_TOTAL_BONUS}
+                                                    className="w-8 h-8 flex items-center justify-center border-2 border-gray-300 rounded-full hover:border-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                                                >
+                                                    <PlusOutlined className="text-sm" />
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {/* Children */}
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-base font-semibold text-gray-700 !mb-0">Trẻ em</p>
+                                                <p className="text-xs text-gray-500 !mt-1 !mb-0">Dưới 12 tuổi</p>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <button
+                                                    onClick={handleRemoveChild}
+                                                    disabled={guests.children <= 0}
+                                                    className="w-8 h-8 flex items-center justify-center border-2 border-gray-300 rounded-full hover:border-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                                                >
+                                                    <MinusOutlined className="text-sm" />
+                                                </button>
+                                                <span className="text-lg font-semibold w-8 text-center text-gray-800">{guests.children}</span>
+                                                <button
+                                                    onClick={handleAddChild}
+                                                    disabled={guests.children >= MAX_ADULTS + MAX_TOTAL_BONUS - guests.adults}
+                                                    className="w-8 h-8 flex items-center justify-center border-2 border-gray-300 rounded-full hover:border-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                                                >
+                                                    <PlusOutlined className="text-sm" />
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {/* Done Button */}
+                                        <div className="flex justify-end">
+                                            <Button
+                                                type="primary"
+                                                onClick={() => setIsGuestDropdownOpen(false)}
+                                                className="py-2 px-4 w-28 hover:shadow-xl font-semibold rounded-lg transition-all"
+                                                style={{
+                                                    backgroundColor: COLORS.primary,
+                                                    borderColor: COLORS.primary,
+                                                    fontFamily: TYPOGRAPHY.fontFamily.secondary,
+                                                    letterSpacing: '0.05em',
+                                                }}
+                                            >
+                                                Xong
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* Search Button */}
@@ -205,70 +296,6 @@ const SearchSection: React.FC = () => {
                     </div>
                 </div>
             </div>
-
-            {/* Guest Selection Modal */}
-            <Modal
-                // title="Chọn khách"
-                open={isGuestModalOpen}
-                onCancel={() => setIsGuestModalOpen(false)}
-                footer={[
-                    <Button key="close" onClick={() => setIsGuestModalOpen(false)}>
-                        Hoàn tất
-                    </Button>,
-                ]}
-                centered
-            >
-                <div className="space-y-6 pt-12">
-                    {/* Adults */}
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-lg font-medium text-gray-700">Người lớn</p>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <button
-                                onClick={handleRemoveAdult}
-                                disabled={guests.adults <= 1}
-                                className="p-2 border border-gray-300 rounded hover:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                <MinusOutlined />
-                            </button>
-                            <span className="text-lg font-semibold w-8 text-center">{guests.adults}</span>
-                            <button
-                                onClick={handleAddAdult}
-                                disabled={guests.adults >= MAX_ADULTS || guests.adults + guests.children >= MAX_ADULTS + MAX_TOTAL_BONUS}
-                                className="p-2 border border-gray-300 rounded hover:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                <PlusOutlined />
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Children */}
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-lg font-medium text-gray-700">Trẻ em</p>
-                            <p className="text-sm text-gray-500">Dưới 12 tuổi</p>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <button
-                                onClick={handleRemoveChild}
-                                disabled={guests.children <= 0}
-                                className="p-2 border border-gray-300 rounded hover:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                <MinusOutlined />
-                            </button>
-                            <span className="text-lg font-semibold w-8 text-center">{guests.children}</span>
-                            <button
-                                onClick={handleAddChild}
-                                disabled={guests.children >= MAX_ADULTS + MAX_TOTAL_BONUS - guests.adults}
-                                className="p-2 border border-gray-300 rounded hover:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                <PlusOutlined />
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </Modal>
         </section>
     );
 };

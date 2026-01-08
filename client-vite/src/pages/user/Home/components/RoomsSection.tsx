@@ -1,5 +1,4 @@
 import React from 'react';
-import { Button } from 'antd';
 import { COLORS, TYPOGRAPHY } from '@/config/constants';
 import useIntersectionObserver from '@/hooks/useIntersectionObserver';
 
@@ -126,9 +125,8 @@ const RoomsSection: React.FC = () => {
                         }`}
                     style={{ transitionDelay: '800ms' }}
                 >
-                    <Button
-                        size="large"
-                        className="px-10 py-6 h-auto text-base border-2 hover:bg-gray-900 hover:text-white transition-all duration-300 rounded"
+                    <button
+                        className="px-5 py-3 h-auto !text-sm border-2 hover:bg-gray-900 hover:!text-white transition-all duration-300 rounded-lg"
                         style={{
                             borderColor: COLORS.black,
                             color: COLORS.black,
@@ -142,7 +140,7 @@ const RoomsSection: React.FC = () => {
                         }}
                     >
                         Xem Tất Cả Các Phòng
-                    </Button>
+                    </button>
                 </div>
             </div>
         </section>
