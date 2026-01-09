@@ -1,4 +1,4 @@
-import { transporter, emailTemplates } from '@/config/email';
+import { resend, EMAIL_FROM, emailTemplates } from '@/config/email';
 import PasswordReset from '@/models/PasswordReset';
 import User from '@/models/User';
 import ApiError from '@/utils/apiError';
@@ -38,15 +38,21 @@ export const sendPasswordResetEmail = async (email: string): Promise<void> => {
       used: false,
     });
 
-    // Send email
+    // Send email using Resend
     const template = emailTemplates.resetPasswordCode(code, EXPIRY_MINUTES);
-    await transporter.sendMail({
-      from: `"Lion Hotel Boutique" <${process.env.EMAIL_USER}>`,
-      to: email,
+    const { data, error } = await resend.emails.send({
+      from: `Lion Hotel Boutique <${EMAIL_FROM}>`,
+      to: [email],
       subject: template.subject,
       html: template.html,
-      text: template.text,
     });
+
+    if (error) {
+      console.error('Error sending password reset email:', error);
+      throw new ApiError('Failed to send password reset email', 500);
+    }
+
+    console.log('Password reset email sent:', data?.id);
   } catch (error) {
     if (error instanceof ApiError) {
       throw error;

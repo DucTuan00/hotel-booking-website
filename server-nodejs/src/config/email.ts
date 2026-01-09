@@ -1,28 +1,24 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import { PaymentMethod } from '@/types/booking';
 
-// Email configuration
-const emailConfig = {
-    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.EMAIL_PORT || '587'),
-    secure: false, // true for 465, false for other ports
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD, // App Password for Gmail
-    },
-};
+// Initialize Resend
+// Resend API Key from environment variable
+const resendApiKey = process.env.RESEND_API_KEY;
 
-// Create transporter
-export const transporter = nodemailer.createTransport(emailConfig);
+if (!resendApiKey) {
+    console.warn('RESEND_API_KEY not found in environment variables. Email functionality will not work.');
+}
 
-// Verify connection configuration
-transporter.verify((error, success) => {
-    if (error) {
-        console.error('Email configuration error:', error);
-    } else {
-        console.log('Email server is ready to send messages');
-    }
-});
+export const resend = new Resend(resendApiKey);
+
+// Email sender configuration
+// Must be a verified domain/email in Resend dashboard
+export const EMAIL_FROM = process.env.EMAIL_FROM || 'onboarding@resend.dev';
+
+// Verify Resend is ready (optional check)
+if (resendApiKey) {
+    console.log('Resend email service initialized');
+}
 
 // Email templates
 export const emailTemplates = {

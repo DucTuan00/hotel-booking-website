@@ -1,4 +1,4 @@
-import { transporter, emailTemplates } from '@/config/email';
+import { resend, EMAIL_FROM, emailTemplates } from '@/config/email';
 import ApiError from '@/utils/apiError';
 
 interface BookingEmailData {
@@ -30,7 +30,7 @@ interface BookingEmailData {
 }
 
 /**
- * Send booking confirmation email to customer
+ * Send booking confirmation email to customer using Resend
  */
 export async function sendBookingConfirmationEmail(bookingData: BookingEmailData) {
     try {
@@ -62,20 +62,27 @@ export async function sendBookingConfirmationEmail(bookingData: BookingEmailData
 
         const emailTemplate = emailTemplates.bookingConfirmation(emailData);
 
-        const mailOptions = {
-            from: `"Lion Hotel Boutique" <${process.env.EMAIL_USER}>`,
-            to: bookingData.customerEmail,
+        // Send email using Resend
+        const { data, error } = await resend.emails.send({
+            from: `Lion Hotel Boutique <${EMAIL_FROM}>`,
+            to: [bookingData.customerEmail],
             subject: emailTemplate.subject,
-            text: emailTemplate.text,
             html: emailTemplate.html,
-        };
+        });
 
-        const info = await transporter.sendMail(mailOptions);
-        console.log('Booking confirmation email sent:', info.messageId);
+        if (error) {
+            console.error('Error sending booking confirmation email:', error);
+            return {
+                success: false,
+                error: error.message,
+            };
+        }
+
+        console.log('Booking confirmation email sent:', data?.id);
         
         return {
             success: true,
-            messageId: info.messageId,
+            messageId: data?.id,
         };
     } catch (error: any) {
         console.error('Error sending booking confirmation email:', error);
