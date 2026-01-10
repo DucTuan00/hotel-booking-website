@@ -6,12 +6,12 @@ const MobileCategory: React.FC = () => {
     const navigate = useNavigate();
 
     const menuItems = [
-        { name: 'Giới thiệu', path: '/#about', icon: '/images/information.png' },
+        { name: 'Giới thiệu', path: '/introduction', icon: '/images/information.png' },
         { name: 'Phòng', path: '/rooms', icon: '/images/bed.png' },
         { name: 'Nhà hàng & Sky Bar', path: '/restaurant', icon: '/images/restaurant.png' },
         { name: 'Spa & Tắm bià', path: '/spa', icon: '/images/massage.png' },
         { name: 'AI Planner', path: '/ai-planner', icon: '/images/ai.png' },
-        { name: 'Liên hệ', path: '/#contact', icon: '/images/contact-mail.png' },
+        { name: 'Liên hệ', path: '/contact', icon: '/images/contact-mail.png' },
     ];
 
     const handleNavigation = (path: string) => {

@@ -20,8 +20,9 @@ const ServicesSection: React.FC = () => {
                         Experience
                     </span>
                     <h2
-                        className={`text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4 sm:mb-6 transition-all duration-1000 transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-                            }`}
+                        className={`text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4 sm:mb-6 md:transition-all md:duration-1000 md:transform ${
+                            isVisible ? 'opacity-100 md:translate-y-0' : 'opacity-100 md:opacity-0 md:translate-y-10'
+                        }`}
                         style={{
                             fontFamily: TYPOGRAPHY.fontFamily.primary,
                             transitionDelay: '200ms'
@@ -35,8 +36,9 @@ const ServicesSection: React.FC = () => {
                 {/* Spa Section */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-24 items-center mb-16 sm:mb-32">
                     <div
-                        className={`relative order-2 lg:order-1 transition-all duration-1000 transform ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-20'
-                            }`}
+                        className={`relative order-2 lg:order-1 md:transition-all md:duration-1000 md:transform ${
+                            isVisible ? 'opacity-100 md:translate-x-0' : 'opacity-100 md:opacity-0 md:-translate-x-20'
+                        }`}
                         style={{ transitionDelay: '400ms' }}
                     >
                         <div className="relative rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl">
@@ -51,8 +53,9 @@ const ServicesSection: React.FC = () => {
                     </div>
 
                     <div
-                        className={`order-1 lg:order-2 transition-all duration-1000 transform ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-20'
-                            }`}
+                        className={`order-1 lg:order-2 md:transition-all md:duration-1000 md:transform ${
+                            isVisible ? 'opacity-100 md:translate-x-0' : 'opacity-100 md:opacity-0 md:translate-x-20'
+                        }`}
                         style={{ transitionDelay: '600ms' }}
                     >
                         <span
@@ -96,8 +99,9 @@ const ServicesSection: React.FC = () => {
                 {/* Restaurant Section */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-24 items-center">
                     <div
-                        className={`order-1 lg:order-1 transition-all duration-1000 transform ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-20'
-                            }`}
+                        className={`order-1 lg:order-1 md:transition-all md:duration-1000 md:transform ${
+                            isVisible ? 'opacity-100 md:translate-x-0' : 'opacity-100 md:opacity-0 md:translate-x-20'
+                        }`}
                         style={{ transitionDelay: '800ms' }}
                     >
                         <span
@@ -138,8 +142,9 @@ const ServicesSection: React.FC = () => {
                     </div>
 
                     <div
-                        className={`relative order-2 lg:order-2 transition-all duration-1000 transform ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-20'
-                            }`}
+                        className={`relative order-2 lg:order-2 md:transition-all md:duration-1000 md:transform ${
+                            isVisible ? 'opacity-100 md:translate-x-0' : 'opacity-100 md:opacity-0 md:-translate-x-20'
+                        }`}
                         style={{ transitionDelay: '1000ms' }}
                     >
                         <div className="relative rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl">

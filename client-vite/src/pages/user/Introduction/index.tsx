@@ -121,9 +121,9 @@ const Introduction: React.FC = () => {
 
                         {/* Single Image */}
                         <div className="flex justify-center">
-                            <div className="overflow-hidden rounded-lg shadow-lg max-w-md w-full">
+                            <div className="overflow-hidden rounded-lg max-w-md w-full">
                                 <img 
-                                    src="/images/home4.jpg" 
+                                    src="/images/introduction/intro1.png" 
                                     alt="Lion Boutique Hotel"
                                     className="w-full h-auto object-cover"
                                 />

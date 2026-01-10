@@ -23,7 +23,7 @@ if (resendApiKey) {
 // Email templates
 export const emailTemplates = {
     resetPasswordCode: (code: string, expiryMinutes: number = 10) => ({
-        subject: 'Đặt lại mật khẩu - Lion Hotel Boutique',
+        subject: 'Đặt lại mật khẩu - Lion Boutique Hotel',
         html: `
       <!DOCTYPE html>
       <html>
@@ -41,7 +41,7 @@ export const emailTemplates = {
       <body>
         <div class="container">
           <div class="header">
-            <h1>Lion Hotel Boutique</h1>
+            <h1>Lion Boutique Hotel</h1>
           </div>
           <div class="content">
             <h2>Đặt lại mật khẩu</h2>
@@ -88,7 +88,7 @@ export const emailTemplates = {
         celebrateItems?: Array<{ name: string; quantity: number; price: number }>;
         discount?: { tier: string; percent: number; amount: number };
     }) => ({
-        subject: 'Xác nhận đặt phòng - Lion Hotel Boutique',
+        subject: 'Xác nhận đặt phòng - Lion Boutique Hotel',
         html: `
       <!DOCTYPE html>
       <html>
@@ -115,12 +115,12 @@ export const emailTemplates = {
       <body>
         <div class="container">
           <div class="header">
-            <h1>Lion Hotel Boutique</h1>
+            <h1>Lion Boutique Hotel</h1>
           </div>
           <div class="content">
             <h2>Xác nhận đặt phòng</h2>
             <p>Kính gửi <strong>${bookingData.customerName}</strong>,</p>
-            <p>Cảm ơn bạn đã chọn Lion Hotel Boutique! Chúng tôi đã nhận được đơn đặt phòng của bạn.</p>
+            <p>Cảm ơn bạn đã chọn Lion Boutique Hotel! Chúng tôi đã nhận được đơn đặt phòng của bạn.</p>
             
             <div class="booking-id">
               Mã đặt phòng: ${bookingData.bookingId}
@@ -214,10 +214,10 @@ export const emailTemplates = {
             </ul>
 
             <p style="margin-top: 30px;">Chúng tôi rất mong được phục vụ quý khách!</p>
-            <p style="color: #D4902A; font-weight: bold;">Trân trọng,<br>Lion Hotel Boutique Team</p>
+            <p style="color: #D4902A; font-weight: bold;">Trân trọng,<br>Lion Boutique Hotel Team</p>
           </div>
           <div class="footer">
-            <p>&copy; 2026 Lion Hotel Boutique. Mọi quyền được bảo lưu.</p>
+            <p>&copy; 2026 Lion Boutique Hotel. Mọi quyền được bảo lưu.</p>
             <p>Đây là email tự động. Vui lòng không trả lời tin nhắn này.</p>
           </div>
         </div>
@@ -225,11 +225,11 @@ export const emailTemplates = {
       </html>
     `,
         text: `
-      Xác nhận đặt phòng - Lion Hotel Boutique
+      Xác nhận đặt phòng - Lion Boutique Hotel
       
       Kính gửi ${bookingData.customerName},
       
-      Cảm ơn bạn đã chọn Lion Hotel Boutique! Chúng tôi đã nhận được đơn đặt phòng của bạn.
+      Cảm ơn bạn đã chọn Lion Boutique Hotel! Chúng tôi đã nhận được đơn đặt phòng của bạn.
       
       Mã đặt phòng: ${bookingData.bookingId}
       
@@ -267,7 +267,7 @@ export const emailTemplates = {
       Chúng tôi rất mong được phục vụ quý khách!
       
       Trân trọng,
-      Lion Hotel Boutique Team
+      Lion Boutique Hotel Team
     `,
     }),
 };

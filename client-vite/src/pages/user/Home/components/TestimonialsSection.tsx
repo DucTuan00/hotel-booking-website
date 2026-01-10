@@ -39,9 +39,10 @@ const TestimonialsSection: React.FC = () => {
                 <img
                     src="/images/home8.jpg"
                     alt="Background"
-                    className="w-full h-full object-cover"
+                    className="w-full !h-full object-cover"
+                    loading="lazy"
                 />
-                <div className="absolute inset-0 bg-gray-900/80 backdrop-blur-sm"></div>
+                <div className="absolute inset-0 bg-gray-900/85"></div>
             </div>
 
             <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -75,21 +76,22 @@ const TestimonialsSection: React.FC = () => {
                     {testimonials.map((testimonial, index) => (
                         <div
                             key={testimonial.id}
-                            className={`bg-white/10 backdrop-blur-md border border-white/10 p-8 rounded-2xl transition-all duration-700 transform hover:-translate-y-2 hover:bg-white/15 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-                                }`}
-                            style={{ transitionDelay: `${index * 150}ms` }}
+                            className={`bg-white/10 border border-white/10 p-8 rounded-2xl md:transition-all md:duration-700 md:transform md:hover:-translate-y-2 md:hover:bg-white/15 ${
+                                isVisible ? 'opacity-100 md:translate-y-0' : 'opacity-100 md:opacity-0 md:translate-y-10'
+                            }`}
+                            style={{ transitionDelay: `${index * 150}ms`, contain: 'layout style paint' }}
                         >
                             <div className="flex items-center gap-4 mb-6">
                                 <div className="w-14 h-14 rounded-full bg-[#D4902A]/20 flex items-center justify-center text-[#D4902A] font-bold text-xl border-2 border-[#D4902A]/50">
                                     {testimonial.avatarLetter}
                                 </div>
                                 <div>
-                                    <h4
-                                        className="text-white font-bold text-lg"
-                                        style={{ fontFamily: TYPOGRAPHY.fontFamily.primary }}
+                                    <p
+                                        className="text-white font-bold text-lg !mb-0"
+                                        style={{ fontFamily: TYPOGRAPHY.fontFamily.secondary }}
                                     >
                                         {testimonial.name}
-                                    </h4>
+                                    </p>
                                     <Rate
                                         disabled
                                         defaultValue={testimonial.rating}
@@ -101,7 +103,7 @@ const TestimonialsSection: React.FC = () => {
                             <div className="relative">
                                 <span className="absolute -top-4 -left-2 text-6xl text-[#D4902A]/20 font-serif leading-none">"</span>
                                 <p
-                                    className="text-gray-300 text-base leading-relaxed relative z-10 italic"
+                                    className="text-gray-300 text-base leading-relaxed relative z-10 italic !mb-0"
                                     style={{ fontFamily: TYPOGRAPHY.fontFamily.secondary }}
                                 >
                                     {testimonial.comment}

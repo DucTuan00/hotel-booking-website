@@ -19,8 +19,9 @@ const RoomsSection: React.FC = () => {
                             Accommodation
                         </span>
                         <h2
-                            className={`text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4 sm:mb-6 transition-all duration-1000 transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-                                }`}
+                            className={`text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4 sm:mb-6 md:transition-all md:duration-1000 md:transform ${
+                                isVisible ? 'opacity-100 md:translate-y-0' : 'opacity-100 md:opacity-0 md:translate-y-10'
+                            }`}
                             style={{
                                 fontFamily: TYPOGRAPHY.fontFamily.primary,
                                 transitionDelay: '200ms'
@@ -35,22 +36,24 @@ const RoomsSection: React.FC = () => {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 mb-10 sm:mb-16">
                         {/* Phòng Đôi */}
                         <div
-                            className={`group cursor-pointer relative overflow-hidden rounded-xl shadow-lg transition-all duration-1000 transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'
-                                }`}
-                            style={{ transitionDelay: '400ms' }}
+                            className={`group cursor-pointer relative overflow-hidden rounded-xl shadow-lg md:transition-all md:duration-1000 md:transform ${
+                                isVisible ? 'opacity-100 md:translate-y-0' : 'opacity-100 md:opacity-0 md:translate-y-20'
+                            }`}
+                            style={{ transitionDelay: '400ms', contain: 'layout style paint' }}
                             onClick={() => window.location.href = '/rooms'}
                         >
                             <div className="aspect-w-16 aspect-h-10 h-64 sm:h-80 md:h-[400px]">
                                 <img
                                     src="/images/home4.jpg"
                                     alt="Phòng Đôi"
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                    className="w-full h-full object-cover md:transition-transform md:duration-700 md:group-hover:scale-110"
+                                    loading="lazy"
                                 />
                             </div>
                             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-80 transition-opacity duration-300"></div>
                             
                             <div className="absolute top-4 left-4 sm:top-6 sm:left-6">
-                                 <span className="bg-white/20 backdrop-blur-md text-white text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-1 rounded-full uppercase tracking-wider border border-white/30">
+                                 <span className="bg-white/90 text-gray-900 text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-1 rounded-full uppercase tracking-wider shadow-md">
                                     PHỔ BIẾN
                                  </span>
                             </div>
@@ -78,22 +81,24 @@ const RoomsSection: React.FC = () => {
     
                         {/* Phòng Suite Gia Đình */}
                         <div
-                            className={`group cursor-pointer relative overflow-hidden rounded-xl shadow-lg transition-all duration-1000 transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'
-                                }`}
-                            style={{ transitionDelay: '600ms' }}
+                            className={`group cursor-pointer relative overflow-hidden rounded-xl shadow-lg md:transition-all md:duration-1000 md:transform ${
+                                isVisible ? 'opacity-100 md:translate-y-0' : 'opacity-100 md:opacity-0 md:translate-y-20'
+                            }`}
+                            style={{ transitionDelay: '600ms', contain: 'layout style paint' }}
                             onClick={() => window.location.href = '/rooms'}
                         >
                             <div className="aspect-w-16 aspect-h-10 h-64 sm:h-80 md:h-[400px]">
                                 <img
                                     src="/images/home5.jpg"
                                     alt="Phòng Suite Gia Đình"
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                    className="w-full h-full object-cover md:transition-transform md:duration-700 md:group-hover:scale-110"
+                                    loading="lazy"
                                 />
                             </div>
                             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-80 transition-opacity duration-300"></div>
                             
                             <div className="absolute top-4 left-4 sm:top-6 sm:left-6">
-                                 <span className="bg-white/20 backdrop-blur-md text-white text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-1 rounded-full uppercase tracking-wider border border-white/30">
+                                 <span className="bg-white/90 text-gray-900 text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-1 rounded-full uppercase tracking-wider shadow-md">
                                     GIA ĐÌNH
                                  </span>
                             </div>
@@ -120,11 +125,13 @@ const RoomsSection: React.FC = () => {
                         </div>
                     </div>
     
-                    {/* CTA Section */}                <div
-                    className={`text-center transition-all duration-1000 transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'
+                    {/* CTA Section */}                
+                    <div
+                        className={`text-center md:transition-all md:duration-1000 md:transform ${
+                            isVisible ? 'opacity-100 md:translate-y-0' : 'opacity-100 md:opacity-0 md:translate-y-20'
                         }`}
-                    style={{ transitionDelay: '800ms' }}
-                >
+                        style={{ transitionDelay: '800ms' }}
+                    >
                     <button
                         className="px-5 py-3 h-auto !text-sm border-2 hover:bg-gray-900 hover:!text-white transition-all duration-300 rounded-lg"
                         style={{

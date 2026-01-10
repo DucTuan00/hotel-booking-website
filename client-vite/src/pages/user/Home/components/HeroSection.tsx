@@ -29,7 +29,7 @@ const HeroSection: React.FC = () => {
             {/* Content */}
             <div className="relative z-10 text-center text-white w-full max-w-6xl mx-auto px-4 sm:px-6 fade-in-up visible pt-10 sm:pt-0">
                 <p 
-                    className="text-[10px] sm:text-base md:text-lg tracking-[0.2em] sm:tracking-[0.3em] uppercase mb-2 sm:mb-6 opacity-0 animate-fadeIn"
+                    className="text-[10px] sm:text-base md:text-lg tracking-[0.2em] sm:tracking-[0.3em] uppercase mb-2 sm:mb-6 opacity-100 md:opacity-0 md:animate-fadeIn"
                     style={{ 
                         fontFamily: TYPOGRAPHY.fontFamily.secondary,
                         animationDelay: '0.2s',
@@ -39,7 +39,7 @@ const HeroSection: React.FC = () => {
                     Welcome to
                 </p>
                 <h1
-                    className="text-3xl sm:text-6xl md:text-7xl lg:text-8xl font-bold mb-3 sm:mb-8 leading-tight opacity-0 animate-fadeIn"
+                    className="text-3xl sm:text-6xl md:text-7xl lg:text-8xl font-bold mb-3 sm:mb-8 leading-tight opacity-100 md:opacity-0 md:animate-fadeIn"
                     style={{
                         fontFamily: TYPOGRAPHY.fontFamily.primary,
                         textShadow: '0 4px 12px rgba(0,0,0,0.3)',
@@ -50,7 +50,7 @@ const HeroSection: React.FC = () => {
                     LION BOUTIQUE HOTEL
                 </h1>
                 <div 
-                    className="w-12 sm:w-24 h-0.5 sm:h-1 mx-auto mb-4 sm:mb-8 opacity-0 animate-fadeIn"
+                    className="w-12 sm:w-24 h-0.5 sm:h-1 mx-auto mb-4 sm:mb-8 opacity-100 md:opacity-0 md:animate-fadeIn"
                     style={{ 
                         backgroundColor: COLORS.primary,
                         animationDelay: '0.6s',
@@ -58,7 +58,7 @@ const HeroSection: React.FC = () => {
                     }}
                 ></div>
                 <p
-                    className="text-sm sm:text-xl md:text-3xl font-light max-w-3xl mx-auto opacity-0 animate-fadeIn px-2"
+                    className="text-sm sm:text-xl md:text-3xl font-light max-w-3xl mx-auto opacity-100 md:opacity-0 md:animate-fadeIn px-2"
                     style={{
                         fontFamily: TYPOGRAPHY.fontFamily.primary,
                         fontStyle: 'italic',
