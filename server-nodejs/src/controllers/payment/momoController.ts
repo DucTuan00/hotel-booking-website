@@ -232,9 +232,20 @@ export async function handleMomoReturn(req: Request, res: Response): Promise<voi
         const isMobileReturn = booking.paymentDetails?.platform === 'mobile';
 
         if (isMobileReturn) {
-            // Redirect to mobile deep link
+            // Redirect to mobile deep link with ALL momo params for signature verification
             const mobileReturnUrl = process.env.MOMO_MOBILE_RETURN_URL || 'hotelboutique://payment-result';
-            const redirectUrl = `${mobileReturnUrl}?success=${isSuccess}&message=${encodeURIComponent(statusMessage)}&bookingId=${booking._id}`;
+            
+            // Build query string with all momo params + gateway identifier
+            const deepLinkParams = new URLSearchParams();
+            deepLinkParams.append('gateway', 'momo');
+            deepLinkParams.append('bookingId', String(booking._id));
+            
+            // Add all MoMo params from the original callback
+            Object.keys(queryData).forEach(key => {
+                deepLinkParams.append(key, String((queryData as any)[key]));
+            });
+            
+            const redirectUrl = `${mobileReturnUrl}?${deepLinkParams.toString()}`;
             
             res.redirect(redirectUrl);
         } else {

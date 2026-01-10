@@ -8,7 +8,7 @@ const DeepLinkHandler: React.FC = () => {
 
     /**
      * Verify payment result from deep link and update booking
-     * Parse all payment params and send to backend for verification
+     * Deep link now contains ALL payment gateway params for signature verification
      */
     const verifyPaymentFromDeepLink = useCallback(async (url: URL, gateway: string) => {
         try {
@@ -28,7 +28,7 @@ const DeepLinkHandler: React.FC = () => {
                 paymentParams[key] = value;
             });
 
-            console.log('Sending payment params to backend for verification...');
+            console.log('Sending payment params to backend for verification:', paymentParams);
 
             // Call backend API to verify signature and update booking
             const endpoint = gateway === 'vnpay'
@@ -48,9 +48,24 @@ const DeepLinkHandler: React.FC = () => {
         } catch (error: any) {
             console.error('Error verifying payment:', error);
 
-            const errorMessage = error.response?.data?.message || error.message || 'Lỗi xác thực thanh toán';
+            // Fallback: Check if booking was already updated by backend return handler
             const bookingId = new URLSearchParams(url.search).get('bookingId');
+            
+            // Try to get booking status as fallback
+            try {
+                if (bookingId) {
+                    const bookingResponse = await api.get(`/booking/${bookingId}`);
+                    if (bookingResponse.data?.data?.paymentStatus === 'paid') {
+                        console.log('Fallback: Booking already paid, redirecting to success');
+                        navigate(`/booking/complete?success=true&bookingId=${bookingId}`);
+                        return;
+                    }
+                }
+            } catch (fallbackError) {
+                console.error('Fallback check failed:', fallbackError);
+            }
 
+            const errorMessage = error.response?.data?.message || error.message || 'Lỗi xác thực thanh toán';
             navigate(`/booking/complete?success=false&message=${encodeURIComponent(errorMessage)}&bookingId=${bookingId || ''}`);
         }
     }, [navigate]);
@@ -64,7 +79,7 @@ const DeepLinkHandler: React.FC = () => {
                 console.log('Deep link opened:', event.url);
 
                 try {
-                    // Parse URL: hotelboutique://payment-result?bookingId=xxx&gateway=vnpay&vnp_...
+                    // Parse URL: hotelboutique://payment-result?gateway=vnpay&bookingId=xxx&vnp_...
                     const url = new URL(event.url);
 
                     if (url.hostname === 'payment-result') {
@@ -72,14 +87,24 @@ const DeepLinkHandler: React.FC = () => {
                         const gateway = params.get('gateway');
 
                         if (gateway === 'vnpay' || gateway === 'momo') {
-                            // Show loading state
+                            // Show loading state while verifying
                             navigate('/booking/complete?loading=true');
 
-                            // Verify payment and update booking
+                            // Verify payment signature and update booking
                             verifyPaymentFromDeepLink(url, gateway);
                         } else {
-                            // Unknown gateway
-                            navigate('/booking/complete?success=false&message=' + encodeURIComponent('Gateway không hợp lệ'));
+                            // Unknown or missing gateway - fallback to simple params
+                            const success = params.get('success');
+                            const message = params.get('message');
+                            const bookingId = params.get('bookingId');
+
+                            console.log('No gateway specified, using simple params:', { success, message, bookingId });
+
+                            if (success === 'true') {
+                                navigate(`/booking/complete?success=true&bookingId=${bookingId || ''}`);
+                            } else {
+                                navigate(`/booking/complete?success=false&message=${encodeURIComponent(message || 'Thanh toán thất bại')}&bookingId=${bookingId || ''}`);
+                            }
                         }
                     }
                 } catch (error) {

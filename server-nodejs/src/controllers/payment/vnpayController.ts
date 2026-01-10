@@ -120,9 +120,22 @@ export async function vnpayReturn(req: Request, res: Response, next: NextFunctio
         const isMobileReturn = booking.paymentDetails?.platform === 'mobile';
 
         if (isMobileReturn) {
-            // Redirect to mobile deep link
+            // Redirect to mobile deep link with ALL vnpay params for signature verification
             const mobileReturnUrl = process.env.VNPAY_MOBILE_RETURN_URL || 'hotelboutique://payment-result';
-            const redirectUrl = `${mobileReturnUrl}?success=${verifyResult.isSuccess}&message=${encodeURIComponent(verifyResult.message)}&bookingId=${txnRef}`;
+            
+            // Build query string with all vnp_* params + gateway identifier
+            const deepLinkParams = new URLSearchParams();
+            deepLinkParams.append('gateway', 'vnpay');
+            deepLinkParams.append('bookingId', txnRef);
+            
+            // Add all vnp_* params from the original callback
+            Object.keys(query).forEach(key => {
+                if (key.startsWith('vnp_')) {
+                    deepLinkParams.append(key, query[key]);
+                }
+            });
+            
+            const redirectUrl = `${mobileReturnUrl}?${deepLinkParams.toString()}`;
             
             res.redirect(redirectUrl);
         } else {
