@@ -129,19 +129,19 @@ export const emailTemplates = {
             <div class="info-section">
               <h3 style="margin-top: 0; color: #8B1A1A;">Thông tin phòng</h3>
               <div class="info-row">
-                <span class="info-label">Loại phòng:</span>
+                <span class="info-label">Loại phòng: </span>
                 <span class="info-value">${bookingData.roomName}</span>
               </div>
               <div class="info-row">
-                <span class="info-label">Hạng phòng:</span>
+                <span class="info-label">Hạng phòng: </span>
                 <span class="info-value">${bookingData.roomType}</span>
               </div>
               <div class="info-row">
-                <span class="info-label">Số lượng phòng:</span>
+                <span class="info-label">Số lượng phòng: </span>
                 <span class="info-value">${bookingData.quantity} phòng</span>
               </div>
               <div class="info-row">
-                <span class="info-label">Số khách:</span>
+                <span class="info-label">Số khách: </span>
                 <span class="info-value">${bookingData.guests.adults} người lớn${bookingData.guests.children ? `, ${bookingData.guests.children} trẻ em` : ''}</span>
               </div>
             </div>
@@ -149,15 +149,15 @@ export const emailTemplates = {
             <div class="info-section">
               <h3 style="margin-top: 0; color: #8B1A1A;">Thời gian lưu trú</h3>
               <div class="info-row">
-                <span class="info-label">Nhận phòng:</span>
+                <span class="info-label">Nhận phòng: </span>
                 <span class="info-value">${bookingData.checkIn}</span>
               </div>
               <div class="info-row">
-                <span class="info-label">Trả phòng:</span>
+                <span class="info-label">Trả phòng: </span>
                 <span class="info-value">${bookingData.checkOut}</span>
               </div>
               <div class="info-row">
-                <span class="info-label">Số đêm:</span>
+                <span class="info-label">Số đêm: </span>
                 <span class="info-value">${bookingData.nights} đêm</span>
               </div>
             </div>
@@ -179,8 +179,8 @@ export const emailTemplates = {
             <div class="price-section">
               <h3 style="margin-top: 0; color: #8B1A1A;">Chi tiết thanh toán</h3>
               <div class="info-row">
-                <span class="info-label">Phương thức:</span>
-                <span class="info-value">${bookingData.paymentMethod === 'CASH' ? 'Tiền mặt' : bookingData.paymentMethod === 'VNPAY' ? 'VNPay' : 'MoMo'}</span>
+                <span class="info-label">Phương thức: </span>
+                <span class="info-value">${bookingData.paymentMethod === PaymentMethod.ONSITE ? 'Thanh toán tại quầy' : 'Thanh toán Online'}</span>
               </div>
               ${bookingData.discount ? `
               <div class="info-row">
@@ -209,8 +209,8 @@ export const emailTemplates = {
 
             <p>Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ:</p>
             <ul>
-              <li>Hotline: 1900-xxxx</li>
-              <li>Email: support@lionhotel.com</li>
+              <li>Hotline: 0987654321</li>
+              <li>Email: support@lionboutiquehotel.com</li>
             </ul>
 
             <p style="margin-top: 30px;">Chúng tôi rất mong được phục vụ quý khách!</p>
