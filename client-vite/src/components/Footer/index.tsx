@@ -66,9 +66,9 @@ const Footer: React.FC = () => {
 
           <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4">
             <span className="text-xs sm:text-sm text-gray-300">Thanh toán:</span>
-            <div className="flex space-x-1 sm:space-x-2">
-              <div className="w-6 sm:w-8 h-4 sm:h-5 rounded text-xs text-white flex items-center justify-center">VNPAY,</div>
-              <div className="w-6 sm:w-8 h-4 sm:h-5 rounded text-xs text-white flex items-center justify-center">MoMo</div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="px-2 py-1 bg-gray-700 rounded text-xs text-white whitespace-nowrap">VNPAY</span>
+              <span className="px-2 py-1 bg-gray-700 rounded text-xs text-white whitespace-nowrap">MOMO</span>
             </div>
           </div>
         </div>

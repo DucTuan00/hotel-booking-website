@@ -188,7 +188,8 @@ const UserBookings: React.FC = () => {
                         <Space direction="vertical" style={{ width: '100%' }} size="middle">
                             {/* Search Input */}
                             <Input
-                                size="large"
+                                size="middle"
+                                className="h-10"
                                 placeholder="Tìm kiếm theo mã đơn"
                                 prefix={<SearchOutlined style={{ color: COLORS.gray[400] }} />}
                                 value={searchText}

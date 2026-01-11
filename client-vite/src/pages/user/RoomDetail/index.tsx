@@ -91,7 +91,7 @@ const RoomDetail: React.FC = () => {
     <div className="room-detail-page min-h-screen bg-gray-50">
       <Notification message={message} onClose={() => setMessage(null)} />
 
-      <div className="relative w-full h-80 overflow-hidden">
+      <div className="relative w-full h-80 overflow-hidden hidden md:block">
         <img
           src={room.images && room.images.length > 0 ? room.images[0].path : "/images/default-image.jpg"}
           alt={room.name}
@@ -106,7 +106,7 @@ const RoomDetail: React.FC = () => {
       </div>
 
       {/* Decorative separator */}
-      <div className="w-full bg-gradient-to-b from-gray-200 to-gray-50 py-4">
+      <div className="w-full bg-gradient-to-b from-gray-200 to-gray-50 py-4 hidden md:block">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="w-24 h-1 bg-[#D4902A] mx-auto"></div>
         </div>
