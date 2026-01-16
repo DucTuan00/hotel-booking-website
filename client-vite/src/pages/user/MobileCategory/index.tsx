@@ -54,7 +54,7 @@ const MobileCategory: React.FC = () => {
             <div
                 style={{
                     display: 'grid',
-                    gridTemplateColumns: '1fr 1fr',
+                    gridTemplateColumns: '1fr',
                     gap: '16px',
                 }}
             >
@@ -64,16 +64,17 @@ const MobileCategory: React.FC = () => {
                         onClick={() => handleNavigation(item.path)}
                         style={{
                             display: 'flex',
-                            flexDirection: 'column',
+                            flexDirection: 'row',
                             alignItems: 'center',
-                            justifyContent: 'center',
-                            padding: '24px 12px',
+                            justifyContent: 'flex-start',
+                            padding: '20px 16px',
                             backgroundColor: '#fff',
-                            border: `2px solid ${COLORS.gray[200]}`,
+                            border: `1px solid ${COLORS.gray[300]}`,
                             borderRadius: '16px',
                             cursor: 'pointer',
                             transition: 'all 0.3s ease',
-                            maxHeight: '100px',
+                            gap: '16px',
+                            maxHeight: '60px'
                         }}
                         onMouseEnter={(e) => {
                             e.currentTarget.style.transform = 'translateY(-4px)';
@@ -95,8 +96,7 @@ const MobileCategory: React.FC = () => {
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                marginBottom: '2px',
-                                fontSize: '28px',
+                                flexShrink: 0,
                             }}
                         >
                             <img
@@ -115,11 +115,11 @@ const MobileCategory: React.FC = () => {
                         {/* Name */}
                         <span
                             style={{
-                                fontSize: '14px',
+                                fontSize: '16px',
                                 fontWeight: 600,
                                 fontFamily: TYPOGRAPHY.fontFamily.secondary,
                                 color: COLORS.gray[700],
-                                textAlign: 'center',
+                                textAlign: 'left',
                                 lineHeight: '1.3',
                             }}
                         >

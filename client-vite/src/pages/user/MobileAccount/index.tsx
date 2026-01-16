@@ -130,7 +130,7 @@ const MobileAccount: React.FC = () => {
                         <div
                             style={{
                                 display: 'grid',
-                                gridTemplateColumns: '1fr 1fr',
+                                gridTemplateColumns: '1fr',
                                 gap: '16px',
                             }}
                         >
@@ -139,16 +139,17 @@ const MobileAccount: React.FC = () => {
                                 onClick={() => navigate('/user/profile')}
                                 style={{
                                     display: 'flex',
-                                    flexDirection: 'column',
+                                    flexDirection: 'row',
                                     alignItems: 'center',
-                                    justifyContent: 'center',
-                                    padding: '28px 16px',
+                                    justifyContent: 'flex-start',
+                                    padding: '20px 16px',
                                     backgroundColor: '#fff',
-                                    border: `2px solid ${COLORS.gray[200]}`,
+                                    border: `1px solid ${COLORS.gray[300]}`,
                                     borderRadius: '16px',
                                     cursor: 'pointer',
                                     transition: 'all 0.3s ease',
-                                    maxHeight: '100px',
+                                    gap: '12px',
+                                    maxHeight: '60px'
                                 }}
                                 onMouseEnter={(e) => {
                                     e.currentTarget.style.transform = 'translateY(-4px)';
@@ -168,7 +169,7 @@ const MobileAccount: React.FC = () => {
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        marginBottom: '2px',
+                                        flexShrink: 0,
                                     }}
                                 >
                                     <UserOutlined style={{ fontSize: '24px' }} />
@@ -179,6 +180,7 @@ const MobileAccount: React.FC = () => {
                                         fontWeight: 600,
                                         fontFamily: TYPOGRAPHY.fontFamily.secondary,
                                         color: COLORS.gray[700],
+                                        textAlign: 'left',
                                     }}
                                 >
                                     Hồ sơ
@@ -190,16 +192,17 @@ const MobileAccount: React.FC = () => {
                                 onClick={() => navigate('/user/bookings')}
                                 style={{
                                     display: 'flex',
-                                    flexDirection: 'column',
+                                    flexDirection: 'row',
                                     alignItems: 'center',
-                                    justifyContent: 'center',
-                                    padding: '28px 16px',
+                                    justifyContent: 'flex-start',
+                                    padding: '20px 16px',
                                     backgroundColor: '#fff',
-                                    border: `2px solid ${COLORS.gray[200]}`,
+                                    border: `1px solid ${COLORS.gray[300]}`,
                                     borderRadius: '16px',
                                     cursor: 'pointer',
                                     transition: 'all 0.3s ease',
-                                    maxHeight: '100px',
+                                    gap: '12px',
+                                    maxHeight: '60px'
                                 }}
                                 onMouseEnter={(e) => {
                                     e.currentTarget.style.transform = 'translateY(-4px)';
@@ -219,7 +222,7 @@ const MobileAccount: React.FC = () => {
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        marginBottom: '2px',
+                                        flexShrink: 0,
                                     }}
                                 >
                                     <UnorderedListOutlined style={{ fontSize: '24px' }} />
@@ -230,6 +233,7 @@ const MobileAccount: React.FC = () => {
                                         fontWeight: 600,
                                         fontFamily: TYPOGRAPHY.fontFamily.secondary,
                                         color: COLORS.gray[700],
+                                        textAlign: 'left',
                                     }}
                                 >
                                     Đơn đặt phòng
@@ -241,16 +245,17 @@ const MobileAccount: React.FC = () => {
                                 onClick={handleLogout}
                                 style={{
                                     display: 'flex',
-                                    flexDirection: 'column',
+                                    flexDirection: 'row',
                                     alignItems: 'center',
-                                    justifyContent: 'center',
-                                    padding: '28px 16px',
+                                    justifyContent: 'flex-start',
+                                    padding: '20px 16px',
                                     backgroundColor: '#fff',
-                                    border: `2px solid ${COLORS.gray[200]}`,
+                                    border: `1px solid ${COLORS.gray[300]}`,
                                     borderRadius: '16px',
                                     cursor: 'pointer',
                                     transition: 'all 0.3s ease',
-                                    maxHeight: '100px',
+                                    gap: '12px',
+                                    maxHeight: '60px'
                                 }}
                                 onMouseEnter={(e) => {
                                     e.currentTarget.style.transform = 'translateY(-4px)';
@@ -270,7 +275,7 @@ const MobileAccount: React.FC = () => {
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        marginBottom: '2px',
+                                        flexShrink: 0,
                                     }}
                                 >
                                     <LogoutOutlined style={{ fontSize: '24px' }} />
@@ -280,6 +285,8 @@ const MobileAccount: React.FC = () => {
                                         fontSize: '15px',
                                         fontWeight: 600,
                                         fontFamily: TYPOGRAPHY.fontFamily.secondary,
+                                        color: COLORS.gray[700],
+                                        textAlign: 'left',
                                     }}
                                 >
                                     Đăng xuất
