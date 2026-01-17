@@ -93,6 +93,15 @@ export function validateRoomData(data: RoomData) {
         data.roomArea = roomArea;
     }
 
+    // Validate bedQuantity
+    if (data.bedQuantity !== undefined && data.bedQuantity !== null) {
+        const bedQuantity = Number(data.bedQuantity);
+        if (isNaN(bedQuantity) || bedQuantity <= 0) {
+            throw new ApiError("Invalid bed quantity. Must be greater than 0.", 400);
+        }
+        data.bedQuantity = bedQuantity;
+    }
+
     // Validate images
     if (data.images && !Array.isArray(data.images)) {
         throw new ApiError("Invalid images. Images should be an array.", 400);
@@ -131,6 +140,7 @@ export async function createRoom(roomData: RoomData) {
         price: roomData.price,
         maxGuests: roomData.maxGuests,
         quantity: roomData.quantity,
+        bedQuantity: roomData.bedQuantity,
         roomArea: roomData.roomArea,
         active: false
     });                             
@@ -441,6 +451,7 @@ export async function updateRoom(roomData: RoomData) {
             price: roomData.price,
             maxGuests: roomData.maxGuests,
             quantity: roomData.quantity,
+            bedQuantity: roomData.bedQuantity,
             roomArea: roomData.roomArea
         },
         { new: true }

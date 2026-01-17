@@ -16,6 +16,7 @@ export interface CreateRoomInput {
     images?: string[];
     maxGuests: number;
     quantity: number;
+    bedQuantity?: number;
     roomArea?: number;
 }
 
@@ -59,6 +60,7 @@ export interface Room {
     }>;
     maxGuests: number;
     quantity: number;
+    bedQuantity?: number;
     roomArea?: number;
     active: boolean;
     averageRating?: number;

@@ -53,6 +53,7 @@ const RoomForm: React.FC<RoomFormProps> = ({ visible, onCancel, onSubmit, initia
                     price: initialValues.price,
                     maxGuests: initialValues.maxGuests,
                     quantity: initialValues.quantity,
+                    bedQuantity: initialValues.bedQuantity,
                     roomArea: initialValues.roomArea,
                     amenities: initialValues.amenities?.map((amenity: Amenity) => amenity.id) || []
                 });
@@ -84,6 +85,7 @@ const RoomForm: React.FC<RoomFormProps> = ({ visible, onCancel, onSubmit, initia
         price: number;
         maxGuests: number;
         quantity: number;
+        bedQuantity?: number;
         roomArea?: number;
         amenities?: string[];
     }) => {
@@ -137,6 +139,7 @@ const RoomForm: React.FC<RoomFormProps> = ({ visible, onCancel, onSubmit, initia
                 price: values.price,
                 maxGuests: values.maxGuests,
                 quantity: values.quantity,
+                bedQuantity: values.bedQuantity,
                 roomArea: values.roomArea,
                 amenities: values.amenities || [],
                 images: allImages.map(img => img.url)
@@ -283,7 +286,7 @@ const RoomForm: React.FC<RoomFormProps> = ({ visible, onCancel, onSubmit, initia
                 </Row>
 
                 <Row gutter={16}>
-                    <Col span={24}>
+                    <Col span={12}>
                         <Form.Item
                             label="Diện tích phòng (m²)"
                             name="roomArea"
@@ -298,6 +301,21 @@ const RoomForm: React.FC<RoomFormProps> = ({ visible, onCancel, onSubmit, initia
                                 style={{ width: '100%' }} 
                                 placeholder="Nhập diện tích phòng"
                             />
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Form.Item
+                            label="Số lượng giường"
+                            name="bedQuantity"
+                            rules={[
+                                { required: true, message: 'Vui lòng chọn số lượng giường!' }
+                            ]}
+                        >
+                            <Select placeholder="Chọn số lượng giường">
+                                {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
+                                    <Option key={num} value={num}>{num} giường</Option>
+                                ))}
+                            </Select>
                         </Form.Item>
                     </Col>
                 </Row>

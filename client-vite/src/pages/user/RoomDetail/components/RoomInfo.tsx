@@ -1,8 +1,6 @@
 import React from "react";
-import { UserOutlined } from "@ant-design/icons";
 import { Room } from "@/types/room";
 import { COLORS, TYPOGRAPHY } from "@/config/constants";
-import { formatPrice } from "@/utils/formatPrice";
 
 interface RoomInfoProps {
     room: Room;
@@ -40,9 +38,9 @@ const RoomInfo: React.FC<RoomInfoProps> = ({ room }) => {
                     </div>
                 </div>
                 <div className="flex items-center gap-2 text-gray-700">
-                    <UserOutlined className="text-4xl w-10 h-10" />
+                    <img src="/images/group.png" alt="Area" className="w-10 h-10" />
                     <div>
-                        <p className="font-semibold" style={{ marginBottom: '8px' }}>Số khách</p>
+                        <p className="font-semibold" style={{ marginBottom: '8px' }}>Số người</p>
                         <p className="text-sm text-gray-500" style={{ margin: 0 }}>{room.maxGuests} người</p>
                     </div>
                 </div>
@@ -54,10 +52,11 @@ const RoomInfo: React.FC<RoomInfoProps> = ({ room }) => {
                     </div>
                 </div>
                 <div className="flex items-center gap-2 text-gray-700">
-                    <img src="/images/dollar.png" alt="Area" className="w-9 h-9" />
+                    {/* TODO: Replace with bed icon if available */}
+                    <img src="/images/bed1.png" alt="Bed" className="w-10 h-10" />
                     <div>
-                        <p className="font-semibold" style={{ marginBottom: '8px' }}>Giá phòng</p>
-                        <p className="text-sm text-gray-500" style={{ margin: 0 }}>Chỉ từ {formatPrice(room.price)}/đêm</p>
+                        <p className="font-semibold" style={{ marginBottom: '8px' }}>Số giường</p>
+                        <p className="text-sm text-gray-500" style={{ margin: 0 }}>{room.bedQuantity || 1} giường</p>
                     </div>
                 </div>
             </div>

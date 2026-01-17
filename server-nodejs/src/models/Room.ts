@@ -8,6 +8,7 @@ interface RoomInterface extends Document {
     price: number;
     maxGuests: number;
     quantity: number;
+    bedQuantity?: number;
     active: boolean;
     roomArea?: number;
     deletedAt?: Date;
@@ -37,6 +38,11 @@ const roomSchema: Schema = new mongoose.Schema({
     quantity: {
         type: Number,
         required: true,
+        min: 1,
+        default: 1
+    },
+    bedQuantity: {
+        type: Number,
         min: 1,
         default: 1
     },

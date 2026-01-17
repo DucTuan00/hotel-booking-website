@@ -4,7 +4,7 @@ import { Request, Response, NextFunction } from 'express';
 
 export async function createRoom(req: Request, res: Response, next: NextFunction) {
     try {
-        const { name, roomType, description, price, maxGuests, quantity, roomArea, amenities, images } = req.body;
+        const { name, roomType, description, price, maxGuests, quantity, bedQuantity, roomArea, amenities, images } = req.body;
 
         console.log('Request Body:', req.body);
 
@@ -18,6 +18,7 @@ export async function createRoom(req: Request, res: Response, next: NextFunction
                 images: images || [],
                 maxGuests,
                 quantity,
+                bedQuantity,
                 roomArea,
             });
 
@@ -89,7 +90,7 @@ export async function getRoomById(req: Request, res: Response, next: NextFunctio
 export async function updateRoom(req: Request, res: Response, next: NextFunction) {
     try {
         const { id } = req.params;
-        const { name, roomType, description, price, maxGuests, quantity, roomArea, amenities, images } = req.body;
+        const { name, roomType, description, price, maxGuests, quantity, bedQuantity, roomArea, amenities, images } = req.body;
 
         try {
             const updatedRoom = await roomService.updateRoom({
@@ -102,6 +103,7 @@ export async function updateRoom(req: Request, res: Response, next: NextFunction
                 images: images || [],
                 maxGuests,
                 quantity,
+                bedQuantity,
                 roomArea,
             });
 

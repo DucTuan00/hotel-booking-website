@@ -20,6 +20,7 @@ export interface RoomData {
     images: string[];
     maxGuests: number;
     quantity: number;
+    bedQuantity?: number;
     roomArea?: number;
     active?: boolean;
 }
@@ -84,6 +85,7 @@ export interface RoomResponse {
     }>;
     maxGuests: number;
     quantity: number;
+    bedQuantity?: number;
     roomArea?: number;
     active: boolean;
     deletedAt?: Date | null;
