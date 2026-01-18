@@ -202,8 +202,7 @@ export const emailTemplates = {
               <ul style="margin: 10px 0; padding-left: 20px;">
                 <li>Vui lòng mang theo CMND/CCCD khi nhận phòng</li>
                 <li>Giờ nhận phòng: 14:00 | Giờ trả phòng: 12:00</li>
-                <li>Đơn đặt phòng của bạn đang được xử lý và chờ xác nhận từ khách sạn</li>
-                <li>Bạn sẽ nhận được email xác nhận khi đơn đặt phòng được duyệt</li>
+                <li>Đơn đặt phòng của bạn đang được xử lý từ khách sạn</li>
               </ul>
             </div>
 
