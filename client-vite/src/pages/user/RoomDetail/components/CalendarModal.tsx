@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Modal, Button, Spin, InputNumber } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import dayjs, { Dayjs } from 'dayjs';
@@ -7,6 +7,7 @@ import 'dayjs/locale/vi';
 import roomAvailableService from '@/services/rooms/roomAvailableService';
 import bookingService from '@/services/bookings/bookingService';
 import authService from '@/services/auth/authService';
+import { joinRoom, leaveRoom, subscribeToInventoryUpdates, InventoryUpdateData } from '@/services/socket/socketService';
 import Notification from '@/components/Notification';
 import { Message } from '@/types/message';
 import { COLORS } from '@/config/constants';
@@ -55,6 +56,58 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
     const [adults, setAdults] = useState<number>(Math.min(2, maxGuests));
     const [children, setChildren] = useState<number>(0);
     const [isInitialLoad, setIsInitialLoad] = useState<boolean>(false);
+
+    // Ref to track socket subscription
+    const unsubscribeRef = useRef<(() => void) | null>(null);
+
+    // Handle real-time inventory updates from WebSocket
+    const handleInventoryUpdate = useCallback((data: InventoryUpdateData) => {
+        if (data.roomId !== roomId) return;
+
+        setAvailabilityMap(prevMap => {
+            const newMap = new Map(prevMap);
+            
+            data.updates.forEach(update => {
+                const existing = newMap.get(update.date);
+                newMap.set(update.date, {
+                    date: update.date,
+                    price: update.price,
+                    inventory: update.inventory,
+                    isAvailable: update.inventory > 0
+                });
+
+                // Show notification if a date in the selected range became unavailable
+                if (existing && existing.inventory > 0 && update.inventory === 0) {
+                    setMessage({
+                        type: 'error',
+                        text: `Ngày ${dayjs(update.date).format('DD/MM/YYYY')} vừa hết phòng!`
+                    });
+                }
+            });
+
+            return newMap;
+        });
+    }, [roomId]);
+
+    // Setup WebSocket subscription when modal opens
+    useEffect(() => {
+        if (open && roomId) {
+            // Join room channel
+            joinRoom(roomId);
+            
+            // Subscribe to inventory updates
+            unsubscribeRef.current = subscribeToInventoryUpdates(handleInventoryUpdate);
+
+            return () => {
+                // Cleanup on close or unmount
+                if (unsubscribeRef.current) {
+                    unsubscribeRef.current();
+                    unsubscribeRef.current = null;
+                }
+                leaveRoom(roomId);
+            };
+        }
+    }, [open, roomId, handleInventoryUpdate]);
 
     // Load availability data
     const loadAvailability = useCallback(async () => {

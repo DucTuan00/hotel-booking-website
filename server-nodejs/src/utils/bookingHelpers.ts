@@ -205,6 +205,93 @@ export async function updateInventory(
 }
 
 /**
+ * Atomic check availability AND decrease inventory in one operation (within transaction)
+ * This prevents race condition when multiple users book the same room simultaneously
+ * 
+ * @returns Object with availability status and updated inventory data
+ */
+export async function checkAndLockInventory(
+    roomId: string,
+    checkIn: Date,
+    checkOut: Date,
+    quantity: number,
+    session: mongoose.ClientSession
+): Promise<{
+    success: boolean;
+    dailyRates: Array<{ date: Date; price: number; inventory: number }>;
+    failedDate?: string;
+    availableCount?: number;
+}> {
+    const bookingDates = getBookingDates(checkIn, checkOut);
+    const dailyRates: Array<{ date: Date; price: number; inventory: number }> = [];
+    const lockedDates: Date[] = []; // Track which dates we've already locked
+
+    try {
+        for (const date of bookingDates) {
+            const normalizedDate = normalizeDate(date);
+            
+            // Atomic findOneAndUpdate with inventory check
+            // This is the key to preventing race conditions!
+            const result = await RoomAvailable.findOneAndUpdate(
+                {
+                    roomId: new mongoose.Types.ObjectId(roomId),
+                    date: normalizedDate,
+                    inventory: { $gte: quantity } // Only update if enough inventory
+                },
+                { $inc: { inventory: -quantity } },
+                { 
+                    session,
+                    new: false // Return document BEFORE update (to get original inventory)
+                }
+            );
+
+            if (!result) {
+                // Check if the room exists for this date but doesn't have enough inventory
+                const roomAvailable = await RoomAvailable.findOne({
+                    roomId: new mongoose.Types.ObjectId(roomId),
+                    date: normalizedDate
+                }).session(session);
+
+                if (!roomAvailable) {
+                    // Room not available for this date at all
+                    return {
+                        success: false,
+                        dailyRates: [],
+                        failedDate: date.toISOString().split('T')[0],
+                        availableCount: 0
+                    };
+                }
+
+                // Not enough inventory
+                return {
+                    success: false,
+                    dailyRates: [],
+                    failedDate: date.toISOString().split('T')[0],
+                    availableCount: roomAvailable.inventory
+                };
+            }
+
+            // Successfully locked this date
+            lockedDates.push(normalizedDate);
+            dailyRates.push({
+                date: normalizedDate,
+                price: result.price,
+                inventory: result.inventory - quantity // New inventory after lock
+            });
+        }
+
+        return {
+            success: true,
+            dailyRates
+        };
+    } catch (error) {
+        // If any error occurs, the transaction will be rolled back
+        // So we don't need to manually restore inventory
+        throw error;
+    }
+}
+
+/**
  * Calculate cancellation fee based on time until check-in
  */
 export function calculateCancellationFee(

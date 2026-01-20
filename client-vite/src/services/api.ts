@@ -23,7 +23,7 @@ const getBaseURL = () => {
     // Development mode
     if (isAndroid()) {
         // Android emulator uses special IP
-        return 'http://10.0.2.2:3000/api';
+        return import.meta.env.ANROID_API_URL;
     }
     
     // Web development

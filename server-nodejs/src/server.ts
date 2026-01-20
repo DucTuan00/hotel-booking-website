@@ -1,7 +1,9 @@
 import express from 'express';
+import { createServer } from 'http';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import connectDB from '@/config/database';
+import { initializeSocket } from '@/config/socket';
 import errorHandler from '@/middlewares/errorHandler';
 import { ErrorRequestHandler } from 'express';
 import authRoute from '@/routes/authRoute';
@@ -23,6 +25,7 @@ import { dirname } from 'path';
 import '@/config/passport.ts'; 
 
 const app: express.Application = express();
+const httpServer = createServer(app);
 const PORT: number = Number(process.env.PORT) || 3000;
 
 //Config to get current folder in ES module
@@ -76,6 +79,9 @@ app.use('/public/uploads', express.static(path.join(__dirname, '../public/upload
 
 app.use(errorHandler as ErrorRequestHandler);
 
-app.listen(PORT, (): void => {
+// Initialize Socket.IO
+initializeSocket(httpServer);
+
+httpServer.listen(PORT, (): void => {
     console.log(`Server running on port http://localhost:${PORT}`);
 });

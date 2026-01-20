@@ -22,7 +22,8 @@ import {
     calculateBookingPrice,
     updateInventory,
     calculateCancellationFee,
-    createBookingSnapshot
+    createBookingSnapshot,
+    checkAndLockInventory
 } from '@/utils/bookingHelpers';
 import {
     getUserDiscount,
@@ -32,6 +33,7 @@ import {
     updateUserLoyaltyTier
 } from '@/services/loyalty/loyaltyService';
 import { sendBookingConfirmationEmail } from '@/services/bookings/bookingEmailService';
+import { emitInventoryUpdate } from '@/config/socket';
 
 /**
  * Create a new booking with dynamic pricing, inventory management, and celebrate items
@@ -111,22 +113,14 @@ export async function createBooking(args: CreateBookingInput) {
         throw new ApiError('Contact information is required', 400);
     }
 
-    // Check availability
-    const availabilityCheck = await checkAvailability(roomId, checkInDate, checkOutDate, quantity);
-    if (!availabilityCheck.available) {
-        throw new ApiError(availabilityCheck.message || 'Room not available for selected dates', 400);
+    // Pre-check availability (optimistic check - may pass but fail in transaction)
+    // This provides better UX by failing fast before starting transaction
+    const preCheck = await checkAvailability(roomId, checkInDate, checkOutDate, quantity);
+    if (!preCheck.available) {
+        throw new ApiError(preCheck.message || 'Room not available for selected dates', 400);
     }
 
-    // Calculate pricing with celebrate items
-    const pricing = await calculateBookingPrice(
-        roomId,
-        checkInDate,
-        checkOutDate,
-        quantity,
-        celebrateItems
-    );
-
-    // Validate celebrate items if provided
+    // Validate celebrate items if provided (before transaction)
     const celebrateItemsData: Array<{ item: any; quantity: number; price: number }> = [];
     if (celebrateItems && celebrateItems.length > 0) {
         for (const celebrateItemInput of celebrateItems) {
@@ -145,42 +139,82 @@ export async function createBooking(args: CreateBookingInput) {
         }
     }
 
-    // Create booking snapshot
-    const snapshot = await createBookingSnapshot(
-        existRoom,
-        pricing.dailyRates,
-        pricing.celebrateItemsDetails,
-        {
-            roomSubtotal: pricing.roomSubtotal,
-            celebrateItemsSubtotal: pricing.celebrateItemsSubtotal,
-            totalPrice: pricing.totalPrice
-        }
-    );
+    // Get user's loyalty discount (before transaction)
+    const userDiscount = await getUserDiscount(userId);
 
     // Determine booking status and payment status
     let bookingStatus = BookingStatus.PENDING;
     let paymentStatus = PaymentStatus.UNPAID;
 
-    // Get user's loyalty discount and calculate final price
-    const userDiscount = await getUserDiscount(userId);
-    const originalPrice = pricing.totalPrice;
-    const discountAmount = calculateDiscountAmount(originalPrice, userDiscount);
-    const finalPrice = calculateFinalPrice(originalPrice, userDiscount);
-
-    // Add loyalty discount info to snapshot for tracking
-    snapshot.loyaltyDiscount = {
-        tier: existUser.loyaltyTier || 'Bronze',
-        discountPercent: userDiscount,
-        originalPrice: originalPrice,
-        discountAmount: discountAmount,
-        finalPrice: finalPrice
-    };
-
-    // Start MongoDB transaction
+    // Start MongoDB transaction - ALL inventory operations happen inside
     const session = await mongoose.startSession();
     session.startTransaction();
 
     try {
+        // ============= CRITICAL SECTION - INSIDE TRANSACTION =============
+        // Atomic check AND lock inventory to prevent race conditions
+        // If 2 users book simultaneously, only 1 will succeed
+        const inventoryResult = await checkAndLockInventory(
+            roomId,
+            checkInDate,
+            checkOutDate,
+            quantity,
+            session
+        );
+
+        if (!inventoryResult.success) {
+            throw new ApiError(
+                `Đã hết phòng trống cho ngày ${inventoryResult.failedDate}. `,
+                400
+            );
+        }
+
+        // Calculate pricing using the locked daily rates
+        const roomSubtotal = inventoryResult.dailyRates.reduce((total, rate) => {
+            return total + (rate.price * quantity);
+        }, 0);
+
+        // Calculate celebrate items subtotal
+        let celebrateItemsSubtotal = 0;
+        const celebrateItemsDetails: Array<{ id: string; name: string; price: number; quantity: number; subtotal: number }> = [];
+
+        for (const celebrateData of celebrateItemsData) {
+            const subtotal = celebrateData.price * celebrateData.quantity;
+            celebrateItemsSubtotal += subtotal;
+            celebrateItemsDetails.push({
+                id: (celebrateData.item._id as mongoose.Types.ObjectId).toString(),
+                name: celebrateData.item.name,
+                price: celebrateData.price,
+                quantity: celebrateData.quantity,
+                subtotal
+            });
+        }
+
+        const totalPrice = roomSubtotal + celebrateItemsSubtotal;
+        const discountAmount = calculateDiscountAmount(totalPrice, userDiscount);
+        const finalPrice = calculateFinalPrice(totalPrice, userDiscount);
+
+        // Create booking snapshot
+        const snapshot = await createBookingSnapshot(
+            existRoom,
+            inventoryResult.dailyRates.map(r => ({ date: r.date, price: r.price })),
+            celebrateItemsDetails,
+            {
+                roomSubtotal,
+                celebrateItemsSubtotal,
+                totalPrice
+            }
+        );
+
+        // Add loyalty discount info to snapshot for tracking
+        snapshot.loyaltyDiscount = {
+            tier: existUser.loyaltyTier || 'Bronze',
+            discountPercent: userDiscount,
+            originalPrice: totalPrice,
+            discountAmount: discountAmount,
+            finalPrice: finalPrice
+        };
+
         const newBooking = new Booking({
             userId: existUser._id,
             roomId: existRoom._id,
@@ -214,30 +248,24 @@ export async function createBooking(args: CreateBookingInput) {
             await BookingItem.insertMany(bookingItemsToCreate, { session });
         }
 
-        // Decrease inventory (lock rooms immediately when booking is PENDING)
-        await updateInventory(
-            roomId,
-            checkInDate,
-            checkOutDate,
-            quantity,
-            'decrease',
-            session
-        );
+        // NOTE: Inventory already decreased in checkAndLockInventory
+        // No need to call updateInventory here
 
         await session.commitTransaction();
+        // ============= END CRITICAL SECTION =============
+
+        // Emit WebSocket event for real-time inventory update (after commit)
+        emitInventoryUpdate(roomId, checkInDate, checkOutDate);
 
         // Send confirmation email (non-blocking)
-        // Calculate number of nights
         const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
         
-        // Prepare celebrate items for email
         const celebrateItemsForEmail = celebrateItemsData.map(item => ({
             name: item.item.name,
             quantity: item.quantity,
             price: item.price * item.quantity,
         }));
 
-        // Send email asynchronously
         sendBookingConfirmationEmail({
             bookingId: (savedBooking._id as any).toString(),
             customerName: `${firstName} ${lastName}`,
@@ -258,13 +286,12 @@ export async function createBooking(args: CreateBookingInput) {
                 amount: discountAmount,
             } : undefined,
         }).catch(error => {
-            // Log email error but don't fail the booking
             console.error('Failed to send booking confirmation email:', error);
         });
 
         return mapId(savedBooking);
     } catch (error: any) {
-        // Rollback transaction on error
+        // Rollback transaction on error - inventory automatically restored
         await session.abortTransaction();
         throw new ApiError(error.message || 'Failed to create booking', error.statusCode || 500);
     } finally {
@@ -450,6 +477,15 @@ export async function cancelBooking(arg: BookingIdInput) {
         await booking.save({ session });
 
         await session.commitTransaction();
+
+        // Emit WebSocket event if inventory was restored
+        if (cancellationInfo.restoreInventory) {
+            emitInventoryUpdate(
+                booking.roomId.toString(),
+                booking.checkIn,
+                booking.checkOut
+            );
+        }
 
         // Fetch the updated booking with populated references
         const updatedBooking = await Booking.findById(bookingId)
