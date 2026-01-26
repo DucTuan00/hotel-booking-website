@@ -1,8 +1,4 @@
-declare global {
-    interface Window {
-        Capacitor?: any;
-    }
-}
+import { Capacitor } from '@capacitor/core';
 
 /**
  * Detect if running on NATIVE mobile app (Capacitor)
@@ -10,10 +6,7 @@ declare global {
  * Does NOT include mobile browsers
  */
 export const isNativeMobile = (): boolean => {
-    return typeof window !== 'undefined' &&
-        window.Capacitor &&
-        window.Capacitor.getPlatform &&
-        (window.Capacitor.getPlatform() === 'android' || window.Capacitor.getPlatform() === 'ios');
+    return Capacitor.isNativePlatform();
 };
 
 /**

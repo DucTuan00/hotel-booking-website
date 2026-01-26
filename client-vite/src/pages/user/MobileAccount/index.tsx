@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Spin } from 'antd';
 import {
     UserOutlined,
@@ -12,14 +12,24 @@ import userService from '@/services/users/userService';
 import authService from '@/services/auth/authService';
 import { User } from '@/types/user';
 import Notification from '@/components/Notification';
+import { hasAuthToken, isMobile } from '@/utils/auth';
 
 const MobileAccount: React.FC = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
     const fetchUserInfo = useCallback(async () => {
+        // For mobile: check if auth token exists before fetching
+        // This prevents showing stale user data after logout
+        if (isMobile() && !hasAuthToken()) {
+            setCurrentUser(null);
+            setLoading(false);
+            return;
+        }
+
         try {
             const user = await userService.getUserInfo();
             setCurrentUser(user);
@@ -30,9 +40,11 @@ const MobileAccount: React.FC = () => {
         }
     }, []);
 
+    // Re-fetch user info when navigating back to this page
     useEffect(() => {
+        setLoading(true);
         fetchUserInfo();
-    }, [fetchUserInfo]);
+    }, [fetchUserInfo, location.pathname]);
 
     const handleLogout = async () => {
         try {

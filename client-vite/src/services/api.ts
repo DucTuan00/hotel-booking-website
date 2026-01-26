@@ -1,17 +1,9 @@
-declare global {
-    interface Window {
-        Capacitor?: any;
-    }
-}
-
 import axios from 'axios';
+import { Capacitor } from '@capacitor/core';
 import { getAuthToken, isMobile, setAuthToken, removeAuthToken } from '@/utils/auth';
 
 const isAndroid = () => {
-    return typeof window !== 'undefined' &&
-        window.Capacitor &&
-        window.Capacitor.getPlatform &&
-        window.Capacitor.getPlatform() === 'android';
+    return Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android';
 };
 
 const getBaseURL = () => {
@@ -23,7 +15,7 @@ const getBaseURL = () => {
     // Development mode
     if (isAndroid()) {
         // Android emulator uses special IP
-        return import.meta.env.ANROID_API_URL;
+        return import.meta.env.VITE_ANDROID_API_URL;
     }
     
     // Web development

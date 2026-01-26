@@ -10,7 +10,7 @@ function getSocketUrl(): string {
     
     if (isNative) {
         // Android emulator uses 10.0.2.2 to access localhost
-        return import.meta.env.ANROID_SOCKET_API_URL;
+        return import.meta.env.VITE_ANDROID_SOCKET_API_URL;
     }
     
     // Web uses the configured API URL or localhost
