@@ -129,3 +129,13 @@ export async function getLoyaltyInfo(req: Request, res: Response, next: NextFunc
         next(new ApiError(error.message, 400));
     }
 };
+
+export async function toggleUserActive(req: Request, res: Response, next: NextFunction) {
+    try {
+        const id = req.params.id;
+        const result = await userService.toggleUserActive({ id });
+        res.json(result);
+    } catch (error: any) {
+        next(new ApiError(error.message, 400));
+    }
+};

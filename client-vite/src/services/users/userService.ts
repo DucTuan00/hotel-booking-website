@@ -92,6 +92,16 @@ const deleteUser = async (userId: string): Promise<{ message: string }> => {
     }
 };
 
+const toggleUserActive = async (userId: string): Promise<{ message: string; active: boolean }> => {
+    try {
+        const response = await api.patch(`/user/${userId}/toggle-active`);
+        return response.data;
+    } catch (error) {
+        console.error('Error toggling user active:', error);
+        throw error;
+    }
+};
+
 const getLoyaltyInfo = async (): Promise<LoyaltyInfo> => {
     try {
         const response = await api.get('/user/loyalty');
@@ -111,5 +121,6 @@ export default {
     updateUserProfile,
     updatePassword,
     deleteUser,
+    toggleUserActive,
     getLoyaltyInfo,
 };

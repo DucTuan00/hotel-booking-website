@@ -1,23 +1,30 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Button, Space, Popconfirm, Tag } from 'antd';
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Button, Space, Tag, Switch } from 'antd';
+import { EditOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import AdminTable from '@/components/AdminTable';
 import SearchTableAdmin, { SearchFilters } from '@/components/SearchTableAdmin';
 import UserForm, { UserFormValues } from '@/pages/admin/User/Form';
 import userService from '@/services/users/userService';
 import Notification from '@/components/Notification';
-import { UserRole } from '@/types/user';
+import { UserRole, LoyaltyTier, User } from '@/types/user';
 import { Message } from '@/types/message';
 import { TYPOGRAPHY } from '@/config/constants';
 
-interface User {
-    id: string;
-    name: string;
-    email: string;
-    phone: string;
-    role: UserRole;
-}
+const getLoyaltyTierLabel = (tier: LoyaltyTier) => {
+    switch (tier) {
+        case LoyaltyTier.BRONZE:
+            return { label: 'Đồng', color: '#CD7F32' };
+        case LoyaltyTier.SILVER:
+            return { label: 'Bạc', color: '#C0C0C0' };
+        case LoyaltyTier.GOLD:
+            return { label: 'Vàng', color: '#FFD700' };
+        case LoyaltyTier.DIAMOND:
+            return { label: 'Kim cương', color: '#B9F2FF' };
+        default:
+            return { label: 'Đồng', color: '#CD7F32' };
+    }
+};
 
 const UserList: React.FC = () => {
     const [users, setUsers] = useState<User[]>([]);
@@ -127,20 +134,20 @@ const UserList: React.FC = () => {
         }
     };
 
-    const handleDelete = async (userId: string) => {
+    const handleToggleActive = async (userId: string, currentActive: boolean) => {
+        setLoading(true);
         try {
-            await userService.deleteUser(userId);
-            setMessage({ type: 'success', text: 'Xóa người dùng thành công!' });
-            
-            // If deleting the last item on current page and not on first page, go to previous page
-            if (users.length === 1 && currentPage > 1) {
-                setCurrentPage(currentPage - 1);
-            } else {
-                await fetchUsers();
-            }
+            await userService.toggleUserActive(userId);
+            setMessage({ 
+                type: 'success', 
+                text: `Người dùng đã được ${currentActive ? 'vô hiệu hóa' : 'kích hoạt'} thành công!` 
+            });
+            fetchUsers();
         } catch (error) {
-            console.error("Error when delete user:", error);
-            setMessage({ type: 'error', text: 'Xóa người dùng thất bại.' });
+            console.error("Error toggling user active:", error);
+            setMessage({ type: 'error', text: 'Thay đổi trạng thái người dùng thất bại.' });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -149,26 +156,41 @@ const UserList: React.FC = () => {
             title: 'Tên người dùng',
             dataIndex: 'name',
             key: 'name',
-            width: '25%',
+            width: '18%',
             sorter: (a, b) => a.name.localeCompare(b.name),
         },
         {
             title: 'Email',
             dataIndex: 'email',
             key: 'email',
-            width: '25%',
+            width: '20%',
         },
         {
             title: 'Số điện thoại',
             dataIndex: 'phone',
             key: 'phone',
-            width: '20%',
+            width: '12%',
+        },
+        {
+            title: 'Thứ hạng',
+            dataIndex: 'loyaltyTier',
+            key: 'loyaltyTier',
+            width: '10%',
+            align: 'center',
+            render: (tier: LoyaltyTier) => {
+                const { label, color } = getLoyaltyTierLabel(tier);
+                return (
+                    <Tag color={color} style={{ color: tier === LoyaltyTier.GOLD ? '#000' : undefined }}>
+                        {label}
+                    </Tag>
+                );
+            },
         },
         {
             title: 'Vai trò',
             dataIndex: 'role',
             key: 'role',
-            width: '15%',
+            width: '12%',
             render: (role: string) => (
                 <Tag color={role === UserRole.ADMIN ? 'red' : 'blue'}>
                     {role === UserRole.ADMIN ? 'Quản trị viên' : 'Người dùng'}
@@ -176,9 +198,24 @@ const UserList: React.FC = () => {
             ),
         },
         {
+            title: 'Trạng thái',
+            dataIndex: 'active',
+            key: 'active',
+            align: 'center',
+            width: '12%',
+            render: (active: boolean, record) => (
+                <Switch
+                    checked={active}
+                    onChange={() => handleToggleActive(record.id, active)}
+                    checkedChildren="Bật"
+                    unCheckedChildren="Tắt"
+                />
+            ),
+        },
+        {
             title: 'Hành động',
             key: 'actions',
-            width: '15%',
+            width: '10%',
             render: (_, record) => (
                 <Space>
                     <Button 
@@ -189,23 +226,6 @@ const UserList: React.FC = () => {
                     >
                         Sửa
                     </Button>
-                    <Popconfirm
-                        title="Xác nhận xóa"
-                        description="Bạn có chắc chắn muốn xóa người dùng này?"
-                        onConfirm={() => handleDelete(record.id)}
-                        okText="Xóa"
-                        cancelText="Hủy"
-                        okType="danger"
-                    >
-                        <Button
-                            type="link" 
-                            danger 
-                            icon={<DeleteOutlined />}
-                            size="small"
-                        >
-                            Xóa
-                        </Button>
-                    </Popconfirm>
                 </Space>
             ),
         },

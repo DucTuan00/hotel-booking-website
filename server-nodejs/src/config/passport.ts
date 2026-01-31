@@ -14,6 +14,10 @@ export default passport.use(
                 let user = await User.findOne({ googleId: profile.id });
 
                 if (user) {
+                    // Check if user is deactivated
+                    if (!user.active) {
+                        return done(new Error('Your account has been deactived'), undefined);
+                    }
                     const newName = profile.displayName || `${profile.name?.givenName} ${profile.name?.familyName}`;
                     if (user.name !== newName) {
                         user.name = newName;
@@ -25,6 +29,10 @@ export default passport.use(
                 user = await User.findOne({ email: profile.emails?.[0]?.value });
 
                 if (user) {
+                    // Check if user is deactivated
+                    if (!user.active) {
+                        return done(new Error('Your account has been deactived'), undefined);
+                    }
                     user.googleId = profile.id;
                     await user.save();
                     return done(null, user);

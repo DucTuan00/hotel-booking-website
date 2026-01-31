@@ -27,7 +27,7 @@ export async function getAllUsers(args: GetAllUsersInput) {
     const { search, role, sortBy, sortOrder, page = 1, pageSize = 10, excludeCurrentUser, currentUserId } = args;
 
     const buildQuery = () => {
-        let query: any = { active: true };
+        let query: any = {};
 
         if (search) {
             query.$or = [
@@ -174,4 +174,25 @@ export async function deleteUser(id: string) {
         throw new Error('Failed to delete user with id: ' + id);
     }
     return { message: 'User deleted successfully'};
+};
+
+export async function toggleUserActive(arg: UserIdInput) {
+    const { id } = arg;
+
+    if (!id) {
+        throw new ApiError('User ID is required', 400);
+    }
+
+    const user = await User.findById(id);
+    if (!user) {
+        throw new ApiError('User not found', 404);
+    }
+
+    user.active = !user.active;
+    await user.save();
+
+    return {
+        message: `User ${user.active ? 'activated' : 'deactivated'} successfully`,
+        active: user.active
+    };
 };

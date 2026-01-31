@@ -101,4 +101,5 @@ export interface User {
         created_at: string;
     }[];
     active: boolean;
+    loyaltyTier: LoyaltyTier;
 }

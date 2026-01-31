@@ -56,6 +56,10 @@ export async function login(args: LoginInput) {
         throw new Error('Tài khoản hoặc mật khẩu không đúng');
     }
 
+    if (!user.active) {
+        throw new Error('Your account has been deactived');
+    }
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
@@ -176,6 +180,10 @@ export async function verifyGoogleIdToken(idToken: string) {
     let user = await User.findOne({ googleId });
 
     if (user) {
+        // Check if user is deactivated
+        if (!user.active) {
+            throw new Error('Your account has been deactived');
+        }
         // Update name if changed
         if (name && user.name !== name) {
             user.name = name;
@@ -186,6 +194,10 @@ export async function verifyGoogleIdToken(idToken: string) {
         user = await User.findOne({ email });
 
         if (user) {
+            // Check if user is deactivated
+            if (!user.active) {
+                throw new Error('Your account has been deactived');
+            }
             // Link Google account to existing user
             user.googleId = googleId;
             await user.save();
