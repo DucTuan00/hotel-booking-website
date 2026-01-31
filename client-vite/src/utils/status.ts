@@ -26,7 +26,7 @@ export const getStatusColor = (status: BookingStatus) => {
         case BookingStatus.PENDING:
             return 'orange';
         case BookingStatus.CANCELLED:
-            return 'red';
+            return 'magenta';
         case BookingStatus.CHECKED_IN:
             return 'blue';
         case BookingStatus.CHECKED_OUT:

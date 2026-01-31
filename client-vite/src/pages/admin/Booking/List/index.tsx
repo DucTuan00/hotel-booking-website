@@ -191,7 +191,10 @@ const BookingList: React.FC = () => {
             width: 120,
             render: (_, booking) => (
                 <div>
-                    <Tag color={getPaymentStatusColor(booking.paymentStatus)}>
+                    <Tag 
+                        color={getPaymentStatusColor(booking.paymentStatus)}
+                        className="!text-sm px-3 py-1"
+                    >
                         {getPaymentStatusText(booking.paymentStatus)}
                     </Tag>
                     <div style={{ fontSize: '12px', color: '#888', marginTop: 4 }}>
@@ -205,7 +208,10 @@ const BookingList: React.FC = () => {
             dataIndex: 'status',
             key: 'status',
             render: (status) => (
-                <Tag color={getStatusColor(status)}>
+                <Tag 
+                    color={getStatusColor(status)}
+                    className="!text-sm px-3 py-1"
+                >
                     {getStatusText(status)}
                 </Tag>
             ),
