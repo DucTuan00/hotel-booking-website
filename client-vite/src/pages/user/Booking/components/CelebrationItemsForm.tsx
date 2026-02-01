@@ -49,7 +49,7 @@ const CelebrationItemsForm: React.FC<CelebrationItemsFormProps> = ({
         return (
             <div 
                 key={item.id}
-                className="flex flex-col h-[430px] border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors p-4"
+                className="flex flex-col h-[410px] border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors p-4"
             >
                 <div className="flex items-start gap-2 mb-3">
                     <Checkbox
