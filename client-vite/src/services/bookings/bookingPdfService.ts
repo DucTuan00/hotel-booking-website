@@ -210,6 +210,30 @@ const createInvoiceHTML = (booking: Booking): string => {
                                 `
                                         : ''
                                 }
+                                ${
+                                    booking.snapshot?.vat
+                                        ? `
+                                <tr>
+                                    <td style="padding: 6px; border: 1px solid ${COLORS_PDF.border};">Thuế VAT (${booking.snapshot.vat.rate}%)</td>
+                                    <td style="padding: 6px; border: 1px solid ${COLORS_PDF.border}; text-align: right; font-weight: 600;">${formatPrice(booking.snapshot.vat.vatAmount)}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 6px; border: 1px solid ${COLORS_PDF.border};">Tổng sau thuế</td>
+                                    <td style="padding: 6px; border: 1px solid ${COLORS_PDF.border}; text-align: right; font-weight: 600;">${formatPrice(booking.snapshot.vat.totalWithVat)}</td>
+                                </tr>
+                                `
+                                        : ''
+                                }
+                                ${
+                                    booking.snapshot?.loyaltyDiscount && booking.snapshot.loyaltyDiscount.discountPercent > 0
+                                        ? `
+                                <tr>
+                                    <td style="padding: 6px; border: 1px solid ${COLORS_PDF.border};">Giảm giá (${booking.snapshot.loyaltyDiscount.discountPercent}%)</td>
+                                    <td style="padding: 6px; border: 1px solid ${COLORS_PDF.border}; text-align: right; font-weight: 600;">-${formatPrice(booking.snapshot.loyaltyDiscount.discountAmount)}</td>
+                                </tr>
+                                `
+                                        : ''
+                                }
                                 <tr style="background: ${COLORS_PDF.lightGray};">
                                     <td style="padding: 8px 6px; border: 1px solid ${COLORS_PDF.border}; font-weight: bold;">Tổng cộng</td>
                                     <td style="padding: 8px 6px; border: 1px solid ${COLORS_PDF.border}; text-align: right; font-weight: bold; font-size: 12px;">${formatPrice(booking.totalPrice)}</td>

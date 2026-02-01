@@ -164,6 +164,12 @@ export interface Booking {
             discountAmount: number;
             finalPrice: number;
         };
+        vat?: {
+            rate: number;
+            subtotalBeforeVat: number;
+            vatAmount: number;
+            totalWithVat: number;
+        };
         bookingDate: string;
     };
     celebrateItems?: BookingCelebrateItem[];
@@ -175,6 +181,11 @@ export interface PreviewPriceResponse {
     available: boolean;
     roomSubtotal: number;
     celebrateItemsSubtotal: number;
+    subtotalBeforeVat: number;
+    vat: {
+        rate: number;
+        amount: number;
+    };
     totalPrice: number;
     dailyBreakdown: Array<{
         date: string;

@@ -45,12 +45,18 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
         return sum + (item.price * itemQuantity);
     }, 0);
     
-    const subtotal = pricePreview.totalPrice + celebrationTotal;
+    // Use subtotal before VAT from preview
+    const subtotalBeforeVat = pricePreview.subtotalBeforeVat || (pricePreview.roomSubtotal + celebrationTotal);
     
-    // Calculate discount
+    // VAT from preview (already includes celebration items)
+    const vatRate = pricePreview.vat?.rate || 10;
+    const vatAmount = pricePreview.vat?.amount || Math.floor(subtotalBeforeVat * (vatRate / 100));
+    const totalWithVat = subtotalBeforeVat + vatAmount;
+    
+    // Calculate discount on total with VAT
     const discountPercent = loyaltyInfo?.currentDiscount || 0;
-    const discountAmount = Math.floor(subtotal * discountPercent / 100);
-    const grandTotal = subtotal - discountAmount;
+    const discountAmount = Math.floor(totalWithVat * discountPercent / 100);
+    const grandTotal = totalWithVat - discountAmount;
 
     return (
         <div className="bg-white rounded-lg border border-gray-200 p-6 sticky top-4">
@@ -154,7 +160,7 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
             {/* Subtotal */}
             <div className="flex justify-between text-sm mb-2">
                 <span className="text-gray-600">Tiền phòng:</span>
-                <span>{formatPrice(pricePreview.totalPrice)}</span>
+                <span>{formatPrice(pricePreview.roomSubtotal)}</span>
             </div>
             
             {celebrationTotal > 0 && (
@@ -164,13 +170,23 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
                 </div>
             )}
 
+            {/* VAT */}
+            <Divider className="my-3" />
+            <div className="flex justify-between text-sm mb-2">
+                <span className="text-gray-600">Tạm tính:</span>
+                <span>{formatPrice(subtotalBeforeVat)}</span>
+            </div>
+            <div className="flex justify-between text-sm mb-2">
+                <span className="text-gray-600">Thuế VAT ({vatRate}%):</span>
+                <span>{formatPrice(vatAmount)}</span>
+            </div>
+
             {/* Loyalty Discount */}
             {loyaltyInfo && discountPercent > 0 && (
                 <>
-                    <Divider className="my-3" />
                     <div className="flex justify-between text-sm mb-2">
-                        <span className="text-gray-600">Tạm tính:</span>
-                        <span>{formatPrice(subtotal)}</span>
+                        <span className="text-gray-600">Tổng sau thuế:</span>
+                        <span>{formatPrice(totalWithVat)}</span>
                     </div>
                     <div className="flex justify-between text-sm mb-2">
                         <span className="text-gray-600">
@@ -196,7 +212,7 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
             {/* Note */}
             <div className="my-4">
                 <p className="text-xs text-gray-600">
-                    * Giá đã bao gồm thuế và phí dịch vụ
+                    * Giá đã bao gồm thuế VAT {vatRate}%
                 </p>
             </div>
 

@@ -190,9 +190,16 @@ export async function createBooking(args: CreateBookingInput) {
             });
         }
 
-        const totalPrice = roomSubtotal + celebrateItemsSubtotal;
-        const discountAmount = calculateDiscountAmount(totalPrice, userDiscount);
-        const finalPrice = calculateFinalPrice(totalPrice, userDiscount);
+        const subtotalBeforeVat = roomSubtotal + celebrateItemsSubtotal;
+        
+        // Calculate VAT (10%)
+        const VAT_RATE = 10;
+        const vatAmount = Math.floor(subtotalBeforeVat * (VAT_RATE / 100));
+        const totalWithVat = subtotalBeforeVat + vatAmount;
+        
+        // Apply loyalty discount on total with VAT
+        const discountAmount = calculateDiscountAmount(totalWithVat, userDiscount);
+        const finalPrice = calculateFinalPrice(totalWithVat, userDiscount);
 
         // Create booking snapshot
         const snapshot = await createBookingSnapshot(
@@ -202,15 +209,23 @@ export async function createBooking(args: CreateBookingInput) {
             {
                 roomSubtotal,
                 celebrateItemsSubtotal,
-                totalPrice
+                totalPrice: subtotalBeforeVat
             }
         );
+
+        // Add VAT info to snapshot
+        snapshot.vat = {
+            rate: VAT_RATE,
+            subtotalBeforeVat: subtotalBeforeVat,
+            vatAmount: vatAmount,
+            totalWithVat: totalWithVat
+        };
 
         // Add loyalty discount info to snapshot for tracking
         snapshot.loyaltyDiscount = {
             tier: existUser.loyaltyTier || 'Bronze',
             discountPercent: userDiscount,
-            originalPrice: totalPrice,
+            originalPrice: totalWithVat,
             discountAmount: discountAmount,
             finalPrice: finalPrice
         };
@@ -752,11 +767,22 @@ export async function previewBookingPrice(args: {
         celebrateItems
     );
 
+    // Calculate VAT (10%)
+    const VAT_RATE = 10;
+    const subtotalBeforeVat = pricing.totalPrice;
+    const vatAmount = Math.floor(subtotalBeforeVat * (VAT_RATE / 100));
+    const totalWithVat = subtotalBeforeVat + vatAmount;
+
     return {
         available: true,
         roomSubtotal: pricing.roomSubtotal,
         celebrateItemsSubtotal: pricing.celebrateItemsSubtotal,
-        totalPrice: pricing.totalPrice,
+        subtotalBeforeVat: subtotalBeforeVat,
+        vat: {
+            rate: VAT_RATE,
+            amount: vatAmount
+        },
+        totalPrice: totalWithVat,
         dailyBreakdown: pricing.dailyRates.map(rate => ({
             date: rate.date.toISOString().split('T')[0],
             price: rate.price

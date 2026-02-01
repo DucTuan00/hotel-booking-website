@@ -64,11 +64,25 @@ const PriceBreakdown: React.FC<PriceBreakdownProps> = ({ booking }) => {
                     />
                 )}
                 
+                {/* VAT */}
+                {snapshot.vat && (
+                    <>
+                        <BaseDetailRow
+                            label="Tạm tính"
+                            value={formatPrice(snapshot.vat.subtotalBeforeVat)}
+                        />
+                        <BaseDetailRow
+                            label={`Thuế VAT (${snapshot.vat.rate}%)`}
+                            value={formatPrice(snapshot.vat.vatAmount)}
+                        />
+                    </>
+                )}
+                
                 {/* Loyalty Discount */}
                 {snapshot.loyaltyDiscount && snapshot.loyaltyDiscount.discountPercent > 0 && (
                     <>
                         <BaseDetailRow
-                            label="Tạm tính"
+                            label="Tổng sau thuế"
                             value={formatPrice(snapshot.loyaltyDiscount.originalPrice)}
                         />
                         <BaseDetailRow

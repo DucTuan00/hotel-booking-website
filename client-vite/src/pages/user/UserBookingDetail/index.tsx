@@ -534,6 +534,31 @@ const UserBookingDetail: React.FC = () => {
                                                     )}
                                                 </div>
 
+                                                {/* VAT */}
+                                                {booking.snapshot.vat && (
+                                                    <>
+                                                        <Divider className="my-4" />
+                                                        <div className="space-y-2">
+                                                            <div className="flex justify-between text-sm">
+                                                                <span className="text-gray-600">
+                                                                    Tạm tính
+                                                                </span>
+                                                                <span className="font-medium text-gray-900">
+                                                                    {formatPrice(booking.snapshot.vat.subtotalBeforeVat)}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex justify-between text-sm">
+                                                                <span className="text-gray-600">
+                                                                    Thuế VAT ({booking.snapshot.vat.rate}%)
+                                                                </span>
+                                                                <span className="font-medium text-gray-900">
+                                                                    {formatPrice(booking.snapshot.vat.vatAmount)}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </>
+                                                )}
+
                                                 {/* Loyalty Discount */}
                                                 {booking.snapshot.loyaltyDiscount && booking.snapshot.loyaltyDiscount.discountPercent > 0 && (
                                                     <>
