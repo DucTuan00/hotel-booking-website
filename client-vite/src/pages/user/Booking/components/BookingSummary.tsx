@@ -212,7 +212,7 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
             {/* Note */}
             <div className="my-4">
                 <p className="text-xs text-gray-600">
-                    * Giá đã bao gồm thuế VAT {vatRate}%
+                    {/* * Giá đã bao gồm thuế VAT {vatRate}% */}
                 </p>
             </div>
 
