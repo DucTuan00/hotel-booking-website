@@ -9,6 +9,7 @@ import {
     StarOutlined,
 } from '@ant-design/icons';
 import moment from 'moment';
+import { Capacitor } from '@capacitor/core';
 import bookingService from '@/services/bookings/bookingService';
 import { generateBookingPDF } from '@/services/bookings/bookingPdfService';
 import reviewService from '@/services/reviews/reviewService';
@@ -162,7 +163,17 @@ const UserBookingDetail: React.FC = () => {
         try {
             setMessage({ type: 'success', text: 'Đang tạo file PDF...' });
             await generateBookingPDF(booking);
-            setMessage({ type: 'success', text: 'Đã tải hóa đơn PDF thành công!' });
+            
+            if (Capacitor.isNativePlatform()) {
+                // Mobile: Show where the file was saved
+                setMessage({ 
+                    type: 'success', 
+                    text: 'Đã lưu hóa đơn PDF vào thư mục Documents!' 
+                });
+            } else {
+                // Web: File is downloaded via browser
+                setMessage({ type: 'success', text: 'Đã tải hóa đơn PDF thành công!' });
+            }
         } catch (error) {
             console.error('Error downloading PDF:', error);
             setMessage({ type: 'error', text: 'Không thể tải hóa đơn PDF. Vui lòng thử lại.' });

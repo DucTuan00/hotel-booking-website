@@ -3,6 +3,8 @@ import html2canvas from 'html2canvas';
 import { Booking, PaymentStatus, PaymentMethod } from '@/types/booking';
 import moment from 'moment';
 import { formatPrice } from '@/utils/formatPrice';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
 
 const HOTEL_INFO = {
     name: 'LION BOUTIQUE HOTEL',
@@ -275,9 +277,27 @@ const createInvoiceHTML = (booking: Booking): string => {
 };
 
 /**
+ * Save PDF file on mobile using Capacitor Filesystem
+ */
+const savePdfOnMobile = async (pdf: jsPDF, fileName: string): Promise<string> => {
+    // Get base64 data from PDF (without the data:application/pdf;base64, prefix)
+    const pdfBase64 = pdf.output('datauristring').split(',')[1];
+    
+    // Save to Downloads directory on Android
+    const result = await Filesystem.writeFile({
+        path: fileName,
+        data: pdfBase64,
+        directory: Directory.Documents,
+        recursive: true,
+    });
+    
+    return result.uri;
+};
+
+/**
  * Generate and download booking invoice PDF with Vietnamese support
  */
-export const generateBookingPDF = async (booking: Booking): Promise<void> => {
+export const generateBookingPDF = async (booking: Booking): Promise<string | void> => {
     // Create hidden iframe to render content without affecting main page
     const iframe = document.createElement('iframe');
     iframe.style.position = 'absolute';
@@ -351,9 +371,18 @@ export const generateBookingPDF = async (booking: Booking): Promise<void> => {
         // Remove iframe
         document.body.removeChild(iframe);
 
-        // Save PDF
+        // Save PDF - handle differently for mobile vs web
         const fileName = `HoaDon_${booking.bookingCode || booking.id}_${moment().format('YYYYMMDD')}.pdf`;
-        pdf.save(fileName);
+        
+        if (Capacitor.isNativePlatform()) {
+            // Mobile: Save to device storage using Capacitor Filesystem
+            const savedPath = await savePdfOnMobile(pdf, fileName);
+            console.log('PDF saved to:', savedPath);
+            return savedPath;
+        } else {
+            // Web: Use browser download
+            pdf.save(fileName);
+        }
     } catch (error) {
         // Clean up iframe on error
         if (document.body.contains(iframe)) {
