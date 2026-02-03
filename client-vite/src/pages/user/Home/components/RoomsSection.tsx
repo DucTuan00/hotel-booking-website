@@ -46,7 +46,7 @@ const RoomsSection: React.FC = () => {
                                 <img
                                     src="/images/home4.jpg"
                                     alt="Phòng Đôi"
-                                    className="w-full h-full object-cover md:transition-transform md:duration-700 md:group-hover:scale-110"
+                                    className="!w-full !h-full object-cover md:transition-transform md:duration-700 md:group-hover:scale-110"
                                     loading="lazy"
                                 />
                             </div>
@@ -91,7 +91,7 @@ const RoomsSection: React.FC = () => {
                                 <img
                                     src="/images/home5.jpg"
                                     alt="Phòng Suite Gia Đình"
-                                    className="w-full h-full object-cover md:transition-transform md:duration-700 md:group-hover:scale-110"
+                                    className="!w-full !h-full object-cover md:transition-transform md:duration-700 md:group-hover:scale-110"
                                     loading="lazy"
                                 />
                             </div>

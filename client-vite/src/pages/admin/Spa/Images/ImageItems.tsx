@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Card, Col, Image } from 'antd';
+import { Button, Card, Col } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
 import { SpaImage } from '@/types/spa';
 
@@ -38,7 +38,7 @@ const ImageItems: React.FC<ImageItemsProps> = ({
                         bodyStyle={{ padding: 0 }}
                         cover={
                             <div style={{ height: '250px', overflow: 'hidden', position: 'relative' }}>
-                                <Image
+                                <img
                                     alt="Spa image"
                                     src={image.imagePath}
                                     style={{ 
@@ -120,7 +120,7 @@ const ImageItems: React.FC<ImageItemsProps> = ({
                             bodyStyle={{ padding: 0 }}
                             cover={
                                 <div style={{ height: '250px', overflow: 'hidden', position: 'relative' }}>
-                                    <Image
+                                    <img
                                         alt="Deleted image"
                                         src={image.imagePath}
                                         style={{ 
