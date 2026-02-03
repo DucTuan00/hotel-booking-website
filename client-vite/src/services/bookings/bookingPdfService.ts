@@ -277,9 +277,38 @@ const createInvoiceHTML = (booking: Booking): string => {
 };
 
 /**
+ * Request storage permissions on Android
+ */
+const requestStoragePermissions = async (): Promise<boolean> => {
+    try {
+        // Check current permission status
+        const permStatus = await Filesystem.checkPermissions();
+        
+        if (permStatus.publicStorage === 'granted') {
+            return true;
+        }
+        
+        // Request permissions if not granted
+        const requestResult = await Filesystem.requestPermissions();
+        return requestResult.publicStorage === 'granted';
+    } catch (error) {
+        console.error('Error requesting permissions:', error);
+        return false;
+    }
+};
+
+/**
  * Save PDF file on mobile using Capacitor Filesystem
  */
 const savePdfOnMobile = async (pdf: jsPDF, fileName: string): Promise<string> => {
+    // Request permissions first on Android
+    if (Capacitor.getPlatform() === 'android') {
+        const hasPermission = await requestStoragePermissions();
+        if (!hasPermission) {
+            throw new Error('Cần cấp quyền truy cập bộ nhớ để lưu file PDF');
+        }
+    }
+    
     // Get base64 data from PDF (without the data:application/pdf;base64, prefix)
     const pdfBase64 = pdf.output('datauristring').split(',')[1];
     

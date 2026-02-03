@@ -275,7 +275,7 @@ const UserBookingDetail: React.FC = () => {
                             <div>
                                 <div className="flex items-center gap-3 mb-2">
                                     <p
-                                        className="text-2xl font-bold"
+                                        className="text-xl font-bold"
                                         style={{
                                             color: COLORS.gray[900],
                                             marginBottom: 0,

@@ -44,6 +44,9 @@ const allowedOrigins = [
     'http://10.0.2.2:5173', // Android emulator (always for mobile dev)
     'http://localhost:5173', // Web dev
     'http://localhost', // Capacitor webview
+    'http://192.168.2.6:5173', // LAN access for physical devices
+    'capacitor://localhost', // Capacitor iOS
+    'ionic://localhost', // Capacitor Android
 ].filter(Boolean);
 
 app.use(cors({
@@ -82,6 +85,7 @@ app.use(errorHandler as ErrorRequestHandler);
 // Initialize Socket.IO
 initializeSocket(httpServer);
 
-httpServer.listen(PORT, (): void => {
+httpServer.listen(PORT, '0.0.0.0', (): void => {
     console.log(`Server running on port http://localhost:${PORT}`);
+    console.log(`LAN access`);
 });
