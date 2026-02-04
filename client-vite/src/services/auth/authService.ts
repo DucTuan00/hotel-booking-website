@@ -1,6 +1,6 @@
 import api from '@/services/api';
 import axios from 'axios';
-import { setAuthToken, removeAuthToken, isMobile } from '@/utils/auth';
+import { setAuthToken, removeAuthToken } from '@/utils/auth';
 import {
     RegisterInput,
     LoginInput,
@@ -23,8 +23,8 @@ const login = async (args: LoginInput): Promise<MessageResponse> => {
     try {
         const response = await api.post<MessageResponse>('/auth/login', args);
         
-        // Only save accessToken to storage for mobile apps (not web)
-        if (isMobile() && response.data.accessToken) {
+        // Save accessToken to storage (for all platforms)
+        if (response.data.accessToken) {
             setAuthToken(response.data.accessToken);
         }
 

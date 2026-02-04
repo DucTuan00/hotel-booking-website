@@ -154,7 +154,9 @@ export async function googleCallback(req: Request, res: Response, next: NextFunc
                 maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
             });
 
-            res.redirect(`${process.env.FRONTEND_URL}/?auth=success`);
+            // Pass tokens via URL for cross-domain compatibility (will be cleared by frontend)
+            const encodedAccessToken = encodeURIComponent(result.accessToken);
+            res.redirect(`${process.env.FRONTEND_URL}/?auth=success&token=${encodedAccessToken}`);
         })(req, res, next);
     } catch (error: any) {
         console.error('Google callback error:', error);

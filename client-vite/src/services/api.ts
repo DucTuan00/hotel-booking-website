@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { Capacitor } from '@capacitor/core';
-import { getAuthToken, isMobile, setAuthToken, removeAuthToken } from '@/utils/auth';
+import { getAuthToken, setAuthToken, removeAuthToken } from '@/utils/auth';
 
 const isAndroid = () => {
     return Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android';
@@ -46,13 +46,12 @@ const processQueue = (error: any, token: string | null = null) => {
     failedQueue = [];
 };
 
-// Add request interceptor to auto add Authorization header for mobile
+// Add request interceptor to auto add Authorization header
+// Use localStorage token if available (for OAuth/Payment callbacks), otherwise rely on cookies
 api.interceptors.request.use((config) => {
-    if (isMobile()) {
-        const token = getAuthToken();
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
+    const token = getAuthToken();
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
 });
@@ -72,7 +71,7 @@ api.interceptors.response.use(
                 return new Promise((resolve, reject) => {
                     failedQueue.push({ resolve, reject });
                 }).then(token => {
-                    if (isMobile() && token) {
+                    if (token) {
                         originalRequest.headers.Authorization = `Bearer ${token}`;
                     }
                     return api(originalRequest);
@@ -95,7 +94,7 @@ api.interceptors.response.use(
                 const newAccessToken = refreshResponse.data.accessToken;
                 console.log('✅ Token refreshed successfully');
                 
-                if (isMobile() && newAccessToken) {
+                if (newAccessToken) {
                     setAuthToken(newAccessToken);
                     originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
                 }

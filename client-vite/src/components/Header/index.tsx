@@ -54,13 +54,20 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
     useEffect(() => {
         const searchParams = new URLSearchParams(location.search);
         const authParam = searchParams.get('auth');
+        const tokenParam = searchParams.get('token');
 
         if (authParam === 'success') {
+            // Save token from URL to localStorage (for cross-domain OAuth)
+            if (tokenParam) {
+                localStorage.setItem('authToken', tokenParam);
+            }
+            
             setMessage({ type: 'success', text: 'Đăng nhập thành công!' });
             
             setLoading(true);
             fetchUserInfo();
             
+            // Clear URL to remove token
             window.history.replaceState({}, '', location.pathname);
         }
     }, [location.search, location.pathname, fetchUserInfo]);
