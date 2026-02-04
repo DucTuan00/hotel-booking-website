@@ -24,8 +24,8 @@ const { Option } = Select;
 interface DayPricingData {
     date: string;
     displayDate: string;
-    price: number;
-    inventory: number;
+    price: number | null;
+    inventory: number | null;
     isModified: boolean;
     isNew: boolean;
 }
@@ -86,8 +86,8 @@ const RoomPricing: React.FC = () => {
                     return {
                         date,
                         displayDate,
-                        price: existingAvailability?.price ?? room.price,
-                        inventory: existingAvailability?.inventory ?? room.quantity,
+                        price: existingAvailability?.price ?? null,
+                        inventory: existingAvailability?.inventory ?? null,
                         isModified: false,
                         isNew: !existingAvailability
                     };
@@ -113,7 +113,7 @@ const RoomPricing: React.FC = () => {
     }, [loadData]);
 
     const handlePriceChange = (roomIndex: number, dayIndex: number, value: number | null) => {
-        if (value === null || value < 0) return;
+        if (value !== null && value < 0) return;
 
         const newData = [...roomPricingData];
         newData[roomIndex].days[dayIndex].price = value;
@@ -121,8 +121,8 @@ const RoomPricing: React.FC = () => {
         setRoomPricingData(newData);
     };
 
-    const handleInventoryChange = (roomIndex: number, dayIndex: number, value: number) => {
-        if (value < 0) return;
+    const handleInventoryChange = (roomIndex: number, dayIndex: number, value: number | null) => {
+        if (value !== null && value < 0) return;
 
         const newData = [...roomPricingData];
         newData[roomIndex].days[dayIndex].inventory = value;
@@ -137,7 +137,8 @@ const RoomPricing: React.FC = () => {
 
             for (const roomData of roomPricingData) {
                 for (const dayData of roomData.days) {
-                    if (dayData.isModified) {
+                    // Only save if modified AND both price and inventory are set
+                    if (dayData.isModified && dayData.price !== null && dayData.inventory !== null) {
                         if (dayData.isNew) {
                             promises.push(
                                 roomAvailableService.createRoomAvailable({
@@ -172,9 +173,9 @@ const RoomPricing: React.FC = () => {
         }
     };
 
-    // Check if there are any changes to save
+    // Check if there are any valid changes to save (both price and inventory must be set)
     const hasChanges = roomPricingData.some(roomData =>
-        roomData.days.some(day => day.isModified)
+        roomData.days.some(day => day.isModified && day.price !== null && day.inventory !== null)
     );
 
     return (
@@ -230,10 +231,10 @@ const RoomPricing: React.FC = () => {
                                         <span style={{ marginLeft: '8px', color: '#666' }}>
                                             ({roomData.room.roomType})
                                         </span>
-                                        <span style={{ marginLeft: '16px', color: '#52c41a' }}>
+                                        <span style={{ marginLeft: '16px', color: '#333' }}>
                                             Giá mặc định: {roomData.room.price.toLocaleString('vi-VN')} VND
                                         </span>
-                                        <span style={{ marginLeft: '16px', color: '#1890ff' }}>
+                                        <span style={{ marginLeft: '16px', color: '#333' }}>
                                             Số lượng mặc định: {roomData.room.quantity}
                                         </span>
                                     </div>
@@ -327,7 +328,12 @@ const RoomPricing: React.FC = () => {
                                                         onChange={(value) => handlePriceChange(roomIndex, dayIndex, value)}
                                                         style={{ width: '100%' }}
                                                         size="small"
-                                                        formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                                        placeholder="-"
+                                                        formatter={(value) => value ? `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}
+                                                        parser={(value) => {
+                                                            const cleaned = value?.replace(/\./g, '') || '';
+                                                            return cleaned ? Number(cleaned) : NaN;
+                                                        }}
                                                     />
                                                 </div>
                                             ))}
@@ -369,6 +375,8 @@ const RoomPricing: React.FC = () => {
                                                         onChange={(value) => handleInventoryChange(roomIndex, dayIndex, value)}
                                                         style={{ width: '100%' }}
                                                         size="small"
+                                                        placeholder="-"
+                                                        allowClear
                                                     >
                                                         {Array.from({ length: 21 }, (_, i) => (
                                                             <Option key={i} value={i}>
