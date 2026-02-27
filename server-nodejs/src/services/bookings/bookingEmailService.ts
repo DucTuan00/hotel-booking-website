@@ -27,6 +27,13 @@ interface BookingEmailData {
         percent: number;
         amount: number;
     };
+    depositInfo?: {
+        type: 'full' | 'deposit';
+        depositPercent: number;
+        depositAmount: number;
+        totalAmount: number;
+        remainingAmount: number;
+    };
 }
 
 /**
@@ -58,6 +65,7 @@ export async function sendBookingConfirmationEmail(bookingData: BookingEmailData
             paymentMethod: bookingData.paymentMethod,
             celebrateItems: bookingData.celebrateItems,
             discount: bookingData.discount,
+            depositInfo: bookingData.depositInfo
         };
 
         const emailTemplate = emailTemplates.bookingConfirmation(emailData);

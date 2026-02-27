@@ -357,6 +357,11 @@ const UserBookings: React.FC = () => {
                                                         >
                                                             {formatPrice(booking.totalPrice)}
                                                         </div>
+                                                        {booking.snapshot?.paymentOption?.type === 'deposit' && (
+                                                            <div className="text-xs text-right mt-1" style={{ color: '#d97706' }}>
+                                                                Đặt cọc {booking.snapshot.paymentOption.depositPercent}%
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </div>
 

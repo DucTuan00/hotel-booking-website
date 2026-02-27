@@ -87,6 +87,7 @@ export const emailTemplates = {
         paymentMethod: string;
         celebrateItems?: Array<{ name: string; quantity: number; price: number }>;
         discount?: { tier: string; percent: number; amount: number };
+        depositInfo?: { type: 'full' | 'deposit'; depositPercent: number; depositAmount: number; totalAmount: number; remainingAmount: number };
     }) => ({
         subject: 'Xác nhận đặt phòng - Lion Boutique Hotel',
         html: `
@@ -195,6 +196,20 @@ export const emailTemplates = {
                   Tổng cộng: ${bookingData.totalPrice.toLocaleString('vi-VN')}đ
                 </div>
               </div>
+              ${bookingData.depositInfo && bookingData.depositInfo.type === 'deposit' ? `
+              <div style="margin-top: 15px; padding: 15px; background: #fff3cd; border-radius: 5px;">
+                <div style="font-weight: bold; color: #8B1A1A; margin-bottom: 8px;">Thông tin đặt cọc</div>
+                <div class="info-row">
+                  <span class="info-label">Số tiền cọc (${bookingData.depositInfo.depositPercent}%): </span>
+                  <span class="info-value" style="font-weight: bold; color: #D4902A;">${bookingData.depositInfo.depositAmount.toLocaleString('vi-VN')}đ</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Còn lại thanh toán tại quầy: </span>
+                  <span class="info-value">${bookingData.depositInfo.remainingAmount.toLocaleString('vi-VN')}đ</span>
+                </div>
+                <p style="color: #8B1A1A; font-size: 12px; margin-top: 8px;"><strong>Lưu ý:</strong> Tiền cọc không được hoàn lại. Đơn đặt cọc không thể hủy.</p>
+              </div>
+              ` : ''}
             </div>
 
             <div class="note">
@@ -252,6 +267,12 @@ export const emailTemplates = {
       - Phương thức: ${bookingData.paymentMethod === PaymentMethod.ONSITE ? 'Thanh toán tại quầy' : 'Thanh toán Online'}
       ${bookingData.discount ? `- Giảm giá ${bookingData.discount.tier}: -${bookingData.discount.amount.toLocaleString('vi-VN')}đ (${bookingData.discount.percent}%)` : ''}
       - Tổng cộng: ${bookingData.totalPrice.toLocaleString('vi-VN')}đ
+      ${bookingData.depositInfo && bookingData.depositInfo.type === 'deposit' ? `
+      THÔNG TIN ĐẶT CỌC
+      - Số tiền cọc (${bookingData.depositInfo.depositPercent}%): ${bookingData.depositInfo.depositAmount.toLocaleString('vi-VN')}đ
+      - Còn lại thanh toán tại quầy: ${bookingData.depositInfo.remainingAmount.toLocaleString('vi-VN')}đ
+      - Lưu ý: Tiền cọc không được hoàn lại. Đơn đặt cọc không thể hủy.
+      ` : ''}
       
       LƯU Ý:
       - Vui lòng mang theo CMND/CCCD khi nhận phòng

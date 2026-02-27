@@ -102,6 +102,27 @@ const PriceBreakdown: React.FC<PriceBreakdownProps> = ({ booking }) => {
                         </span>
                     }
                 />
+
+                {/* Deposit Info */}
+                {snapshot.paymentOption?.type === 'deposit' && (
+                    <>
+                        <BaseDetailRow
+                            label={`Tiền cọc (${snapshot.paymentOption.depositPercent}%)`}
+                            value={
+                                <span className="font-bold text-lg">
+                                    {formatPrice(snapshot.paymentOption.depositAmount)}
+                                </span>
+                            }
+                        />
+                        <BaseDetailRow
+                            label="Còn lại (TT tại quầy)"
+                            value={formatPrice(snapshot.paymentOption.remainingAmount)}
+                        />
+                        <div className="text-xs text-red-600 mt-2 mb-2 px-4">
+                            * Đơn đặt cọc - Tiền cọc không hoàn lại, không thể hủy đơn.
+                        </div>
+                    </>
+                )}
             </DetailSection>
         </>
     );

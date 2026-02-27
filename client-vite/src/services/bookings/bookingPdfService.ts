@@ -240,6 +240,20 @@ const createInvoiceHTML = (booking: Booking): string => {
                                     <td style="padding: 8px 6px; border: 1px solid ${COLORS_PDF.border}; font-weight: bold;">Tổng cộng</td>
                                     <td style="padding: 8px 6px; border: 1px solid ${COLORS_PDF.border}; text-align: right; font-weight: bold; font-size: 12px;">${formatPrice(booking.totalPrice)}</td>
                                 </tr>
+                                ${
+                                    booking.snapshot?.paymentOption?.type === 'deposit'
+                                        ? `
+                                <tr>
+                                    <td style="padding: 6px; border: 1px solid ${COLORS_PDF.border}; font-weight: bold;">Tiền cọc (${booking.snapshot.paymentOption.depositPercent}%)</td>
+                                    <td style="padding: 6px; border: 1px solid ${COLORS_PDF.border}; text-align: right; font-weight: bold;">${formatPrice(booking.snapshot.paymentOption.depositAmount)}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 6px; border: 1px solid ${COLORS_PDF.border};">Còn lại (TT tại quầy)</td>
+                                    <td style="padding: 6px; border: 1px solid ${COLORS_PDF.border}; text-align: right; font-weight: 600;">${formatPrice(booking.snapshot.paymentOption.remainingAmount)}</td>
+                                </tr>
+                                `
+                                        : ''
+                                }
                             </table>
                         </td>
                     </tr>
@@ -255,7 +269,7 @@ const createInvoiceHTML = (booking: Booking): string => {
                         </tr>
                         <tr>
                             <td style="padding: 6px; border: 1px solid ${COLORS_PDF.border};">Phương thức thanh toán</td>
-                            <td style="padding: 6px; border: 1px solid ${COLORS_PDF.border}; font-weight: 600;">${booking.paymentMethod === PaymentMethod.ONLINE ? 'Thanh toán online' : 'Thanh toán tại quầy'}</td>
+                            <td style="padding: 6px; border: 1px solid ${COLORS_PDF.border}; font-weight: 600;">${booking.paymentMethod === PaymentMethod.ONLINE ? 'Thanh toán online' : 'Thanh toán tại quầy'}${booking.snapshot?.paymentOption?.type === 'deposit' ? ' (Đặt cọc)' : ''}</td>
                         </tr>
                         <tr>
                             <td style="padding: 6px; border: 1px solid ${COLORS_PDF.border};">Ngày đặt phòng</td>

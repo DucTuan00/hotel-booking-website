@@ -34,9 +34,14 @@ export async function createPaymentUrl(req: Request, res: Response, next: NextFu
         booking.paymentDetails.platform = platform || 'web';
         await booking.save();
 
+        // Determine payment amount: deposit amount or full amount
+        const paymentAmount = booking.snapshot?.paymentOption?.type === 'deposit'
+            ? booking.snapshot.paymentOption.depositAmount
+            : booking.totalPrice;
+
         // Create payment URL
         const paymentUrl = vnpayService.createPaymentUrl({
-            amount: booking.totalPrice,
+            amount: paymentAmount,
             bookingId: String(booking._id),
             orderInfo: `Thanh toan dat phong ${booking._id}`,
             ipAddr,

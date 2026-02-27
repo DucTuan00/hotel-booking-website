@@ -203,6 +203,9 @@ const UserBookingDetail: React.FC = () => {
 
     const cancellationInfo = calculateCancellationFee(booking);
 
+    // Check if booking is a deposit booking
+    const isDepositBooking = booking.snapshot?.paymentOption?.type === 'deposit';
+
     // Check if can show cancel button
     // Set check-in time to 14:00 of the check-in date
     const checkInDateTime = new Date(booking.checkIn);
@@ -211,6 +214,7 @@ const UserBookingDetail: React.FC = () => {
     const isBeforeCheckIn = now < checkInDateTime;
 
     const canShowCancelButton =
+        !isDepositBooking &&
         booking.status !== BookingStatus.CANCELLED &&
         booking.status !== BookingStatus.REJECTED &&
         booking.status !== BookingStatus.CHECKED_OUT &&
@@ -606,6 +610,37 @@ const UserBookingDetail: React.FC = () => {
                                                         {formatPrice(booking.totalPrice)}
                                                     </span>
                                                 </div>
+
+                                                {/* Deposit Info */}
+                                                {booking.snapshot?.paymentOption?.type === 'deposit' && (
+                                                    <>
+                                                        <Divider className="my-4" />
+                                                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                                                            <div className="text-sm font-medium text-orange-800 mb-2">
+                                                                Thông tin đặt cọc
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                <div className="flex justify-between text-sm">
+                                                                    <span className="text-gray-600">
+                                                                        Tiền cọc ({booking.snapshot.paymentOption.depositPercent}%):
+                                                                    </span>
+                                                                    <span className="font-bold" style={{ color: '#D4902A' }}>
+                                                                        {formatPrice(booking.snapshot.paymentOption.depositAmount)}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="flex justify-between text-sm">
+                                                                    <span className="text-gray-600">Còn lại (thanh toán tại quầy):</span>
+                                                                    <span className="font-medium text-gray-900">
+                                                                        {formatPrice(booking.snapshot.paymentOption.remainingAmount)}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <div className="text-xs text-red-600 mt-2">
+                                                                * Tiền cọc không được hoàn lại. Đơn đặt cọc không thể hủy.
+                                                            </div>
+                                                        </div>
+                                                    </>
+                                                )}
                                             </>
                                         )}
                                     </div>

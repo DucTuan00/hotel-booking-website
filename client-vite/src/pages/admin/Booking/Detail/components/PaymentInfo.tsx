@@ -78,7 +78,16 @@ const PaymentInfo: React.FC<PaymentInfoProps> = ({ booking, paymentStatus, onPay
         <DetailSection title="Thông tin thanh toán">
             <BaseDetailRow
                 label="Phương thức thanh toán"
-                value={getPaymentMethodText(booking.paymentMethod)}
+                value={
+                    <span>
+                        {getPaymentMethodText(booking.paymentMethod)}
+                        {booking.snapshot?.paymentOption?.type === 'deposit' && (
+                            <span className="ml-2 text-xs font-semibold text-white bg-orange-500 px-2 py-0.5 rounded">
+                                Đặt cọc {booking.snapshot.paymentOption.depositPercent}%
+                            </span>
+                        )}
+                    </span>
+                }
             />
             <BaseDetailRow
                 label="Trạng thái thanh toán"

@@ -18,6 +18,13 @@ export enum PaymentStatus {
     REFUNDED = 'Refunded'
 }
 
+export enum PaymentOption {
+    FULL = 'full',
+    DEPOSIT = 'deposit'
+}
+
+export const DEPOSIT_PERCENT = 30;
+
 // Sort & Filter Types
 export type BookingSortField = 'createdAt' | 'checkIn' | 'checkOut' | 'totalPrice';
 export type SortOrder = 'asc' | 'desc';
@@ -43,6 +50,7 @@ export interface CreateBookingInput {
     phoneNumber: string;
     note?: string;
     paymentMethod: PaymentMethod;
+    paymentOption?: PaymentOption;
     celebrateItems?: CelebrateItemInput[];
 }
 
@@ -169,6 +177,14 @@ export interface Booking {
             subtotalBeforeVat: number;
             vatAmount: number;
             totalWithVat: number;
+        };
+        paymentOption?: {
+            type: 'full' | 'deposit';
+            depositPercent: number;
+            depositAmount: number;
+            totalAmount: number;
+            paidAmount: number;
+            remainingAmount: number;
         };
         bookingDate: string;
     };

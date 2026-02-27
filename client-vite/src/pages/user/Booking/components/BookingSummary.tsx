@@ -3,7 +3,7 @@ import { Divider, Button } from 'antd';
 import dayjs from 'dayjs';
 import { COLORS } from '@/config/constants';
 import { Room } from '@/types/room';
-import { PreviewPriceResponse } from '@/types/booking';
+import { PreviewPriceResponse, PaymentOption, DEPOSIT_PERCENT } from '@/types/booking';
 import { CelebrateItem } from '@/types/celebrate';
 import { LoyaltyInfo } from '@/types/user';
 import { formatPrice } from '@/utils/formatPrice';
@@ -21,6 +21,7 @@ interface BookingSummaryProps {
     onSubmit: () => void;
     submitting: boolean;
     loyaltyInfo?: LoyaltyInfo | null;
+    paymentOption?: PaymentOption;
 }
 
 const BookingSummary: React.FC<BookingSummaryProps> = ({ 
@@ -35,7 +36,8 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
     selectedCelebrationQuantities,
     onSubmit,
     submitting,
-    loyaltyInfo
+    loyaltyInfo,
+    paymentOption
 }) => {
     const nights = dayjs(checkOut).diff(dayjs(checkIn), 'day');
     
@@ -57,6 +59,11 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
     const discountPercent = loyaltyInfo?.currentDiscount || 0;
     const discountAmount = Math.floor(totalWithVat * discountPercent / 100);
     const grandTotal = totalWithVat - discountAmount;
+
+    // Deposit calculation
+    const isDeposit = paymentOption === PaymentOption.DEPOSIT;
+    const depositAmount = isDeposit ? Math.floor(grandTotal * DEPOSIT_PERCENT / 100) : grandTotal;
+    const remainingAmount = isDeposit ? grandTotal - depositAmount : 0;
 
     return (
         <div className="bg-white rounded-lg border border-gray-200 p-6 sticky top-4">
@@ -208,6 +215,30 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
                     {formatPrice(grandTotal)}
                 </span>
             </div>
+
+            {/* Deposit Info */}
+            {isDeposit && (
+                <>
+                    <Divider className="my-3" />
+                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                        <div className="flex justify-between text-sm mb-1">
+                            <span className="text-gray-600">Tiền cọc ({DEPOSIT_PERCENT}%):</span>
+                            <span className="font-bold text-lg" style={{ color: '#D4902A' }}>
+                                {formatPrice(depositAmount)}
+                            </span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">Còn lại (thanh toán tại quầy):</span>
+                            <span className="font-medium text-gray-900">
+                                {formatPrice(remainingAmount)}
+                            </span>
+                        </div>
+                        <div className="text-xs text-red-600 mt-2">
+                            * Tiền cọc không được hoàn lại. Đơn đặt cọc không thể hủy.
+                        </div>
+                    </div>
+                </>
+            )}
 
             {/* Note */}
             <div className="my-4">

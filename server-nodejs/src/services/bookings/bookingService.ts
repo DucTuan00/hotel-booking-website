@@ -14,7 +14,9 @@ import {
     UpdateBookingInput,
     BookingStatus,
     PaymentMethod,
-    PaymentStatus
+    PaymentStatus,
+    PaymentOption,
+    DEPOSIT_PERCENT
 } from '@/types/booking';
 import {
     normalizeDate,
@@ -52,6 +54,7 @@ export async function createBooking(args: CreateBookingInput) {
         phoneNumber,
         note,
         paymentMethod,
+        paymentOption,
         celebrateItems = []
     } = args;
 
@@ -230,6 +233,20 @@ export async function createBooking(args: CreateBookingInput) {
             finalPrice: finalPrice
         };
 
+        // Add payment option info to snapshot
+        const isDeposit = paymentMethod === PaymentMethod.ONLINE && paymentOption === PaymentOption.DEPOSIT;
+        const depositAmount = isDeposit ? Math.floor(finalPrice * DEPOSIT_PERCENT / 100) : finalPrice;
+        const remainingAmount = isDeposit ? finalPrice - depositAmount : 0;
+
+        snapshot.paymentOption = {
+            type: isDeposit ? 'deposit' : 'full',
+            depositPercent: isDeposit ? DEPOSIT_PERCENT : 100,
+            depositAmount: depositAmount,
+            totalAmount: finalPrice,
+            paidAmount: depositAmount,
+            remainingAmount: remainingAmount
+        };
+
         const newBooking = new Booking({
             userId: existUser._id,
             roomId: existRoom._id,
@@ -299,6 +316,13 @@ export async function createBooking(args: CreateBookingInput) {
                 tier: existUser.loyaltyTier || 'Bronze',
                 percent: userDiscount,
                 amount: discountAmount,
+            } : undefined,
+            depositInfo: isDeposit ? {
+                type: 'deposit',
+                depositPercent: DEPOSIT_PERCENT,
+                depositAmount: depositAmount,
+                totalAmount: finalPrice,
+                remainingAmount: remainingAmount,
             } : undefined,
         }).catch(error => {
             console.error('Failed to send booking confirmation email:', error);
@@ -444,6 +468,11 @@ export async function cancelBooking(arg: BookingIdInput) {
     // Check if already rejected
     if (booking.status === BookingStatus.REJECTED) {
         throw new ApiError('Rejected bookings cannot be cancelled', 400);
+    }
+
+    // Check if booking is a deposit booking - deposit bookings cannot be cancelled
+    if (booking.snapshot?.paymentOption?.type === 'deposit') {
+        throw new ApiError('Đơn đặt cọc không thể hủy. Tiền cọc không được hoàn lại.', 400);
     }
 
     // Calculate cancellation fee

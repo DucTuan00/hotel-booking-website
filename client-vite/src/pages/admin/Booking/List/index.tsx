@@ -199,6 +199,9 @@ const BookingList: React.FC = () => {
                     </Tag>
                     <div style={{ fontSize: '12px', color: '#888', marginTop: 4 }}>
                         {getPaymentMethodText(booking.paymentMethod)}
+                        {booking.snapshot?.paymentOption?.type === 'deposit' && (
+                            <Tag color="orange" style={{ marginLeft: 4, fontSize: '11px' }}>Đặt cọc</Tag>
+                        )}
                     </div>
                 </div>
             ),

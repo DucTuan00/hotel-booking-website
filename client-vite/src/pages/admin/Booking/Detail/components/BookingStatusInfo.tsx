@@ -99,13 +99,17 @@ const BookingStatusInfo: React.FC<BookingStatusInfoProps> = ({ booking, status, 
 
     const cancellationInfo = calculateCancellationFee(booking);
     
+    // Check if booking is a deposit booking
+    const isDepositBooking = booking.snapshot?.paymentOption?.type === 'deposit';
+
     // Check if current time is before check-in time (14:00)
     const checkInDateTime = new Date(booking.checkIn);
     checkInDateTime.setHours(14, 0, 0, 0);
     const now = new Date();
     const isBeforeCheckIn = now < checkInDateTime;
     
-    const canShowCancelButton = booking.status !== BookingStatus.CANCELLED && 
+    const canShowCancelButton = !isDepositBooking &&
+                                booking.status !== BookingStatus.CANCELLED && 
                                 booking.status !== BookingStatus.REJECTED &&
                                 booking.status !== BookingStatus.CHECKED_OUT &&
                                 isBeforeCheckIn &&

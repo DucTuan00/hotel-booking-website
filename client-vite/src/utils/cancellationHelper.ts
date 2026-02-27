@@ -9,9 +9,25 @@ export interface CancellationInfo {
     reason?: string;
     daysBeforeCheckIn: number;
     hoursBeforeCheckIn: number;
+    isDeposit?: boolean;
 }
 
 export const calculateCancellationFee = (booking: Booking): CancellationInfo => {
+    // Check if booking is a deposit booking - deposit bookings cannot be cancelled
+    if (booking.snapshot?.paymentOption?.type === 'deposit') {
+        return {
+            canCancel: false,
+            feePercentage: 0,
+            fee: 0,
+            refundAmount: 0,
+            restoreInventory: false,
+            reason: 'Đơn đặt cọc không thể hủy. Tiền cọc không được hoàn lại.',
+            daysBeforeCheckIn: 0,
+            hoursBeforeCheckIn: 0,
+            isDeposit: true
+        };
+    }
+
     const now = new Date();
     
     // Set check-in time to 14:00 of the check-in date

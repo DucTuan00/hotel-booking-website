@@ -19,6 +19,13 @@ export enum PaymentStatus {
     REFUNDED = 'Refunded'
 }
 
+export enum PaymentOption {
+    FULL = 'full',
+    DEPOSIT = 'deposit'
+}
+
+export const DEPOSIT_PERCENT = 30;
+
 // MARK: Interfaces
 export interface PaymentDetails {
     gateway?: 'vnpay' | 'momo' | 'zalopay'; // Payment gateway used
@@ -53,6 +60,7 @@ export interface CreateBookingInput {
     phoneNumber: string;
     note?: string;
     paymentMethod: PaymentMethod;
+    paymentOption?: PaymentOption;
     celebrateItems?: CelebrateItemInput[];
 }
 

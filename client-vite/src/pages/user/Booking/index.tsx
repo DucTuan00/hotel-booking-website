@@ -13,7 +13,7 @@ import Notification from '@/components/Notification';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { Message } from '@/types/message';
 import { Room } from '@/types/room';
-import { PaymentMethod, PreviewPriceResponse } from '@/types/booking';
+import { PaymentMethod, PreviewPriceResponse, PaymentOption } from '@/types/booking';
 import { User, LoyaltyInfo } from '@/types/user';
 import { CelebrateItem } from '@/types/celebrate';
 import GuestInfoForm from '@/pages/user/Booking/components/GuestInfoForm';
@@ -37,6 +37,7 @@ const Booking: React.FC = () => {
     const [celebrateItems, setCelebrateItems] = useState<CelebrateItem[]>([]);
     const [selectedCelebrateItems, setSelectedCelebrateItems] = useState<Map<string, number>>(new Map());
     const [loyaltyInfo, setLoyaltyInfo] = useState<LoyaltyInfo | null>(null);
+    const [paymentOption, setPaymentOption] = useState<PaymentOption>(PaymentOption.FULL);
     
     const roomId = searchParams.get('roomId');
     const checkIn = searchParams.get('checkIn');
@@ -113,7 +114,8 @@ const Booking: React.FC = () => {
             // Set initial form values with URL params
             form.setFieldsValue({
                 paymentMethod: PaymentMethod.ONSITE,
-                paymentGateway: 'vnpay'
+                paymentGateway: 'vnpay',
+                paymentOption: PaymentOption.FULL
             });
         } catch (error) {
             console.error('Error loading booking data:', error);
@@ -166,6 +168,7 @@ const Booking: React.FC = () => {
                 phoneNumber: values.phoneNumber,
                 note: values.note,
                 paymentMethod: values.paymentMethod,
+                ...(values.paymentMethod === PaymentMethod.ONLINE && values.paymentOption && { paymentOption: values.paymentOption }),
                 ...(celebrateItemsData && { celebrateItems: celebrateItemsData })
             };
 
@@ -287,6 +290,16 @@ const Booking: React.FC = () => {
                                 form={form}
                                 layout="vertical"
                                 onFinish={handleSubmit}
+                                onValuesChange={(changedValues) => {
+                                    if (changedValues.paymentOption !== undefined) {
+                                        setPaymentOption(changedValues.paymentOption);
+                                    }
+                                    // Reset paymentOption when switching to Onsite
+                                    if (changedValues.paymentMethod === PaymentMethod.ONSITE) {
+                                        setPaymentOption(PaymentOption.FULL);
+                                        form.setFieldValue('paymentOption', PaymentOption.FULL);
+                                    }
+                                }}
                             >
                                 {/* Guest Information */}
                                 <GuestInfoForm />
@@ -322,6 +335,7 @@ const Booking: React.FC = () => {
                             onSubmit={() => form.submit()}
                             submitting={submitting}
                             loyaltyInfo={loyaltyInfo}
+                            paymentOption={paymentOption}
                         />
                     </div>
                 </div>

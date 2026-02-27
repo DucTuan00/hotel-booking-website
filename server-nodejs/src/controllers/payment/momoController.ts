@@ -39,9 +39,14 @@ export async function createMomoPayment(req: Request, res: Response): Promise<vo
         booking.paymentDetails.platform = platform || 'web';
         await booking.save();
 
+        // Determine payment amount: deposit amount or full amount
+        const paymentAmount = booking.snapshot?.paymentOption?.type === 'deposit'
+            ? booking.snapshot.paymentOption.depositAmount
+            : booking.totalPrice;
+
         // Create payment with MoMo
         const result = await createPayment({
-            amount: booking.totalPrice.toString(),
+            amount: paymentAmount.toString(),
             orderInfo: `Thanh toan dat phong ${booking._id}`,
             extraData: JSON.stringify({ bookingId: String(booking._id), ipAddr }),
             platform,
