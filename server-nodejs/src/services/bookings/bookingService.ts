@@ -491,8 +491,7 @@ export async function cancelBooking(arg: BookingIdInput) {
         booking.status = BookingStatus.CANCELLED;
         booking.cancelledAt = new Date();
         
-        booking.cancellationReason = cancellationReason || 
-            `Cancelled. Fee: ${cancellationInfo.feePercentage}% (${cancellationInfo.fee} VND). Refund: ${cancellationInfo.refundAmount} VND.`;
+        booking.cancellationReason = cancellationReason || 'Khách hàng yêu cầu hủy đơn';
 
         await booking.save({ session });
 
