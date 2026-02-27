@@ -20,6 +20,11 @@ export const sendPasswordResetEmail = async (email: string): Promise<void> => {
       throw new ApiError('No account found with this email address', 404);
     }
 
+    // Check if account is active
+    if (!user.active) {
+      throw new ApiError('Tài khoản đã bị vô hiệu hóa. Hãy liên hệ để được hỗ trợ', 403);
+    }
+
     // Generate verification code
     const code = generateVerificationCode();
 
@@ -111,6 +116,11 @@ export const resetPasswordWithCode = async (
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
       throw new ApiError('User not found', 404);
+    }
+
+    // Check if account is active
+    if (!user.active) {
+      throw new ApiError('Tài khoản đã bị vô hiệu hóa. Hãy liên hệ để được hỗ trợ', 403);
     }
 
     // Hash new password
