@@ -1,18 +1,23 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Card, Empty, Spin, Tag, Pagination, Button, Input, Select, Space } from 'antd';
+import { Card, Empty, Spin, Tag, Pagination, Button, Input, Select, Space, Modal, Radio, Alert } from 'antd';
 import {
     CalendarOutlined,
     UserOutlined,
     EyeOutlined,
     SearchOutlined,
+    CreditCardOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import bookingService from '@/services/bookings/bookingService';
-import { Booking, BookingStatus, PaymentStatus } from '@/types/booking';
+import { createVNPayPaymentUrl } from '@/services/payment/vnpayService';
+import { createMoMoPaymentUrl } from '@/services/payment/momoService';
+import { Booking, BookingStatus, PaymentStatus, PaymentMethod } from '@/types/booking';
 import Notification from '@/components/Notification';
+import LoadingSpinner from '@/components/LoadingSpinner';
 import { Message } from '@/types/message';
 import { COLORS, TYPOGRAPHY } from '@/config/constants';
 import { getStatusColor, getStatusText, getPaymentStatusColor, getPaymentStatusText } from '@/utils/status';
+import { formatPrice as formatPriceUtil } from '@/utils/formatPrice';
 
 const { Option } = Select;
 
@@ -50,6 +55,12 @@ const UserBookings: React.FC = () => {
     const [debouncedSearchText, setDebouncedSearchText] = useState('');
     const [statusFilter, setStatusFilter] = useState<BookingStatus | 'ALL'>('ALL');
     const [paymentStatusFilter, setPaymentStatusFilter] = useState<PaymentStatus | 'ALL'>('ALL');
+    
+    // Retry payment states
+    const [isPaymentModalVisible, setIsPaymentModalVisible] = useState(false);
+    const [selectedGateway, setSelectedGateway] = useState<string>('vnpay');
+    const [paymentBooking, setPaymentBooking] = useState<Booking | null>(null);
+    const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
     // Debounce search text with 500ms delay
     const { debouncedCallback: debouncedSearch } = useDebounce(
@@ -121,6 +132,53 @@ const UserBookings: React.FC = () => {
         return '';
     };
 
+    const canRetryPayment = (booking: Booking) => {
+        return (
+            booking.paymentMethod === PaymentMethod.ONLINE &&
+            booking.paymentStatus === PaymentStatus.UNPAID &&
+            booking.status === BookingStatus.PENDING
+        );
+    };
+
+    const handleOpenPaymentModal = (booking: Booking) => {
+        setPaymentBooking(booking);
+        const previousGateway = booking.paymentDetails?.gateway;
+        if (previousGateway === 'vnpay' || previousGateway === 'momo') {
+            setSelectedGateway(previousGateway);
+        } else {
+            setSelectedGateway('vnpay');
+        }
+        setIsPaymentModalVisible(true);
+    };
+
+    const handleRetryPayment = async () => {
+        if (!paymentBooking) return;
+
+        setIsProcessingPayment(true);
+        setIsPaymentModalVisible(false);
+        try {
+            if (selectedGateway === 'vnpay') {
+                const paymentResponse = await createVNPayPaymentUrl({
+                    bookingId: paymentBooking.id,
+                    locale: 'vn',
+                });
+                window.location.href = paymentResponse.data.paymentUrl;
+            } else if (selectedGateway === 'momo') {
+                const paymentResponse = await createMoMoPaymentUrl({
+                    bookingId: paymentBooking.id,
+                });
+                window.location.href = paymentResponse.data.payUrl;
+            }
+        } catch (error: any) {
+            console.error('Error creating payment URL:', error);
+            setMessage({
+                type: 'error',
+                text: error?.response?.data?.message || 'Không thể tạo link thanh toán. Vui lòng thử lại.',
+            });
+            setIsProcessingPayment(false);
+        }
+    };
+
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -155,6 +213,19 @@ const UserBookings: React.FC = () => {
             <div className="flex justify-center items-center min-h-screen">
                 <Spin size="large" tip="Đang tải..." />
             </div>
+        );
+    }
+
+    if (isProcessingPayment) {
+        return (
+            <LoadingSpinner 
+                message="Đang chuyển đến cổng thanh toán..." 
+                size="large"
+                style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.98)',
+                    backdropFilter: 'blur(10px)'
+                }}
+            />
         );
     }
 
@@ -365,7 +436,20 @@ const UserBookings: React.FC = () => {
                                                     </div>
                                                 </div>
 
-                                                <div className="flex justify-end">
+                                                <div className="flex justify-end gap-2">
+                                                    {canRetryPayment(booking) && (
+                                                        <Button
+                                                            icon={<CreditCardOutlined />}
+                                                            onClick={() => handleOpenPaymentModal(booking)}
+                                                            style={{
+                                                                backgroundColor: '#52c41a',
+                                                                borderColor: '#52c41a',
+                                                                color: '#fff',
+                                                            }}
+                                                        >
+                                                            Thanh toán
+                                                        </Button>
+                                                    )}
                                                     <Button
                                                         type="primary"
                                                         icon={<EyeOutlined />}
@@ -401,6 +485,95 @@ const UserBookings: React.FC = () => {
                     )}
                 </div>
             </div>
+
+            {/* Retry Payment Modal */}
+            <Modal
+                title="Thanh toán đơn đặt phòng"
+                open={isPaymentModalVisible}
+                onOk={handleRetryPayment}
+                onCancel={() => setIsPaymentModalVisible(false)}
+                okText="Thanh toán ngay"
+                cancelText="Đóng"
+                okButtonProps={{
+                    style: { backgroundColor: '#52c41a', borderColor: '#52c41a' },
+                    icon: <CreditCardOutlined />,
+                }}
+                width={500}
+            >
+                <div className="py-4">
+                    <Alert
+                        message="Đơn đặt phòng chưa được thanh toán"
+                        description="Vui lòng chọn cổng thanh toán và tiến hành thanh toán để hoàn tất đơn đặt phòng."
+                        type="warning"
+                        showIcon
+                        className="!mb-4"
+                    />
+
+                    {paymentBooking && (
+                        <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                            <div className="flex justify-between text-sm mb-2">
+                                <span className="text-gray-600">Mã đơn:</span>
+                                <span className="font-medium text-gray-900 font-mono">{paymentBooking.id}</span>
+                            </div>
+                            <div className="flex justify-between text-sm mb-2">
+                                <span className="text-gray-600">Phòng:</span>
+                                <span className="font-medium text-gray-900">{paymentBooking.snapshot?.room?.name}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Số tiền:</span>
+                                <span className="font-bold" style={{ color: COLORS.primary }}>
+                                    {formatPriceUtil(
+                                        paymentBooking.snapshot?.paymentOption?.type === 'deposit'
+                                            ? paymentBooking.snapshot.paymentOption.depositAmount
+                                            : paymentBooking.totalPrice
+                                    )}
+                                </span>
+                            </div>
+                            {paymentBooking.snapshot?.paymentOption?.type === 'deposit' && (
+                                <div className="text-xs text-orange-600 mt-1 text-right">
+                                    (Đặt cọc {paymentBooking.snapshot.paymentOption.depositPercent}%)
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    <div className="mb-2">
+                        <div className="text-sm font-medium text-gray-700 mb-3">Chọn cổng thanh toán</div>
+                        <Radio.Group
+                            value={selectedGateway}
+                            onChange={(e) => setSelectedGateway(e.target.value)}
+                            className="w-full"
+                        >
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className={`border rounded-lg transition-colors cursor-pointer ${selectedGateway === 'vnpay' ? 'border-[#D4902A] bg-orange-50' : 'border-gray-200 hover:border-[#D4902A]'}`}>
+                                    <Radio value="vnpay" className="!ml-4 w-full">
+                                        <div className="flex items-center justify-center gap-2 p-4 cursor-pointer w-full">
+                                            <img 
+                                                src="/images/vnpay.png" 
+                                                alt="VNPay"
+                                                className="w-12 h-12 object-contain"
+                                            />
+                                            <span className="font-medium">VNPAY</span>
+                                        </div>
+                                    </Radio>
+                                </div>
+                                <div className={`border rounded-lg transition-colors cursor-pointer ${selectedGateway === 'momo' ? 'border-[#D4902A] bg-orange-50' : 'border-gray-200 hover:border-[#D4902A]'}`}>
+                                    <Radio value="momo" className="!ml-4 w-full">
+                                        <div className="flex items-center justify-center gap-2 p-4 cursor-pointer w-full">
+                                            <img 
+                                                src="/images/momo.png" 
+                                                alt="MoMo"
+                                                className="w-12 h-12 object-contain"
+                                            />
+                                            <span className="font-medium">MOMO</span>
+                                        </div>
+                                    </Radio>
+                                </div>
+                            </div>
+                        </Radio.Group>
+                    </div>
+                </div>
+            </Modal>
         </>
     );
 };

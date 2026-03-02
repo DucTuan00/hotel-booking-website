@@ -29,9 +29,10 @@ export async function createPaymentUrl(req: Request, res: Response, next: NextFu
             req.socket.remoteAddress ||
             '127.0.0.1';
 
-        // Store platform info for later use in return handler
+        // Store platform and gateway info for later use in return handler and retry
         booking.paymentDetails = booking.paymentDetails || {};
         booking.paymentDetails.platform = platform || 'web';
+        booking.paymentDetails.gateway = 'vnpay';
         await booking.save();
 
         // Determine payment amount: deposit amount or full amount

@@ -377,8 +377,8 @@ const AIPlanner: React.FC = () => {
                             }`}
                             onClick={() => handleViewPlan(item)}
                         >
-                            <div className="flex items-start gap-2 w-full">
-                                <div className="flex-1">
+                            <div className="relative w-full">
+                                <div className={`${item.isFavorite ? 'pr-5' : ''}`}>
                                     <Text strong className={`block text-sm ${isActive ? 'text-[#D4902A]' : ''}`}>
                                         {checkIn} - {checkOut}
                                     </Text>
@@ -387,7 +387,7 @@ const AIPlanner: React.FC = () => {
                                     </Text>
                                 </div>
                                 {item.isFavorite && (
-                                    <StarOutlined className="text-base !text-[#D4902A] my-auto" />
+                                    <StarOutlined className="absolute top-1 right-0 text-sm !text-[#D4902A]" />
                                 )}
                             </div>
                         </List.Item>

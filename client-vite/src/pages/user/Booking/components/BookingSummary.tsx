@@ -47,12 +47,13 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
         return sum + (item.price * itemQuantity);
     }, 0);
     
-    // Use subtotal before VAT from preview
-    const subtotalBeforeVat = pricePreview.subtotalBeforeVat || (pricePreview.roomSubtotal + celebrationTotal);
+    // Always recalculate subtotal to include dynamically selected celebration items
+    // pricePreview.subtotalBeforeVat only includes room cost (API doesn't know about selected celebrations)
+    const subtotalBeforeVat = pricePreview.roomSubtotal + celebrationTotal;
     
-    // VAT from preview (already includes celebration items)
+    // Recalculate VAT based on correct subtotal (including celebration items)
     const vatRate = pricePreview.vat?.rate || 10;
-    const vatAmount = pricePreview.vat?.amount || Math.floor(subtotalBeforeVat * (vatRate / 100));
+    const vatAmount = Math.floor(subtotalBeforeVat * (vatRate / 100));
     const totalWithVat = subtotalBeforeVat + vatAmount;
     
     // Calculate discount on total with VAT

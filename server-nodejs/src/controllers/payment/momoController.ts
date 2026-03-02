@@ -34,9 +34,10 @@ export async function createMomoPayment(req: Request, res: Response): Promise<vo
             req.socket.remoteAddress ||
             '127.0.0.1';
 
-        // Store platform info for later use in return handler
+        // Store platform and gateway info for later use in return handler and retry
         booking.paymentDetails = booking.paymentDetails || {};
         booking.paymentDetails.platform = platform || 'web';
+        booking.paymentDetails.gateway = 'momo';
         await booking.save();
 
         // Determine payment amount: deposit amount or full amount

@@ -1,21 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Spin, Empty, Modal, Input, Alert, Tag, Divider } from 'antd';
+import { Button, Spin, Empty, Modal, Input, Alert, Tag, Divider, Radio } from 'antd';
 import {
     ArrowLeftOutlined,
     CloseCircleOutlined,
     ExclamationCircleOutlined,
     FilePdfOutlined,
     StarOutlined,
+    CreditCardOutlined,
 } from '@ant-design/icons';
 import moment from 'moment';
 import { Capacitor } from '@capacitor/core';
 import bookingService from '@/services/bookings/bookingService';
 import { generateBookingPDF } from '@/services/bookings/bookingPdfService';
 import reviewService from '@/services/reviews/reviewService';
+import { createVNPayPaymentUrl } from '@/services/payment/vnpayService';
+import { createMoMoPaymentUrl } from '@/services/payment/momoService';
 import Notification from '@/components/Notification';
+import LoadingSpinner from '@/components/LoadingSpinner';
 import ReviewForm from '@/components/ReviewForm';
-import { Booking, BookingStatus, PaymentMethod } from '@/types/booking';
+import { Booking, BookingStatus, PaymentMethod, PaymentStatus } from '@/types/booking';
 import { Message } from '@/types/message';
 import { COLORS } from '@/config/constants';
 import { calculateCancellationFee } from '@/utils/cancellationHelper';
@@ -48,6 +52,9 @@ const UserBookingDetail: React.FC = () => {
     const [isReviewModalVisible, setIsReviewModalVisible] = useState(false);
     const [canReview, setCanReview] = useState(false);
     const [reviewEligibilityMessage, setReviewEligibilityMessage] = useState('');
+    const [isPaymentModalVisible, setIsPaymentModalVisible] = useState(false);
+    const [selectedGateway, setSelectedGateway] = useState<string>('vnpay');
+    const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
     useEffect(() => {
         const fetchBookingDetail = async () => {
@@ -93,6 +100,40 @@ const UserBookingDetail: React.FC = () => {
                 title: 'Không thể đánh giá',
                 content: reviewEligibilityMessage || 'Bạn chưa thể đánh giá đặt phòng này.',
             });
+        }
+    };
+
+    // Retry payment logic
+    const canRetryPayment = booking
+        ? booking.paymentMethod === PaymentMethod.ONLINE &&
+          booking.paymentStatus === PaymentStatus.UNPAID &&
+          booking.status === BookingStatus.PENDING
+        : false;
+
+    const handleRetryPayment = async () => {
+        if (!booking) return;
+
+        setIsProcessingPayment(true);
+        try {
+            if (selectedGateway === 'vnpay') {
+                const paymentResponse = await createVNPayPaymentUrl({
+                    bookingId: booking.id,
+                    locale: 'vn',
+                });
+                window.location.href = paymentResponse.data.paymentUrl;
+            } else if (selectedGateway === 'momo') {
+                const paymentResponse = await createMoMoPaymentUrl({
+                    bookingId: booking.id,
+                });
+                window.location.href = paymentResponse.data.payUrl;
+            }
+        } catch (error: any) {
+            console.error('Error creating payment URL:', error);
+            setMessage({
+                type: 'error',
+                text: error?.response?.data?.message || 'Không thể tạo link thanh toán. Vui lòng thử lại.',
+            });
+            setIsProcessingPayment(false);
         }
     };
 
@@ -188,6 +229,19 @@ const UserBookingDetail: React.FC = () => {
         );
     }
 
+    if (isProcessingPayment) {
+        return (
+            <LoadingSpinner 
+                message="Đang chuyển đến cổng thanh toán..." 
+                size="large"
+                style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.98)',
+                    backdropFilter: 'blur(10px)'
+                }}
+            />
+        );
+    }
+
     if (!booking) {
         return (
             <div className="max-w-7xl mx-auto px-4 py-8">
@@ -249,6 +303,26 @@ const UserBookingDetail: React.FC = () => {
                                 >
                                     Xuất PDF
                                 </Button>
+                                {canRetryPayment && (
+                                    <Button
+                                        type="primary"
+                                        icon={<CreditCardOutlined />}
+                                        onClick={() => {
+                                            // Default to previously used gateway if available
+                                            const previousGateway = booking.paymentDetails?.gateway;
+                                            if (previousGateway === 'vnpay' || previousGateway === 'momo') {
+                                                setSelectedGateway(previousGateway);
+                                            }
+                                            setIsPaymentModalVisible(true);
+                                        }}
+                                        style={{
+                                            backgroundColor: '#52c41a',
+                                            borderColor: '#52c41a',
+                                        }}
+                                    >
+                                        Thanh toán
+                                    </Button>
+                                )}
                                 {booking.status === BookingStatus.CHECKED_OUT && canReview && (
                                     <Button 
                                         type="primary" 
@@ -311,6 +385,40 @@ const UserBookingDetail: React.FC = () => {
                             </div>
                         </div>
                     </div>
+
+                    {/* Payment Required Alert */}
+                    {canRetryPayment && (
+                        <Alert
+                            message="Đơn đặt phòng chưa được thanh toán"
+                            description={
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                                    <span>Đơn đặt phòng này chọn thanh toán online nhưng chưa hoàn tất thanh toán. Vui lòng thanh toán để hoàn tất đặt phòng.</span>
+                                    <Button
+                                        type="primary"
+                                        icon={<CreditCardOutlined />}
+                                        onClick={() => {
+                                            const previousGateway = booking.paymentDetails?.gateway;
+                                            if (previousGateway === 'vnpay' || previousGateway === 'momo') {
+                                                setSelectedGateway(previousGateway);
+                                            }
+                                            setIsPaymentModalVisible(true);
+                                        }}
+                                        style={{
+                                            backgroundColor: '#52c41a',
+                                            borderColor: '#52c41a',
+                                            whiteSpace: 'nowrap',
+                                        }}
+                                    >
+                                        Thanh toán ngay
+                                    </Button>
+                                </div>
+                            }
+                            type="warning"
+                            showIcon
+                            icon={<ExclamationCircleOutlined />}
+                            className="!mb-6"
+                        />
+                    )}
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         {/* Left Column - Main Info */}
@@ -885,6 +993,97 @@ const UserBookingDetail: React.FC = () => {
                         type="info"
                         showIcon
                     />
+                </div>
+            </Modal>
+
+            {/* Retry Payment Modal */}
+            <Modal
+                open={isPaymentModalVisible}
+                onOk={handleRetryPayment}
+                onCancel={() => setIsPaymentModalVisible(false)}
+                okText="Thanh toán ngay"
+                cancelText="Đóng"
+                okButtonProps={{
+                    style: { backgroundColor: '#52c41a', borderColor: '#52c41a' },
+                    icon: <CreditCardOutlined />,
+                }}
+                width={500}
+            >
+                <span className="text-base font-semibold mb-4">
+                    Thanh toán đơn đặt phòng
+                </span>
+                <div className="py-4">
+                    <Alert
+                        message="Đơn đặt phòng chưa được thanh toán"
+                        description="Vui lòng chọn cổng thanh toán và tiến hành thanh toán để hoàn tất đơn đặt phòng."
+                        type="warning"
+                        showIcon
+                        className="!mb-4"
+                    />
+
+                    {booking && (
+                        <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                            <div className="flex justify-between text-sm mb-2">
+                                <span className="text-gray-600">Mã đơn:</span>
+                                <span className="font-medium text-gray-900 font-mono">{booking.id}</span>
+                            </div>
+                            <div className="flex justify-between text-sm mb-2">
+                                <span className="text-gray-600">Phòng:</span>
+                                <span className="font-medium text-gray-900">{booking.snapshot?.room?.name}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Số tiền:</span>
+                                <span className="font-bold" style={{ color: COLORS.primary }}>
+                                    {formatPrice(
+                                        booking.snapshot?.paymentOption?.type === 'deposit'
+                                            ? booking.snapshot.paymentOption.depositAmount
+                                            : booking.totalPrice
+                                    )}
+                                </span>
+                            </div>
+                            {booking.snapshot?.paymentOption?.type === 'deposit' && (
+                                <div className="text-xs text-orange-600 mt-1 text-right">
+                                    (Đặt cọc {booking.snapshot.paymentOption.depositPercent}%)
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    <div className="mb-2">
+                        <div className="text-sm font-medium text-gray-700 mb-3">Chọn cổng thanh toán</div>
+                        <Radio.Group
+                            value={selectedGateway}
+                            onChange={(e) => setSelectedGateway(e.target.value)}
+                            className="w-full"
+                        >
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className={`border rounded-lg transition-colors cursor-pointer ${selectedGateway === 'vnpay' ? 'border-[#D4902A] bg-orange-50' : 'border-gray-200 hover:border-[#D4902A]'}`}>
+                                    <Radio value="vnpay" className="!ml-4 w-full">
+                                        <div className="flex items-center justify-center gap-2 p-4 cursor-pointer w-full">
+                                            <img 
+                                                src="/images/vnpay.png" 
+                                                alt="VNPay"
+                                                className="w-12 h-12 object-contain"
+                                            />
+                                            <span className="font-medium">VNPAY</span>
+                                        </div>
+                                    </Radio>
+                                </div>
+                                <div className={`border rounded-lg transition-colors cursor-pointer ${selectedGateway === 'momo' ? 'border-[#D4902A] bg-orange-50' : 'border-gray-200 hover:border-[#D4902A]'}`}>
+                                    <Radio value="momo" className="!ml-4 w-full">
+                                        <div className="flex items-center justify-center gap-2 p-4 cursor-pointer w-full">
+                                            <img 
+                                                src="/images/momo.png" 
+                                                alt="MoMo"
+                                                className="w-12 h-12 object-contain"
+                                            />
+                                            <span className="font-medium">MOMO</span>
+                                        </div>
+                                    </Radio>
+                                </div>
+                            </div>
+                        </Radio.Group>
+                    </div>
                 </div>
             </Modal>
         </>
