@@ -10,8 +10,7 @@ import authService from '@/services/auth/authService';
 import { joinRoom, leaveRoom, subscribeToInventoryUpdates, InventoryUpdateData } from '@/services/socket/socketService';
 import Notification from '@/components/Notification';
 import { Message } from '@/types/message';
-import { COLORS } from '@/config/constants';
-import { TYPOGRAPHY } from '@/config/constants';
+import { COLORS, TYPOGRAPHY, SAME_DAY_BOOKING_CUTOFF_HOUR } from '@/config/constants';
 
 dayjs.extend(isBetween);
 dayjs.locale('vi');
@@ -189,6 +188,19 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
         }
     }, [open, checkInDate, checkOutDate, availabilityMap, isInitialLoad]);
 
+    // Check if today is past the cutoff hour for same-day booking
+    const isTodayPastCutoff = (): boolean => {
+        return dayjs().hour() >= SAME_DAY_BOOKING_CUTOFF_HOUR;
+    };
+
+    // Check if a date is effectively in the past (including cutoff logic)
+    const isEffectivelyPast = (date: Dayjs): boolean => {
+        if (date.isBefore(dayjs(), 'day')) return true;
+        // If today and past cutoff hour, treat today as past
+        if (date.isSame(dayjs(), 'day') && isTodayPastCutoff()) return true;
+        return false;
+    };
+
     // Check if a date is within 30 days limit
     const isDateWithin30Days = (date: Dayjs): boolean => {
         const maxDate = dayjs().add(30, 'day');
@@ -216,8 +228,8 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
 
     // Handle date click
     const handleDateClick = (date: Dayjs) => {
-        if (date.isBefore(dayjs(), 'day')) {
-            return; // Can't select past dates
+        if (isEffectivelyPast(date)) {
+            return; // Can't select past dates (or today past cutoff)
         }
 
         if (!isDateWithin30Days(date)) {
@@ -327,7 +339,7 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
                 {days.map((day, index) => {
                     const isCurrentMonth = day.month() === currentMonth.month();
                     const isToday = day.isSame(dayjs(), 'day');
-                    const isPast = day.isBefore(dayjs(), 'day');
+                    const isPast = isEffectivelyPast(day);
                     const isBeyond30Days = !isDateWithin30Days(day);
                     const isAvailable = isDateAvailable(day);
                     const isCheckIn = checkInDate && day.isSame(checkInDate, 'day');

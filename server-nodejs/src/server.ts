@@ -45,6 +45,8 @@ const allowedOrigins = [
     'http://localhost:5173', // Web dev
     'http://localhost', // Capacitor webview
     'http://192.168.2.6:5173', // LAN access for physical devices
+    'http://192.168.2.51:5173',
+    'http://172.20.10.6:5173', 
     'capacitor://localhost', // Capacitor iOS
     'ionic://localhost', // Capacitor Android
 ].filter(Boolean);

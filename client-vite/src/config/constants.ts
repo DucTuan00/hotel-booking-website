@@ -114,6 +114,10 @@ export const LAYOUT = {
     },
 };
 
+// Booking policy: if current hour >= this value, today is no longer bookable as check-in
+// Example: 21 means after 21:00 (9 PM), users can only book from tomorrow
+export const SAME_DAY_BOOKING_CUTOFF_HOUR = 21;
+
 export const DEMO_IMAGES = {
     // Demo images for development
     hero: 'https://images.unsplash.com/photo-1564501049412-61c2a3083791?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button, DatePicker } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { COLORS, TYPOGRAPHY } from '@/config/constants';
+import { COLORS, TYPOGRAPHY, SAME_DAY_BOOKING_CUTOFF_HOUR } from '@/config/constants';
 import { MinusOutlined, PlusOutlined } from '@ant-design/icons';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
@@ -39,15 +39,21 @@ const SearchSection: React.FC = () => {
         };
     }, [isGuestDropdownOpen]);
 
-    // Disable dates: past dates and dates beyond 30 days from today
+    // Disable dates: past dates, dates beyond 30 days, and today if past cutoff hour
     const disabledDate = (current: Dayjs) => {
         if (!current) return false;
 
-        const today = dayjs().startOf('day');
-        const maxDate = dayjs().add(30, 'days').endOf('day');
+        const now = dayjs();
+        const today = now.startOf('day');
+        const maxDate = now.add(30, 'days').endOf('day');
 
-        // Disable if before today or after 30 days from today
-        return current.isBefore(today, 'day') || current.isAfter(maxDate, 'day');
+        // If current hour >= cutoff, treat today as past (can only book from tomorrow)
+        const effectiveToday = now.hour() >= SAME_DAY_BOOKING_CUTOFF_HOUR
+            ? today.add(1, 'day')
+            : today;
+
+        // Disable if before effective today or after 30 days from today
+        return current.isBefore(effectiveToday, 'day') || current.isAfter(maxDate, 'day');
     };
 
     const handleSearch = () => {

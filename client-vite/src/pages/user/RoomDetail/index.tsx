@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button, Spin } from "antd";
 import dayjs from "dayjs";
+import { SAME_DAY_BOOKING_CUTOFF_HOUR } from "@/config/constants";
 import { Room } from "@/types/room";
 import { Message } from "@/types/message";
 import roomService from "@/services/rooms/roomService";
@@ -149,7 +150,11 @@ const RoomDetail: React.FC = () => {
           roomId={room.id}
           maxRooms={room.quantity}
           maxGuests={room.maxGuests}
-          initialDate={dayjs().format('YYYY-MM-DD')}
+          initialDate={
+            dayjs().hour() >= SAME_DAY_BOOKING_CUTOFF_HOUR
+              ? dayjs().add(1, 'day').format('YYYY-MM-DD')
+              : dayjs().format('YYYY-MM-DD')
+          }
         />
       )}
     </div>

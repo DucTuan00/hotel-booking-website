@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/vi';
 import roomAvailableService from '@/services/rooms/roomAvailableService';
 import { formatPrice } from '@/utils/formatPrice';
+import { SAME_DAY_BOOKING_CUTOFF_HOUR } from '@/config/constants';
 import CalendarModal from '@/pages/user/RoomDetail/components/CalendarModal';
 
 dayjs.locale('vi');
@@ -35,7 +36,11 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({ roomId, defaultPrice, maxRo
     const loadData = useCallback(async () => {
         setLoading(true);
         try {
-            const startDate = dayjs().startOf('day').toDate();
+            // If past cutoff hour, start from tomorrow
+            const isPastCutoff = dayjs().hour() >= SAME_DAY_BOOKING_CUTOFF_HOUR;
+            const startOffset = isPastCutoff ? 1 : 0;
+
+            const startDate = dayjs().add(startOffset, 'day').startOf('day').toDate();
             const endDate = dayjs().add(30, 'day').endOf('day').toDate();
 
             const availabilityData = await roomAvailableService.getRoomAvailable({
@@ -46,9 +51,9 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({ roomId, defaultPrice, maxRo
             });
 
             const days: DayData[] = [];
-            const today = dayjs().startOf('day');
+            const effectiveToday = dayjs().add(startOffset, 'day').startOf('day');
 
-            for (let i = 0; i < 30; i++) {
+            for (let i = startOffset; i < 30; i++) {
                 const currentDate = dayjs().add(i, 'day');
                 const dateStr = currentDate.format('YYYY-MM-DD');
 
@@ -63,7 +68,7 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({ roomId, defaultPrice, maxRo
                     price: existingData?.price ?? defaultPrice,
                     inventory: existingData?.inventory ?? 0,
                     isDefault: !existingData,
-                    isPast: currentDate.isBefore(today)
+                    isPast: currentDate.isBefore(effectiveToday)
                 });
             }
 
