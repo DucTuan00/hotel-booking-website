@@ -1,5 +1,6 @@
 import * as roomAvailableService from '@/services/rooms/roomAvailableService';
 import ApiError from '@/utils/apiError';
+import { emitInventoryUpdate } from '@/config/socket';
 import { Request, Response, NextFunction } from 'express';
 
 export async function createRoomAvailable(req: Request, res: Response, next: NextFunction) {
@@ -21,6 +22,10 @@ export async function createRoomAvailable(req: Request, res: Response, next: Nex
             price: Number(price),
             inventory: Number(inventory)
         });
+
+        // Emit real-time update to connected clients
+        const nextDay = new Date(parsedDate.getTime() + 86400000);
+        await emitInventoryUpdate(roomId, parsedDate, nextDay);
 
         res.status(201).json(roomAvailable);
     } catch (error: any) {
@@ -50,6 +55,10 @@ export async function createBulkRoomAvailable(req: Request, res: Response, next:
             price: Number(price),
             inventory: Number(inventory)
         });
+
+        // Emit real-time update to connected clients
+        const nextDay = new Date(parsedEndDate.getTime() + 86400000);
+        await emitInventoryUpdate(roomId, parsedStartDate, nextDay);
 
         res.status(201).json(result);
     } catch (error: any) {
@@ -121,6 +130,11 @@ export async function updateRoomAvailable(req: Request, res: Response, next: Nex
         }
 
         const result = await roomAvailableService.updateRoomAvailable(input);
+
+        // Emit real-time update to connected clients
+        const nextDay = new Date(parsedDate.getTime() + 86400000);
+        await emitInventoryUpdate(roomId, parsedDate, nextDay);
+
         res.json(result);
     } catch (error: any) {
         next(new ApiError(error.message, error.statusCode || 500));
@@ -141,6 +155,11 @@ export async function deleteRoomAvailable(req: Request, res: Response, next: Nex
         }
 
         const result = await roomAvailableService.deleteRoomAvailable(roomId, parsedDate);
+
+        // Emit real-time update to connected clients
+        const nextDay = new Date(parsedDate.getTime() + 86400000);
+        await emitInventoryUpdate(roomId, parsedDate, nextDay);
+
         res.json(result);
     } catch (error: any) {
         next(new ApiError(error.message, error.statusCode || 500));

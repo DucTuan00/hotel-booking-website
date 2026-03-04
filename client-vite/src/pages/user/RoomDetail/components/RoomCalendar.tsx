@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Spin } from 'antd';
 import dayjs from 'dayjs';
 import 'dayjs/locale/vi';
 import roomAvailableService from '@/services/rooms/roomAvailableService';
 import { formatPrice } from '@/utils/formatPrice';
 import { SAME_DAY_BOOKING_CUTOFF_HOUR } from '@/config/constants';
+import { joinRoom, leaveRoom, subscribeToInventoryUpdates, InventoryUpdateData } from '@/services/socket/socketService';
 import CalendarModal from '@/pages/user/RoomDetail/components/CalendarModal';
 
 dayjs.locale('vi');
@@ -32,6 +33,7 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({ roomId, defaultPrice, maxRo
     const [daysData, setDaysData] = useState<DayData[]>([]);
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState<string | undefined>(undefined);
+    const unsubscribeRef = useRef<(() => void) | null>(null);
 
     const loadData = useCallback(async () => {
         setLoading(true);
@@ -83,6 +85,42 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({ roomId, defaultPrice, maxRo
     useEffect(() => {
         loadData();
     }, [loadData]);
+
+    // Handle real-time price/inventory updates via WebSocket
+    const handleInventoryUpdate = useCallback((data: InventoryUpdateData) => {
+        if (data.roomId !== roomId) return;
+
+        setDaysData(prevDays =>
+            prevDays.map(day => {
+                const update = data.updates.find(u => u.date === day.date);
+                if (update) {
+                    return {
+                        ...day,
+                        price: update.price,
+                        inventory: update.inventory,
+                        isDefault: false
+                    };
+                }
+                return day;
+            })
+        );
+    }, [roomId]);
+
+    // Setup WebSocket subscription
+    useEffect(() => {
+        if (roomId) {
+            joinRoom(roomId);
+            unsubscribeRef.current = subscribeToInventoryUpdates(handleInventoryUpdate);
+
+            return () => {
+                if (unsubscribeRef.current) {
+                    unsubscribeRef.current();
+                    unsubscribeRef.current = null;
+                }
+                leaveRoom(roomId);
+            };
+        }
+    }, [roomId, handleInventoryUpdate]);
 
     // Calculate min and max prices
     const prices = daysData.map(d => d.price);

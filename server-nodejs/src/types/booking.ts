@@ -62,6 +62,9 @@ export interface CreateBookingInput {
     paymentMethod: PaymentMethod;
     paymentOption?: PaymentOption;
     celebrateItems?: CelebrateItemInput[];
+    expectedPrice?: number;
+    expectedCelebrateSubtotal?: number;
+    acceptPriceChange?: boolean;
 }
 
 export interface BookingIdInput {

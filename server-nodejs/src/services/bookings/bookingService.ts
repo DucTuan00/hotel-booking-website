@@ -55,7 +55,10 @@ export async function createBooking(args: CreateBookingInput) {
         note,
         paymentMethod,
         paymentOption,
-        celebrateItems = []
+        celebrateItems = [],
+        expectedPrice,
+        expectedCelebrateSubtotal,
+        acceptPriceChange
     } = args;
 
     // Validate user
@@ -199,6 +202,62 @@ export async function createBooking(args: CreateBookingInput) {
         const VAT_RATE = 10;
         const vatAmount = Math.floor(subtotalBeforeVat * (VAT_RATE / 100));
         const totalWithVat = subtotalBeforeVat + vatAmount;
+
+        // Price verification
+        if (!acceptPriceChange) {
+            const roomPriceChanged = expectedPrice !== undefined && roomSubtotal !== expectedPrice;
+            const celebratePriceChanged = expectedCelebrateSubtotal !== undefined && celebrateItemsSubtotal !== expectedCelebrateSubtotal;
+
+            if (roomPriceChanged || celebratePriceChanged) {
+                // Reconstruct "old" total using expected prices
+                const oldRoomSub = expectedPrice !== undefined ? expectedPrice : roomSubtotal;
+                const oldCelebrateSub = expectedCelebrateSubtotal !== undefined ? expectedCelebrateSubtotal : celebrateItemsSubtotal;
+                const oldSubtotalBeforeVat = oldRoomSub + oldCelebrateSub;
+                const oldVatAmount = Math.floor(oldSubtotalBeforeVat * (VAT_RATE / 100));
+                const oldTotalWithVat = oldSubtotalBeforeVat + oldVatAmount;
+                const oldFinalPrice = calculateFinalPrice(oldTotalWithVat, userDiscount);
+                const newFinalPrice = calculateFinalPrice(totalWithVat, userDiscount);
+
+                // Calculate deposit info for both old and new prices
+                const isDepositPayment = paymentMethod === PaymentMethod.ONLINE && paymentOption === PaymentOption.DEPOSIT;
+                const oldDepositAmount = isDepositPayment ? Math.floor(oldFinalPrice * DEPOSIT_PERCENT / 100) : undefined;
+                const newDepositAmount = isDepositPayment ? Math.floor(newFinalPrice * DEPOSIT_PERCENT / 100) : undefined;
+                const oldRemainingAmount = isDepositPayment && oldDepositAmount !== undefined ? oldFinalPrice - oldDepositAmount : undefined;
+                const newRemainingAmount = isDepositPayment && newDepositAmount !== undefined ? newFinalPrice - newDepositAmount : undefined;
+
+                throw new ApiError(
+                    'Giá đã thay đổi kể từ khi bạn xem. Vui lòng xác nhận giá mới.',
+                    409,
+                    'PRICE_CHANGED',
+                    {
+                        roomPriceChanged,
+                        celebratePriceChanged,
+                        expectedRoomSubtotal: expectedPrice,
+                        actualRoomSubtotal: roomSubtotal,
+                        expectedCelebrateSubtotal: expectedCelebrateSubtotal,
+                        actualCelebrateSubtotal: celebrateItemsSubtotal,
+                        expectedFinalPrice: oldFinalPrice,
+                        actualFinalPrice: newFinalPrice,
+                        discountPercent: userDiscount,
+                        dailyRates: inventoryResult.dailyRates.map(r => ({
+                            date: r.date.toISOString().split('T')[0],
+                            price: r.price
+                        })),
+                        // Deposit info (only if user chose deposit payment)
+                        ...(isDepositPayment && {
+                            deposit: {
+                                percent: DEPOSIT_PERCENT,
+                                oldDepositAmount,
+                                newDepositAmount,
+                                oldRemainingAmount,
+                                newRemainingAmount
+                            }
+                        })
+                    }
+                );
+            }
+        }
+        // ============= END PRICE VERIFICATION =============
         
         // Apply loyalty discount on total with VAT
         const discountAmount = calculateDiscountAmount(totalWithVat, userDiscount);
@@ -331,7 +390,13 @@ export async function createBooking(args: CreateBookingInput) {
         return mapId(savedBooking);
     } catch (error: any) {
         // Rollback transaction on error - inventory automatically restored
-        await session.abortTransaction();
+        if (session.inTransaction()) {
+            await session.abortTransaction();
+        }
+        // Preserve ApiError code & data (e.g. PRICE_CHANGED)
+        if (error instanceof ApiError) {
+            throw error;
+        }
         throw new ApiError(error.message || 'Failed to create booking', error.statusCode || 500);
     } finally {
         session.endSession();

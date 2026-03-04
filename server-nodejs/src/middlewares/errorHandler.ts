@@ -18,5 +18,7 @@ export default function errorHandler(err: ApiError, req: Request, res: Response,
 
     res.status(statusCode).json({
         message: message,
+        ...(err.code && { code: err.code }),
+        ...(err.data && { data: err.data }),
     });
 };

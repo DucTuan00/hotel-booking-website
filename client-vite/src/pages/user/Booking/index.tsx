@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Form, Spin } from 'antd';
+import { Form, Spin, Modal } from 'antd';
 import dayjs from 'dayjs';
 import { COLORS, TYPOGRAPHY } from '@/config/constants';
 import roomService from '@/services/rooms/roomService';
@@ -16,6 +16,7 @@ import { Room } from '@/types/room';
 import { PaymentMethod, PreviewPriceResponse, PaymentOption } from '@/types/booking';
 import { User, LoyaltyInfo } from '@/types/user';
 import { CelebrateItem } from '@/types/celebrate';
+import { formatPrice } from '@/utils/formatPrice';
 import GuestInfoForm from '@/pages/user/Booking/components/GuestInfoForm';
 import NoteForm from '@/pages/user/Booking/components/NoteForm';
 import PaymentMethodForm from '@/pages/user/Booking/components/PaymentMethodForm';
@@ -38,6 +39,25 @@ const Booking: React.FC = () => {
     const [selectedCelebrateItems, setSelectedCelebrateItems] = useState<Map<string, number>>(new Map());
     const [loyaltyInfo, setLoyaltyInfo] = useState<LoyaltyInfo | null>(null);
     const [paymentOption, setPaymentOption] = useState<PaymentOption>(PaymentOption.FULL);
+
+    // Price change verification state
+    const [priceChangeModal, setPriceChangeModal] = useState(false);
+    const [priceChangeData, setPriceChangeData] = useState<{
+        roomPriceChanged: boolean;
+        celebratePriceChanged: boolean;
+        oldFinalPrice: number;
+        newFinalPrice: number;
+        discountPercent: number;
+        dailyRates: Array<{ date: string; price: number }>;
+        deposit?: {
+            percent: number;
+            oldDepositAmount: number;
+            newDepositAmount: number;
+            oldRemainingAmount: number;
+            newRemainingAmount: number;
+        };
+    } | null>(null);
+    const [pendingFormValues, setPendingFormValues] = useState<any>(null);
     
     const roomId = searchParams.get('roomId');
     const checkIn = searchParams.get('checkIn');
@@ -128,7 +148,7 @@ const Booking: React.FC = () => {
         }
     };
 
-    const handleSubmit = async (values: any) => {
+    const handleSubmit = async (values: any, acceptPriceChange = false) => {
         if (!roomId || !checkIn || !checkOut) return;
 
         setSubmitting(true);
@@ -169,7 +189,17 @@ const Booking: React.FC = () => {
                 note: values.note,
                 paymentMethod: values.paymentMethod,
                 ...(values.paymentMethod === PaymentMethod.ONLINE && values.paymentOption && { paymentOption: values.paymentOption }),
-                ...(celebrateItemsData && { celebrateItems: celebrateItemsData })
+                ...(celebrateItemsData && { celebrateItems: celebrateItemsData }),
+                // Price verification: send room subtotal and celebrate subtotal
+                // so backend can detect admin price changes for both
+                ...(pricePreview && { expectedPrice: pricePreview.roomSubtotal }),
+                ...(selectedCelebrateItems.size > 0 && {
+                    expectedCelebrateSubtotal: Array.from(selectedCelebrateItems.entries()).reduce((total, [id, qty]) => {
+                        const item = celebrateItems.find(c => c.id === id);
+                        return total + ((item?.price || 0) * qty);
+                    }, 0)
+                }),
+                ...(acceptPriceChange && { acceptPriceChange: true })
             };
 
             console.log('Submitting booking data:', bookingData);
@@ -222,6 +252,29 @@ const Booking: React.FC = () => {
             }
         } catch (error: any) {
             console.error('Error creating booking:', error);
+            
+            // Handle PRICE_CHANGED error - show confirmation modal
+            const errorCode = error?.response?.data?.code;
+            if (errorCode === 'PRICE_CHANGED') {
+                const priceData = error.response.data.data;
+
+                // Store price change info and pending form values for re-submission
+                setPriceChangeData({
+                    roomPriceChanged: priceData.roomPriceChanged || false,
+                    celebratePriceChanged: priceData.celebratePriceChanged || false,
+                    oldFinalPrice: priceData.expectedFinalPrice,
+                    newFinalPrice: priceData.actualFinalPrice,
+                    discountPercent: priceData.discountPercent || 0,
+                    dailyRates: priceData.dailyRates || [],
+                    ...(priceData.deposit && { deposit: priceData.deposit })
+                });
+                setPendingFormValues(values);
+                setPriceChangeModal(true);
+
+                setSubmitting(false);
+                return;
+            }
+
             const errorMessage = error?.response?.data?.message || 'Có lỗi xảy ra khi đặt phòng. Vui lòng thử lại.';
             setMessage({
                 type: 'error',
@@ -231,6 +284,32 @@ const Booking: React.FC = () => {
         } finally {
             setSubmitting(false);
         }
+    };
+
+    // Handle user confirming the price change
+    const handleAcceptPriceChange = () => {
+        if (!pendingFormValues || !priceChangeData) return;
+
+        // Update price preview with new daily rates
+        if (pricePreview && priceChangeData.dailyRates.length > 0) {
+            setPricePreview({
+                ...pricePreview,
+                dailyBreakdown: priceChangeData.dailyRates
+            });
+        }
+
+        // Close modal and re-submit with acceptPriceChange flag
+        setPriceChangeModal(false);
+        setPriceChangeData(null);
+        handleSubmit(pendingFormValues, true);
+        setPendingFormValues(null);
+    };
+
+    // Handle user declining the price change
+    const handleDeclinePriceChange = () => {
+        setPriceChangeModal(false);
+        setPriceChangeData(null);
+        setPendingFormValues(null);
     };
 
     if (loading) {
@@ -266,6 +345,90 @@ const Booking: React.FC = () => {
     return (
         <div className="min-h-screen bg-gray-50 py-8">
             <Notification message={message} onClose={() => setMessage(null)} />
+
+            {/* Price Change Confirmation Modal */}
+            <Modal
+                open={priceChangeModal}
+                title={
+                    <span style={{ color: COLORS.primary, fontFamily: TYPOGRAPHY.fontFamily.secondary }}>
+                        Giá đã thay đổi
+                    </span>
+                }
+                okText="Tiếp tục đặt phòng"
+                cancelText="Hủy"
+                onOk={handleAcceptPriceChange}
+                onCancel={handleDeclinePriceChange}
+                okButtonProps={{ 
+                    style: { backgroundColor: '#D4902A', borderColor: '#D4902A' }
+                }}
+                width={460}
+                centered
+            >
+                {priceChangeData && (
+                    <div className="py-3">
+                        {/* What changed */}
+                        <p className="mb-2 text-gray-600">
+                            {priceChangeData.roomPriceChanged && priceChangeData.celebratePriceChanged
+                                ? 'Giá phòng và quà kỷ niệm đã được cập nhật trong khi bạn đang đặt phòng:'
+                                : priceChangeData.celebratePriceChanged
+                                    ? 'Giá quà kỷ niệm đã được cập nhật trong khi bạn đang đặt phòng:'
+                                    : 'Giá phòng đã được cập nhật trong khi bạn đang đặt phòng:'}
+                        </p>
+
+                        {/* Total price comparison */}
+                        <div className="bg-gray-50 rounded-lg p-4 mb-3">
+                            <div className="flex justify-between items-center mb-2">
+                                <span className="text-gray-500">Tổng cũ:</span>
+                                <span className="line-through text-gray-400">{formatPrice(priceChangeData.oldFinalPrice)}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="text-gray-700 font-medium">Tổng mới:</span>
+                                <span className="text-[#8B1A1A] font-bold text-lg">{formatPrice(priceChangeData.newFinalPrice)}</span>
+                            </div>
+                            {priceChangeData.newFinalPrice > priceChangeData.oldFinalPrice && (
+                                <div className="mt-2 text-orange-600 text-sm">
+                                    ↑ Tăng {formatPrice(priceChangeData.newFinalPrice - priceChangeData.oldFinalPrice)}
+                                </div>
+                            )}
+                            {priceChangeData.newFinalPrice < priceChangeData.oldFinalPrice && (
+                                <div className="mt-2 text-green-600 text-sm">
+                                    ↓ Giảm {formatPrice(priceChangeData.oldFinalPrice - priceChangeData.newFinalPrice)}
+                                </div>
+                            )}
+                            {priceChangeData.discountPercent > 0 && (
+                                <div className="mt-2 pt-2 border-t border-gray-200 text-gray-400 text-xs">
+                                    Đã bao gồm giảm giá thành viên ({priceChangeData.discountPercent}%)
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Deposit breakdown (only if user chose deposit payment) */}
+                        {priceChangeData.deposit && (
+                            <div className="bg-amber-50 rounded-lg p-4 mb-3 border border-amber-200">
+                                <p className="text-sm font-medium text-amber-800 mb-2">
+                                    Chi tiết đặt cọc ({priceChangeData.deposit.percent}%):
+                                </p>
+                                <div className="space-y-1.5 text-sm">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-gray-500">Tiền cọc cũ:</span>
+                                        <span className="line-through text-gray-400">{formatPrice(priceChangeData.deposit.oldDepositAmount)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-gray-700 font-medium">Tiền cọc mới:</span>
+                                        <span className="text-[#8B1A1A] font-semibold">{formatPrice(priceChangeData.deposit.newDepositAmount)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center pt-1.5 border-t border-amber-200">
+                                        <span className="text-gray-500">Còn lại (tại quầy):</span>
+                                        <span className="text-gray-700">{formatPrice(priceChangeData.deposit.newRemainingAmount)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        <p className="text-gray-500 text-sm">Bạn có muốn tiếp tục đặt phòng với giá mới không?</p>
+                    </div>
+                )}
+            </Modal>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}

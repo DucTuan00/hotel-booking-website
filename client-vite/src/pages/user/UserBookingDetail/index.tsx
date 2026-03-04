@@ -884,7 +884,7 @@ const UserBookingDetail: React.FC = () => {
                                                 <div className="flex items-start gap-3">
                                                     <div className="w-2 h-2 rounded-full bg-yellow-500 mt-2"></div>
                                                     <div>
-                                                        <div className="text-sm font-medium text-gray-900">Đã hủy</div>
+                                                        <div className="text-sm font-medium text-gray-900">Đã từ chối</div>
                                                         <div className="text-xs text-gray-500">
                                                             {moment(booking.rejectedAt).format('DD/MM/YYYY HH:mm')}
                                                         </div>

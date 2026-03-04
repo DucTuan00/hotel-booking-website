@@ -18,7 +18,10 @@ export async function createBooking(req: Request, res: Response, next: NextFunct
             note,
             paymentMethod,
             paymentOption,
-            celebrateItems
+            celebrateItems,
+            expectedPrice,
+            expectedCelebrateSubtotal,
+            acceptPriceChange
         } = req.body;
 
         if (!userId) {
@@ -40,7 +43,10 @@ export async function createBooking(req: Request, res: Response, next: NextFunct
                 note,
                 paymentMethod,
                 paymentOption,
-                celebrateItems
+                celebrateItems,
+                expectedPrice,
+                expectedCelebrateSubtotal,
+                acceptPriceChange
             });
             
             res.status(201).json(booking);

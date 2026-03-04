@@ -363,7 +363,7 @@ const Introduction: React.FC = () => {
                                 if (contactSection) {
                                     contactSection.scrollIntoView({ behavior: 'smooth' });
                                 } else {
-                                    window.location.href = '/#contact';
+                                    window.location.href = '/contact';
                                 }
                             }}
                         >
