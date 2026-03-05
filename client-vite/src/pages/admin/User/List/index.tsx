@@ -156,26 +156,27 @@ const UserList: React.FC = () => {
             title: 'Tên người dùng',
             dataIndex: 'name',
             key: 'name',
-            width: '18%',
+            width: 180,
             sorter: (a, b) => a.name.localeCompare(b.name),
         },
         {
             title: 'Email',
             dataIndex: 'email',
             key: 'email',
-            width: '20%',
+            width: 220,
+            ellipsis: true,
         },
         {
             title: 'Số điện thoại',
             dataIndex: 'phone',
             key: 'phone',
-            width: '12%',
+            width: 140,
         },
         {
             title: 'Thứ hạng',
             dataIndex: 'loyaltyTier',
             key: 'loyaltyTier',
-            width: '10%',
+            width: 120,
             align: 'center',
             render: (tier: LoyaltyTier) => {
                 const { label, color } = getLoyaltyTierLabel(tier);
@@ -190,7 +191,7 @@ const UserList: React.FC = () => {
             title: 'Vai trò',
             dataIndex: 'role',
             key: 'role',
-            width: '12%',
+            width: 130,
             render: (role: string) => (
                 <Tag color={role === UserRole.ADMIN ? 'red' : 'blue'}>
                     {role === UserRole.ADMIN ? 'Quản trị viên' : 'Người dùng'}
@@ -202,7 +203,7 @@ const UserList: React.FC = () => {
             dataIndex: 'active',
             key: 'active',
             align: 'center',
-            width: '12%',
+            width: 120,
             render: (active: boolean, record) => (
                 <Switch
                     checked={active}
@@ -215,7 +216,7 @@ const UserList: React.FC = () => {
         {
             title: 'Hành động',
             key: 'actions',
-            width: '10%',
+            width: 100,
             render: (_, record) => (
                 <Space>
                     <Button 
@@ -275,6 +276,7 @@ const UserList: React.FC = () => {
                         setPageSize(size);
                     },
                 }}
+                scroll={{ x: 1000 }}
             >
                 <UserForm
                     visible={isModalVisible}

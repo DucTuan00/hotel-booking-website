@@ -145,12 +145,14 @@ const RestaurantServiceList: React.FC = () => {
             title: 'Tên dịch vụ',
             dataIndex: 'title',
             key: 'title',
+            width: 200,
             sorter: (a, b) => a.title.localeCompare(b.title),
         },
         {
             title: 'Mô tả',
             dataIndex: 'description',
             key: 'description',
+            width: 250,
             ellipsis: true,
             render: (description: string) => description || '-'
         },
@@ -158,6 +160,7 @@ const RestaurantServiceList: React.FC = () => {
             title: 'Giá',
             dataIndex: 'price',
             key: 'price',
+            width: 150,
             sorter: (a, b) => (a.price || 0) - (b.price || 0),
             render: (price: number) => formatPrice(price)
         },
@@ -165,12 +168,14 @@ const RestaurantServiceList: React.FC = () => {
             title: 'Ngày tạo',
             dataIndex: 'createdAt',
             key: 'createdAt',
+            width: 130,
             sorter: (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
             render: (date: Date) => new Date(date).toLocaleDateString('vi-VN')
         },
         {
             title: 'Hành động',
             key: 'action',
+            width: 150,
             render: (_, record) => (
                 <Space size="middle">
                     <Button 
@@ -225,6 +230,7 @@ const RestaurantServiceList: React.FC = () => {
                     showTotal: (total, range) => 
                         `${range[0]}-${range[1]} của ${total} dịch vụ`,
                 }}
+                scroll={{ x: 1000 }}
             />
 
             <RestaurantServiceForm

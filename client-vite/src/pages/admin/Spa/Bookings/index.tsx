@@ -142,6 +142,7 @@ const SpaBookingList: React.FC = () => {
                     },
                 }}
                 rowKey="id"
+                scroll={{ x: 1000 }}
             />
 
             <SpaBookingDetailModal

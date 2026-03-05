@@ -151,6 +151,7 @@ const CelebrationItemList: React.FC = () => {
             title: 'Mô tả',
             dataIndex: 'description',
             key: 'description',
+            width: 250,
             ellipsis: true,
             render: (description: string) => description || '-',
         },
@@ -220,6 +221,7 @@ const CelebrationItemList: React.FC = () => {
                     showTotal: (total, range) => 
                         `${range[0]}-${range[1]} của ${total} món quà`,
                 }}
+                scroll={{ x: 900 }}
             />
 
             <CelebrateItemForm
