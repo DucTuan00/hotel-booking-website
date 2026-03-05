@@ -174,15 +174,22 @@ const UserBookingDetail: React.FC = () => {
             setIsCancelModalVisible(false);
             setCancellationReason('');
 
-            const refundText =
-                cancellationInfo.refundAmount > 0
-                    ? ` Hoàn tiền: ${formatPrice(cancellationInfo.refundAmount)}`
-                    : '';
+            if (shouldShowRefundInfo) {
+                const refundText =
+                    cancellationInfo.refundAmount > 0
+                        ? ` Hoàn tiền: ${formatPrice(cancellationInfo.refundAmount)}`
+                        : '';
 
-            setMessage({
-                type: 'success',
-                text: `Đã hủy đơn đặt phòng thành công! Phí hủy: ${cancellationInfo.feePercentage}%.${refundText}`,
-            });
+                setMessage({
+                    type: 'success',
+                    text: `Đã hủy đơn đặt phòng thành công! Phí hủy: ${cancellationInfo.feePercentage}%.${refundText}`,
+                });
+            } else {
+                setMessage({
+                    type: 'success',
+                    text: 'Đã hủy đơn đặt phòng thành công!',
+                });
+            }
         } catch (error) {
             console.error('Error cancelling booking:', error);
             setMessage({
@@ -256,6 +263,11 @@ const UserBookingDetail: React.FC = () => {
     }
 
     const cancellationInfo = calculateCancellationFee(booking);
+
+    // Only show refund info when user has actually paid (online + paid)
+    const shouldShowRefundInfo =
+        booking.paymentMethod === PaymentMethod.ONLINE &&
+        booking.paymentStatus === PaymentStatus.PAID;
 
     // Check if booking is a deposit booking
     const isDepositBooking = booking.snapshot?.paymentOption?.type === 'deposit';
@@ -932,32 +944,52 @@ const UserBookingDetail: React.FC = () => {
                 okButtonProps={{ danger: true }}
                 width={600}
             >
-                <div style={{ marginBottom: '20px' }}>
-                    <Alert
-                        message="Thông tin phí hủy"
-                        description={
-                            <div>
-                                <p>
-                                    <strong>Thời gian hủy:</strong>{' '}
-                                    {cancellationInfo.hoursBeforeCheckIn < 24
-                                        ? `${Math.floor(cancellationInfo.hoursBeforeCheckIn)} giờ trước ngày nhận phòng`
-                                        : `${cancellationInfo.daysBeforeCheckIn} ngày trước ngày nhận phòng`}
-                                </p>
-                                <p>
-                                    <strong>Phí hủy:</strong> {cancellationInfo.feePercentage}% ={' '}
-                                    {formatPrice(cancellationInfo.fee)}
-                                </p>
-                                <p>
-                                    <strong>Số tiền hoàn lại:</strong> {formatPrice(cancellationInfo.refundAmount)}
-                                </p>
-                            </div>
-                        }
-                        type="warning"
-                        showIcon
-                        icon={<ExclamationCircleOutlined />}
-                    />
-                </div>
-                <div>
+                {shouldShowRefundInfo ? (
+                    <>
+                        <div style={{ marginBottom: '20px' }}>
+                            <Alert
+                                message="Thông tin phí hủy"
+                                description={
+                                    <div>
+                                        <p>
+                                            <strong>Thời gian hủy:</strong>{' '}
+                                            {cancellationInfo.hoursBeforeCheckIn < 24
+                                                ? `${Math.floor(cancellationInfo.hoursBeforeCheckIn)} giờ trước ngày nhận phòng`
+                                                : `${cancellationInfo.daysBeforeCheckIn} ngày trước ngày nhận phòng`}
+                                        </p>
+                                        <p>
+                                            <strong>Phí hủy:</strong> {cancellationInfo.feePercentage}% ={' '}
+                                            {formatPrice(cancellationInfo.fee)}
+                                        </p>
+                                        <p>
+                                            <strong>Số tiền hoàn lại:</strong> {formatPrice(cancellationInfo.refundAmount)}
+                                        </p>
+                                    </div>
+                                }
+                                type="warning"
+                                showIcon
+                                icon={<ExclamationCircleOutlined />}
+                            />
+                        </div>
+                    </>
+                ) : (
+                    <div style={{ marginBottom: '20px' }}>
+                        <Alert
+                            message="Xác nhận hủy đơn"
+                            description={
+                                booking.paymentMethod === PaymentMethod.ONSITE
+                                    ? 'Đơn đặt phòng này thanh toán tại quầy nên không phát sinh phí hủy hay hoàn tiền.'
+                                    : 'Đơn đặt phòng này chưa được thanh toán nên không phát sinh phí hủy hay hoàn tiền.'
+                            }
+                            type="info"
+                            showIcon
+                            icon={<ExclamationCircleOutlined />}
+                        />
+                    </div>
+                )}
+                <div
+                    style={{ marginBottom: '20px' }}
+                >
                     <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
                         Lý do hủy (tùy chọn):
                     </label>
@@ -971,29 +1003,31 @@ const UserBookingDetail: React.FC = () => {
                     />
                 </div>
 
-                <div style={{ marginTop: '20px' }}>
-                    <Alert
-                        message="Chính sách hủy phòng"
-                        description={
-                            <ul style={{ marginBottom: 0, paddingLeft: '20px' }}>
-                                <li>
-                                    Hủy trước 7 ngày: <strong>Miễn phí</strong>
-                                </li>
-                                <li>
-                                    Hủy từ 3-7 ngày trước: <strong>20% phí</strong>
-                                </li>
-                                <li>
-                                    Hủy từ 1-3 ngày trước: <strong>50% phí</strong>
-                                </li>
-                                <li>
-                                    Hủy trong vòng 24 giờ: <strong>100% phí</strong>
-                                </li>
-                            </ul>
-                        }
-                        type="info"
-                        showIcon
-                    />
-                </div>
+                {shouldShowRefundInfo && (
+                    <div style={{ marginTop: '20px' }}>
+                        <Alert
+                            message="Chính sách hủy phòng"
+                            description={
+                                <ul style={{ marginBottom: 0, paddingLeft: '20px' }}>
+                                    <li>
+                                        Hủy trước 7 ngày: <strong>Miễn phí</strong>
+                                    </li>
+                                    <li>
+                                        Hủy từ 3-7 ngày trước: <strong>20% phí</strong>
+                                    </li>
+                                    <li>
+                                        Hủy từ 1-3 ngày trước: <strong>50% phí</strong>
+                                    </li>
+                                    <li>
+                                        Hủy trong vòng 24 giờ: <strong>100% phí</strong>
+                                    </li>
+                                </ul>
+                            }
+                            type="info"
+                            showIcon
+                        />
+                    </div>
+                )}
             </Modal>
 
             {/* Retry Payment Modal */}
