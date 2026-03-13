@@ -18,12 +18,12 @@
 - Role-based access control
 
 **Mobile (Android)**
-- Same React codebase wrapped with **Capacitor**
-- Works on emulator and physical devices (WiFi / USB ADB)
+- Same ReactJS codebase wrapped with **CapacitorJS**
+- Works on emulator and physical devices (LAN access)
 
 ---
 
-## 📸 Screenshots
+## Screenshots
 
 
 
