@@ -13,6 +13,7 @@
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
     "types": ["node"],
+    "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
