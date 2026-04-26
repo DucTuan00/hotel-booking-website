@@ -32,9 +32,10 @@
 <img width="1918" height="948" alt="Image" src="https://github.com/user-attachments/assets/94359d35-c027-428c-9e35-007b9c4b218f" />
 <img width="1919" height="948" alt="Image" src="https://github.com/user-attachments/assets/c5ed35e9-9188-49f6-a5ec-d25be78aa79e" />
 
-<img width="192" height="413" alt="Image" src="https://github.com/user-attachments/assets/f32da65f-471c-4aeb-a292-54e13f46a4f6" />
-<img width="191" height="413" alt="Image" src="https://github.com/user-attachments/assets/c288c35d-4d2d-436f-9ea9-58c24f8eb8ac" />
-<img width="192" height="413" alt="Image" src="https://github.com/user-attachments/assets/d34e1ec1-a367-4cae-b848-e395fb200951" />
-<img width="192" height="413" alt="Image" src="https://github.com/user-attachments/assets/077dc66f-f02f-47ea-bc89-4715562e7833" />
+## 📱 Mobile UI Preview
+
+| Home                                                                                                     | Room Detail                                                                                              | Room Detail                                                                                                  | AI Planner                                                                                                  |
+| -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| <img src="https://github.com/user-attachments/assets/f32da65f-471c-4aeb-a292-54e13f46a4f6" width="192"/> | <img src="https://github.com/user-attachments/assets/c288c35d-4d2d-436f-9ea9-58c24f8eb8ac" width="192"/> | <img src="https://github.com/user-attachments/assets/d34e1ec1-a367-4cae-b848-e395fb200951" width="192"/> | <img src="https://github.com/user-attachments/assets/077dc66f-f02f-47ea-bc89-4715562e7833" width="192"/> |
 
 ---
