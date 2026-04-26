@@ -22,7 +22,7 @@ import reviewRoute from '@/routes/reviewRoute';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import '@/config/passport.ts'; 
+import '@/config/passport'; 
 
 const app: express.Application = express();
 const httpServer = createServer(app);
@@ -66,6 +66,10 @@ app.use(cors({
     credentials: true,
 }));
 app.use(express.json());
+
+app.get('/api/health', (_req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
 
 app.use('/api/auth', authRoute);
 app.use('/api/user', userRoute);

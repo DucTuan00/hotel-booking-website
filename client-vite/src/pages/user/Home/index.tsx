@@ -1,11 +1,17 @@
+import { useEffect } from "react";
 import "@/pages/user/Home/Home.css";
 import HeroSection from "@/pages/user/Home/components/HeroSection";
 import SearchSection from "@/pages/user/Home/components/SearchSection";
 import RoomsSection from "@/pages/user/Home/components/RoomsSection";
 import ServicesSection from "@/pages/user/Home/components/ServicesSection";
 import TestimonialsSection from "@/pages/user/Home/components/TestimonialsSection";
+import api from "@/services/api";
 
 const Home: React.FC = () => {
+    useEffect(() => {
+        api.get('/health').catch(() => {});
+    }, []);
+
     return (
         <div className="home-container">
             <HeroSection />
