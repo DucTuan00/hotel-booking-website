@@ -61,7 +61,9 @@ export async function createBooking(req: Request, res: Response, next: NextFunct
 export async function getBookingById(req: Request, res: Response, next: NextFunction) {
     try {
         const bookingId = req.params.id;
-        const booking = await bookingService.getBookingById({ bookingId });
+        const userId = req.user?.id;
+        const userRole = req.user?.role;
+        const booking = await bookingService.getBookingById({ bookingId, userId, userRole });
         res.status(200).json(booking);
     } catch (error: any) {
         next(new ApiError(error.message, error.statusCode || 500));
@@ -94,11 +96,15 @@ export async function getBookingsByUserId(req: Request, res: Response, next: Nex
 export async function cancelBooking(req: Request, res: Response, next: NextFunction) {
     try {
         const bookingId = req.params.id;
+        const userId = req.user?.id;
+        const userRole = req.user?.role;
         const { cancellationReason } = req.body;
         
         const booking = await bookingService.cancelBooking({ 
             bookingId, 
-            cancellationReason 
+            cancellationReason,
+            userId,
+            userRole
         });
         res.status(200).json(booking);
     } catch (error: any) {

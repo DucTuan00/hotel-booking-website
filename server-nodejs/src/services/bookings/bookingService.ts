@@ -6,6 +6,7 @@ import CelebrateItem from '@/models/CelebrateItem';
 import ApiError from '@/utils/apiError';
 import { mapId, mapIds } from '@/utils/mapId';
 import mongoose from 'mongoose';
+import { UserRole } from '@/types/user';
 import {
     CreateBookingInput,
     BookingIdInput,
@@ -406,14 +407,18 @@ export async function createBooking(args: CreateBookingInput) {
 /**
  * Get booking by ID with populated data
  */
-export async function getBookingById(arg: BookingIdInput) {
-    const { bookingId } = arg;
+export async function getBookingById(arg: BookingIdInput & { userId?: string; userRole?: UserRole }) {
+    const { bookingId, userId, userRole } = arg;
 
     const booking = await Booking.findById(bookingId)
         .populate({ path: 'userId', select: 'name email' })
         .populate({ path: 'roomId', select: 'name roomType price' });
 
     if (!booking) {
+        throw new ApiError('Booking not found', 404);
+    }
+
+    if (userRole === UserRole.USER && booking.userId._id.toString() !== userId) {
         throw new ApiError('Booking not found', 404);
     }
 
@@ -517,11 +522,15 @@ export async function getBookingsByUserId(arg: UserIdInput & { search?: string; 
 /**
  * Cancel booking with cancellation policy (for both user and admin)
  */
-export async function cancelBooking(arg: BookingIdInput) {
-    const { bookingId, cancellationReason } = arg;
+export async function cancelBooking(arg: BookingIdInput & { userId?: string; userRole?: UserRole }) {
+    const { bookingId, cancellationReason, userId, userRole } = arg;
 
     const booking = await Booking.findById(bookingId);
     if (!booking) {
+        throw new ApiError('Booking not found', 404);
+    }
+
+    if (userRole === UserRole.USER && booking.userId.toString() !== userId) {
         throw new ApiError('Booking not found', 404);
     }
 
