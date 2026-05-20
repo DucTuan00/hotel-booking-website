@@ -6,7 +6,6 @@ export interface RegisterInput {
     password: string;
     name: string;
     phone: string;
-    role: UserRole;
 }
 
 export interface LoginInput {

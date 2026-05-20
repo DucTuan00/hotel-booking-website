@@ -15,7 +15,7 @@ import {
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 export async function register(args: RegisterInput) {
-    const { email, password, name, phone, role } = args;
+    const { email, password, name, phone } = args;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -29,7 +29,7 @@ export async function register(args: RegisterInput) {
         password: hashedPassword,
         name,
         phone,
-        role
+        role: 'user'
     });
 
     try {

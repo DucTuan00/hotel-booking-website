@@ -6,8 +6,8 @@ import passport from 'passport';
 
 export async function register(req: Request, res: Response, next: NextFunction) {
     try {
-        const { email, password, name, phone, role } = req.body;
-        const user = await authService.register({ email, password, name, phone, role });
+        const { email, password, name, phone } = req.body;
+        const user = await authService.register({ email, password, name, phone });
         res.status(201).json(user);
     } catch (error: any) {
         if (error.message === 'User already exists') {
