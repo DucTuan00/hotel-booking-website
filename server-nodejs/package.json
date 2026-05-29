@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --import tsx --test src/utils/apiError.test.ts src/utils/bookingHelpers.test.ts src/utils/mapId.test.ts",
     "start": "tsx src/server.ts",
     "dev": "nodemon --watch src --ext ts --exec tsx src/server.ts",
     "build": "tsc",
