@@ -4,15 +4,13 @@ import ApiError from '@/utils/apiError';
 
 /**
  * Generate AI travel plan
+ * - Authenticated users: plan is saved to DB and returned with an ID
+ * - Guest users: plan is generated and returned without saving to DB
  */
 export async function generatePlan(req: Request, res: Response, next: NextFunction) {
     try {
         const userId = req.user?.id;
         const { preferences } = req.body;
-
-        if (!userId) {
-            throw new ApiError('Không có quyền: thiếu user ID', 401);
-        }
 
         if (!preferences) {
             throw new ApiError('Thiếu thông tin sở thích', 400);

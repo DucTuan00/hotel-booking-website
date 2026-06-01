@@ -226,26 +226,45 @@ export async function generatePlan(
             });
         }
 
-        // Step 3: Only create DB record AFTER successful AI generation and parsing
-        const plan = await AITravelPlanner.create({
-            userId,
+        // Step 3: Only create DB record for authenticated users AFTER successful AI generation
+        if (userId) {
+            const plan = await AITravelPlanner.create({
+                userId,
+                preferences,
+                aiGenerationMetadata: {
+                    model: 'gemini-2.5-flash',
+                    promptTokens: aiResponse.usageMetadata?.promptTokenCount || 0,
+                    completionTokens: aiResponse.usageMetadata?.candidatesTokenCount || 0,
+                    lastGeneratedAt: new Date(),
+                },
+                status: 'completed',
+                generatedPlan: {
+                    days: planData.days || [],
+                    suggestions: planData.suggestions || [],
+                    hanoiTips: planData.hanoiTips || [],
+                    totalEstimatedCost: totalCost,
+                },
+            });
+
+            return mapPlanToResponse(plan);
+        }
+
+        // Guest user — return plan without saving to DB
+        return {
+            id: '',
+            userId: '',
             preferences,
-            aiGenerationMetadata: {
-                model: 'gemini-2.5-flash',
-                promptTokens: aiResponse.usageMetadata?.promptTokenCount || 0,
-                completionTokens: aiResponse.usageMetadata?.candidatesTokenCount || 0,
-                lastGeneratedAt: new Date(),
-            },
-            status: 'completed',
             generatedPlan: {
                 days: planData.days || [],
                 suggestions: planData.suggestions || [],
                 hanoiTips: planData.hanoiTips || [],
                 totalEstimatedCost: totalCost,
             },
-        });
-
-        return mapPlanToResponse(plan);
+            status: 'completed',
+            isFavorite: false,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        };
     } catch (error: any) {
         console.error('Error generating plan:', error);
         throw new ApiError(error.message || 'Failed to generate plan', 500);

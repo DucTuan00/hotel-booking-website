@@ -41,3 +41,36 @@ export default function authMiddleware(roles: UserRole[] = []): RequestHandler {
         });
     };
 }
+
+/**
+ * Optional auth middleware — does NOT block unauthenticated requests.
+ * If a valid token is present, injects req.user; otherwise continues as guest.
+ */
+export function optionalAuthMiddleware(): RequestHandler {
+    return (req: Request, res: Response, next: NextFunction): void => {
+        let token = req.cookies.accessToken;
+
+        if (!token) {
+            const authHeader = req.headers.authorization;
+            if (authHeader && authHeader.startsWith('Bearer ')) {
+                token = authHeader.substring(7);
+            }
+        }
+
+        if (!token) {
+            // No token — continue as guest
+            return next();
+        }
+
+        jwt.verify(token, jwtConfig.secret as string, (err: any, user: any) => {
+            if (!err && user) {
+                req.user = {
+                    id: user.id,
+                    role: user.role as UserRole,
+                };
+            }
+            // Always continue, even if token is invalid/expired
+            next();
+        });
+    };
+}

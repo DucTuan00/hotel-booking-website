@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, Button, Typography, DatePicker, List, Segmented, Collapse, Skeleton } from 'antd';
-import { StarOutlined, CalendarOutlined, HistoryOutlined, FormOutlined, FileTextOutlined, RocketOutlined } from '@ant-design/icons';
+import { StarOutlined, CalendarOutlined, HistoryOutlined, FormOutlined, FileTextOutlined, RocketOutlined, LoginOutlined } from '@ant-design/icons';
 import PreferenceSelector from './components/PreferenceSelector';
 import ItineraryDisplay from './components/ItineraryDisplay';
 import aiPlannerService from '@/services/aiPlanner/aiPlannerService';
@@ -8,8 +8,8 @@ import { TravelPlan, GroupType, BudgetLevel, UserPreferences } from '@/types/aiP
 import { Message } from '@/types/message';
 import Notification from '@/components/Notification';
 import dayjs, { Dayjs } from 'dayjs';
-import authService from '@/services/auth/authService';
 import { useNavigate } from 'react-router-dom';
+import { hasAuthToken } from '@/utils/auth';
 import '@/pages/user/AIPlanner/AIPlanner.css';
 import { TYPOGRAPHY } from '@/config/constants';
 
@@ -28,6 +28,7 @@ const loadingMessages = [
 
 const AIPlanner: React.FC = () => {
     const navigate = useNavigate();
+    const isLoggedIn = hasAuthToken();
     const [plan, setPlan] = useState<TravelPlan | null>(null);
     const [userPlans, setUserPlans] = useState<TravelPlan[]>([]);
     const [loading, setLoading] = useState(false);
@@ -52,8 +53,10 @@ const AIPlanner: React.FC = () => {
     const [interests, setInterests] = useState<string[]>([]);
     const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>([]);
 
-    // Fetch user's existing plans on mount
+    // Fetch user's existing plans on mount (only for logged-in users)
     useEffect(() => {
+        if (!isLoggedIn) return;
+
         const fetchUserPlans = async () => {
             setLoadingPlans(true);
             try {
@@ -69,7 +72,7 @@ const AIPlanner: React.FC = () => {
         };
 
         fetchUserPlans();
-    }, []);
+    }, [isLoggedIn]);
 
     // Load more plans handler
     const handleLoadMorePlans = async () => {
@@ -119,28 +122,6 @@ const AIPlanner: React.FC = () => {
             return;
         }
 
-        // Check authentication before proceeding
-        try {
-            setLoading(true);
-            await authService.verifyToken();
-        } catch {
-            setLoading(false);
-            setMessage({
-                type: 'error',
-                text: 'Vui lòng đăng nhập để tiếp tục đặt phòng'
-            });
-            
-            setTimeout(() => {
-                navigate('/login', { 
-                    state: { 
-                        from: window.location.pathname,
-                        returnUrl: window.location.pathname + window.location.search
-                    } 
-                });
-            }, 3000);
-            return;
-        }
-
         setLoading(true);
         // On mobile, switch to plan tab immediately to show loading
         setMobileTab('plan');
@@ -173,11 +154,13 @@ const AIPlanner: React.FC = () => {
             setIsNewPlan(true); // Enable progressive animation
             setPlan(generatedPlan);
             
-            // Refresh plans list and reset pagination
-            const response = await aiPlannerService.getUserPlans({ limit: PLANS_PER_PAGE, page: 1 });
-            setUserPlans(response.plans);
-            setCurrentPage(1);
-            setHasMorePlans(response.plans.length === PLANS_PER_PAGE && response.pagination.total > PLANS_PER_PAGE);
+            // Refresh plans list only for logged-in users
+            if (isLoggedIn) {
+                const response = await aiPlannerService.getUserPlans({ limit: PLANS_PER_PAGE, page: 1 });
+                setUserPlans(response.plans);
+                setCurrentPage(1);
+                setHasMorePlans(response.plans.length === PLANS_PER_PAGE && response.pagination.total > PLANS_PER_PAGE);
+            }
             
             setMessage({
                 type: 'success',
@@ -197,6 +180,14 @@ const AIPlanner: React.FC = () => {
 
     const handleToggleFavorite = async () => {
         if (!plan) return;
+
+        if (!isLoggedIn) {
+            setMessage({
+                type: 'error',
+                text: 'Vui lòng đăng nhập để lưu kế hoạch yêu thích',
+            });
+            return;
+        }
 
         try {
             const newFavoriteStatus = !plan.isFavorite;
@@ -461,17 +452,35 @@ const AIPlanner: React.FC = () => {
                         <Title level={3} className="mb-0">
                             Kế Hoạch Du Lịch Của Bạn
                         </Title>
-                        <Button
-                            icon={<StarOutlined />}
-                            onClick={handleToggleFavorite}
-                            className={plan.isFavorite 
-                                ? "bg-[#D4902A] text-white hover:bg-[#bf8125] border-none" 
-                                : ""}
-                            type={plan.isFavorite ? "primary" : "default"}
-                        >
-                            {plan.isFavorite ? 'Yêu thích' : 'Yêu thích'}
-                        </Button>
+                        {isLoggedIn && (
+                            <Button
+                                icon={<StarOutlined />}
+                                onClick={handleToggleFavorite}
+                                className={plan.isFavorite 
+                                    ? "bg-[#D4902A] text-white hover:bg-[#bf8125] border-none" 
+                                    : ""}
+                                type={plan.isFavorite ? "primary" : "default"}
+                            >
+                                {plan.isFavorite ? 'Yêu thích' : 'Yêu thích'}
+                            </Button>
+                        )}
                     </div>
+                    {/* Guest upsell banner */}
+                    {!isLoggedIn && (
+                        <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between gap-3">
+                            <Text className="text-amber-800 text-sm">
+                                Đăng nhập để lưu kế hoạch và xem lại lịch sử
+                            </Text>
+                            <Button
+                                size="small"
+                                icon={<LoginOutlined />}
+                                onClick={() => navigate('/login', { state: { from: '/ai-planner' } })}
+                                className="bg-[#D4902A] text-white border-none hover:bg-[#bf8125] shrink-0"
+                            >
+                                Đăng nhập
+                            </Button>
+                        </div>
+                    )}
                     <ItineraryDisplay plan={plan.generatedPlan} isNewPlan={isNewPlan} />
                 </div>
             ) : (
@@ -526,7 +535,7 @@ const AIPlanner: React.FC = () => {
                                     ),
                                     value: 'preferences',
                                 },
-                                {
+                                ...(isLoggedIn ? [{
                                     label: (
                                         <div className="flex items-center gap-1 py-1">
                                             <HistoryOutlined />
@@ -539,7 +548,7 @@ const AIPlanner: React.FC = () => {
                                         </div>
                                     ),
                                     value: 'history',
-                                },
+                                }] : []),
                                 {
                                     label: (
                                         <div className="flex items-center gap-1 py-1">
@@ -613,8 +622,8 @@ const AIPlanner: React.FC = () => {
                         >
                             {renderPreferenceForm()}
 
-                            {/* Previous Plans List - Desktop only in sidebar */}
-                            {userPlans.length > 0 && (
+                            {/* Previous Plans List - Desktop only in sidebar, logged-in users only */}
+                            {isLoggedIn && userPlans.length > 0 && (
                                 <div className="mt-6 pt-4 border-t border-gray-200">
                                     <Collapse
                                         ghost

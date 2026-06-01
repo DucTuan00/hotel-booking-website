@@ -72,7 +72,7 @@ export interface AIGenerationMetadata {
 
 // MARK: Input
 export interface GeneratePlanInput {
-    userId: string;
+    userId?: string;
     preferences: UserPreferencesResponse;
 }
 
