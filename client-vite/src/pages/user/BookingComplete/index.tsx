@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from 'antd';
 import { CheckCircleOutlined } from '@ant-design/icons';
 import { COLORS, TYPOGRAPHY } from '@/config/constants';
+import { hasAuthToken } from '@/utils/auth';
 
 const BookingComplete: React.FC = () => {
     const navigate = useNavigate();
+    const isLoggedIn = hasAuthToken();
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-start justify-center py-8">
@@ -62,25 +64,32 @@ const BookingComplete: React.FC = () => {
                             <p className="text-lg text-gray-600">
                                 Chúng tôi đã nhận được yêu cầu đặt phòng của quý khách
                             </p>
+                            {!isLoggedIn && (
+                                <p className="text-sm text-gray-500">
+                                    Thông tin xác nhận đặt phòng đã được gửi đến email của bạn
+                                </p>
+                            )}
                         </div>
 
                         {/* Action buttons */}
                         <div className="space-y-3 sm:space-y-0 sm:space-x-4 flex flex-col sm:flex-row justify-center gap-4">
-                            <Button
-                                type="primary"
-                                size="large"
-                                onClick={() => navigate('/user/bookings')}
-                                style={{
-                                    backgroundColor: COLORS.primary,
-                                    borderColor: COLORS.primary,
-                                    height: '48px',
-                                    fontSize: '16px',
-                                    fontWeight: 600,
-                                    minWidth: '200px'
-                                }}
-                            >
-                                Xem đơn đặt phòng
-                            </Button>
+                            {isLoggedIn && (
+                                <Button
+                                    type="primary"
+                                    size="large"
+                                    onClick={() => navigate('/user/bookings')}
+                                    style={{
+                                        backgroundColor: COLORS.primary,
+                                        borderColor: COLORS.primary,
+                                        height: '48px',
+                                        fontSize: '16px',
+                                        fontWeight: 600,
+                                        minWidth: '200px'
+                                    }}
+                                >
+                                    Xem đơn đặt phòng
+                                </Button>
+                            )}
                             <Button
                                 size="large"
                                 onClick={() => navigate('/')}

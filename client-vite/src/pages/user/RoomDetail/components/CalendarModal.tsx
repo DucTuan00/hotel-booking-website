@@ -1,12 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Modal, Button, Spin, InputNumber } from 'antd';
-import { useNavigate } from 'react-router-dom';
 import dayjs, { Dayjs } from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
 import 'dayjs/locale/vi';
 import roomAvailableService from '@/services/rooms/roomAvailableService';
 import bookingService from '@/services/bookings/bookingService';
-import authService from '@/services/auth/authService';
 import { joinRoom, leaveRoom, subscribeToInventoryUpdates, InventoryUpdateData } from '@/services/socket/socketService';
 import Notification from '@/components/Notification';
 import { Message } from '@/types/message';
@@ -41,7 +39,6 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
     maxRooms,
     maxGuests
 }) => {
-    const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [checkInDate, setCheckInDate] = useState<Dayjs | null>(null);
     const [checkOutDate, setCheckOutDate] = useState<Dayjs | null>(null);
@@ -468,29 +465,6 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
                 type: 'error',
                 text: 'Ngày check-in đã hết phòng. Vui lòng chọn ngày khác.'
             });
-            return;
-        }
-
-        // Check authentication before proceeding
-        try {
-            setLoading(true);
-            await authService.verifyToken();
-        } catch {
-            setLoading(false);
-            setMessage({
-                type: 'error',
-                text: 'Vui lòng đăng nhập để tiếp tục đặt phòng'
-            });
-            
-            setTimeout(() => {
-                onClose();
-                navigate('/login', { 
-                    state: { 
-                        from: window.location.pathname,
-                        returnUrl: window.location.pathname + window.location.search
-                    } 
-                });
-            }, 3000);
             return;
         }
 

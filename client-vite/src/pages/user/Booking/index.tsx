@@ -153,9 +153,6 @@ const Booking: React.FC = () => {
 
         setSubmitting(true);
         try {
-            // Get or create user ID (for guest booking, we could use a placeholder)
-            const userId = currentUser?.id || 'guest'; // You might want to handle guest differently
-
             // Format dates to YYYY-MM-DD before sending to API
             const formattedCheckIn = dayjs(checkIn).format('YYYY-MM-DD');
             const formattedCheckOut = dayjs(checkOut).format('YYYY-MM-DD');
@@ -173,7 +170,7 @@ const Booking: React.FC = () => {
                 : undefined;
 
             const bookingData = {
-                userId,
+                ...(currentUser?.id && { userId: currentUser.id }), // Only include userId for logged-in users
                 roomId,
                 checkIn: formattedCheckIn,
                 checkOut: formattedCheckOut,

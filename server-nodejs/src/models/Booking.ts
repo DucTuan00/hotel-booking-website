@@ -7,7 +7,7 @@ interface Guests {
 }
 
 interface BookingInterface extends Document {
-    userId: Types.ObjectId;
+    userId?: Types.ObjectId; // Optional — null for guest bookings
     roomId: Types.ObjectId;
     checkIn: Date;
     checkOut: Date;
@@ -37,10 +37,11 @@ interface BookingInterface extends Document {
 }
 
 const bookingSchema: Schema = new mongoose.Schema({
-    userId: { 
-        type: mongoose.Types.ObjectId, 
-        ref: 'User', 
-        required: true 
+    userId: {
+        type: mongoose.Types.ObjectId,
+        ref: 'User',
+        required: false,  // Optional — guests can book without an account
+        default: null
     },
     roomId: { 
         type: mongoose.Types.ObjectId, 

@@ -4,7 +4,7 @@ import { Request, Response, NextFunction } from 'express';
 
 export async function createBooking(req: Request, res: Response, next: NextFunction) {
     try {
-        const userId = req.user?.id;
+        const userId = req.user?.id; // undefined for guest bookings
         const { 
             roomId, 
             checkIn, 
@@ -23,10 +23,6 @@ export async function createBooking(req: Request, res: Response, next: NextFunct
             expectedCelebrateSubtotal,
             acceptPriceChange
         } = req.body;
-
-        if (!userId) {
-            throw new ApiError('Unauthorized: missing user ID', 401);
-        }
 
         try {
             const booking = await bookingService.createBooking({

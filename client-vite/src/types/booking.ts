@@ -35,7 +35,7 @@ export interface CelebrateItemInput {
 }
 
 export interface CreateBookingInput {
-    userId: string;
+    userId?: string; // Optional — guests can book without an account
     roomId: string;
     checkIn: string;
     checkOut: string;

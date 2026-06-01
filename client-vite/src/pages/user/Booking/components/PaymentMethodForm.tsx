@@ -3,8 +3,9 @@ import { Form, Radio, Divider, Space, Alert } from 'antd';
 import { PaymentMethod, PaymentOption, DEPOSIT_PERCENT } from '@/types/booking';
 
 const PaymentMethodForm: React.FC = () => {
+    const form = Form.useFormInstance();
     const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>(PaymentMethod.ONSITE);
-    const [selectedGateway, setSelectedGateway] = useState<string>('vnpay');
+    const [selectedGateway, setSelectedGateway] = useState<string>('momo');
     const [selectedPaymentOption, setSelectedPaymentOption] = useState<PaymentOption>(PaymentOption.FULL);
 
     return (
@@ -24,9 +25,13 @@ const PaymentMethodForm: React.FC = () => {
                         if (e.target.value !== PaymentMethod.ONLINE) {
                             setSelectedPaymentOption(PaymentOption.FULL);
                         } else {
-                            // Switching back to online — reset to FULL to stay in sync with form initialValue
+                            // Switching back to online — reset to FULL and force momo in Form store
                             setSelectedPaymentOption(PaymentOption.FULL);
-                            setSelectedGateway('vnpay');
+                            setSelectedGateway('momo');
+                            form.setFieldsValue({
+                                paymentOption: PaymentOption.FULL,
+                                paymentGateway: 'momo',
+                            });
                         }
                     }}
                 >
@@ -102,7 +107,7 @@ const PaymentMethodForm: React.FC = () => {
                     {/* Payment Gateway Selection */}
                     <Form.Item
                         name="paymentGateway"
-                        initialValue={selectedGateway}
+                        initialValue="momo"
                         rules={[{ required: true, message: 'Vui lòng chọn cổng thanh toán!' }]}
                     >
                         <Radio.Group 
@@ -110,18 +115,6 @@ const PaymentMethodForm: React.FC = () => {
                             className="w-full"
                         >
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div className={`border rounded-lg transition-colors cursor-pointer ${selectedGateway === 'vnpay' ? 'border-[#D4902A] bg-orange-50' : 'border-gray-200 hover:border-[#D4902A]'}`}>
-                                    <Radio value="vnpay" className="!ml-4 w-full">
-                                        <div className="flex items-center justify-center gap-2 p-4 cursor-pointer w-full">
-                                            <img 
-                                                src="/images/vnpay.png" 
-                                                alt="VNPay"
-                                                className="w-12 h-12 object-contain"
-                                            />
-                                            <span className="font-medium">VNPAY</span>
-                                        </div>
-                                    </Radio>
-                                </div>
                                 <div className={`border rounded-lg transition-colors cursor-pointer ${selectedGateway === 'momo' ? 'border-[#D4902A] bg-orange-50' : 'border-gray-200 hover:border-[#D4902A]'}`}>
                                     <Radio value="momo" className="!ml-4 w-full">
                                         <div className="flex items-center justify-center gap-2 p-4 cursor-pointer w-full">
@@ -131,6 +124,21 @@ const PaymentMethodForm: React.FC = () => {
                                                 className="w-12 h-12 object-contain"
                                             />
                                             <span className="font-medium">MOMO</span>
+                                        </div>
+                                    </Radio>
+                                </div>
+                                <div className={`border rounded-lg transition-colors opacity-50 cursor-not-allowed ${selectedGateway === 'vnpay' ? 'border-[#D4902A] bg-orange-50' : 'border-gray-200'}`}>
+                                    <Radio value="vnpay" disabled className="!ml-4 w-full">
+                                        <div className="flex items-center justify-center gap-2 p-4 w-full">
+                                            <img 
+                                                src="/images/vnpay.png" 
+                                                alt="VNPay"
+                                                className="w-12 h-12 object-contain"
+                                            />
+                                            <div>
+                                                <div className="font-medium">VNPAY</div>
+                                                <div className="text-xs text-gray-500">Đang bảo trì</div>
+                                            </div>
                                         </div>
                                     </Radio>
                                 </div>

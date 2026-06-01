@@ -62,10 +62,13 @@ export async function createBooking(args: CreateBookingInput) {
         acceptPriceChange
     } = args;
 
-    // Validate user
-    const existUser = await User.findById(userId);
-    if (!existUser || !existUser.active) {
-        throw new ApiError('User not found or inactive', 404);
+    // Validate user (only for authenticated bookings)
+    let existUser: any = null;
+    if (userId) {
+        existUser = await User.findById(userId);
+        if (!existUser || !existUser.active) {
+            throw new ApiError('User not found or inactive', 404);
+        }
     }
 
     // Validate room
@@ -146,8 +149,8 @@ export async function createBooking(args: CreateBookingInput) {
         }
     }
 
-    // Get user's loyalty discount (before transaction)
-    const userDiscount = await getUserDiscount(userId);
+    // Get user's loyalty discount (0 for guests)
+    const userDiscount = userId ? await getUserDiscount(userId) : 0;
 
     // Determine booking status and payment status
     let bookingStatus = BookingStatus.PENDING;
@@ -286,7 +289,7 @@ export async function createBooking(args: CreateBookingInput) {
 
         // Add loyalty discount info to snapshot for tracking
         snapshot.loyaltyDiscount = {
-            tier: existUser.loyaltyTier || 'Bronze',
+            tier: existUser?.loyaltyTier || 'Guest',
             discountPercent: userDiscount,
             originalPrice: totalWithVat,
             discountAmount: discountAmount,
@@ -308,7 +311,7 @@ export async function createBooking(args: CreateBookingInput) {
         };
 
         const newBooking = new Booking({
-            userId: existUser._id,
+            ...(userId && { userId: existUser!._id }), // Only set userId for authenticated users
             roomId: existRoom._id,
             checkIn: checkInDate,
             checkOut: checkOutDate,
@@ -372,7 +375,7 @@ export async function createBooking(args: CreateBookingInput) {
             totalPrice: finalPrice,
             paymentMethod: paymentMethod,
             celebrateItems: celebrateItemsForEmail.length > 0 ? celebrateItemsForEmail : undefined,
-            discount: userDiscount > 0 ? {
+            discount: userDiscount > 0 && existUser ? {
                 tier: existUser.loyaltyTier || 'Bronze',
                 percent: userDiscount,
                 amount: discountAmount,
@@ -765,15 +768,17 @@ export async function updateBooking(args: UpdateBookingInput) {
                 booking.checkedOutAt = new Date();
             }
 
-            // Update user loyalty stats after successful checkout
-            const bookingAmount = booking.totalPrice;
-            await incrementUserBookingStats(
-                booking.userId.toString(),
-                bookingAmount
-            );
+            // Update user loyalty stats after successful checkout (only for registered users)
+            if (booking.userId) {
+                const bookingAmount = booking.totalPrice;
+                await incrementUserBookingStats(
+                    booking.userId.toString(),
+                    bookingAmount
+                );
 
-            // Check and update user loyalty tier
-            await updateUserLoyaltyTier(booking.userId.toString());
+                // Check and update user loyalty tier
+                await updateUserLoyaltyTier(booking.userId.toString());
+            }
         }
 
         await booking.save({ session });

@@ -1,11 +1,11 @@
 import express from 'express';
 import * as momoController from '@/controllers/payment/momoController';
-import authMiddleware from '@/middlewares/authMiddleware';
+import authMiddleware, { optionalAuthMiddleware } from '@/middlewares/authMiddleware';
 
 const router = express.Router();
 
-// Create MoMo payment (protected - requires login)
-router.post('/create-payment-url', authMiddleware([]), momoController.createMomoPayment);
+// Create MoMo payment — guests can pay too (booking already exists at this point)
+router.post('/create-payment-url', optionalAuthMiddleware(), momoController.createMomoPayment);
 
 // Handle MoMo IPN callback (public - MoMo sends notification here)
 router.post('/callback', momoController.handleMomoCallback);

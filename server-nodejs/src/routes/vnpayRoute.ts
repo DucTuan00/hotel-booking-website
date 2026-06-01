@@ -1,11 +1,11 @@
 import express from 'express';
 import * as vnpayController from '@/controllers/payment/vnpayController';
-import authMiddleware from '@/middlewares/authMiddleware';
+import authMiddleware, { optionalAuthMiddleware } from '@/middlewares/authMiddleware';
 
 const router = express.Router();
 
-// Create payment URL (protected - requires login)
-router.post('/create-payment-url', authMiddleware([]), vnpayController.createPaymentUrl);
+// Create payment URL — guests can pay too (booking already exists at this point)
+router.post('/create-payment-url', optionalAuthMiddleware(), vnpayController.createPaymentUrl);
 
 // VNPay return URL (public - VNPay redirects here)
 router.get('/return', vnpayController.vnpayReturn);
