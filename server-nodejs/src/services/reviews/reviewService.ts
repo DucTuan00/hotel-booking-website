@@ -38,7 +38,7 @@ export async function checkReviewEligibility(args: CheckReviewEligibilityInput):
     }
 
     // Check if booking belongs to user
-    if (booking.userId.toString() !== userId) {
+    if (!booking.userId || booking.userId.toString() !== userId) {
         return {
             canReview: false,
             reason: 'This booking does not belong to you'

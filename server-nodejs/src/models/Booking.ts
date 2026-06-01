@@ -7,7 +7,7 @@ interface Guests {
 }
 
 interface BookingInterface extends Document {
-    userId?: Types.ObjectId; // Optional — null for guest bookings
+    userId?: Types.ObjectId | null; // Optional — null for guest bookings
     roomId: Types.ObjectId;
     checkIn: Date;
     checkOut: Date;

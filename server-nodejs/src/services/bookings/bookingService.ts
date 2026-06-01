@@ -421,7 +421,7 @@ export async function getBookingById(arg: BookingIdInput & { userId?: string; us
         throw new ApiError('Booking not found', 404);
     }
 
-    if (userRole === UserRole.USER && booking.userId._id.toString() !== userId) {
+    if (userRole === UserRole.USER && (!booking.userId || booking.userId._id.toString() !== userId)) {
         throw new ApiError('Booking not found', 404);
     }
 
@@ -533,7 +533,7 @@ export async function cancelBooking(arg: BookingIdInput & { userId?: string; use
         throw new ApiError('Booking not found', 404);
     }
 
-    if (userRole === UserRole.USER && booking.userId.toString() !== userId) {
+    if (userRole === UserRole.USER && (!booking.userId || booking.userId._id.toString() !== userId)) {
         throw new ApiError('Booking not found', 404);
     }
 
