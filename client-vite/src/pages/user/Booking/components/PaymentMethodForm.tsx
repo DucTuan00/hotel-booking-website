@@ -123,7 +123,7 @@ const PaymentMethodForm: React.FC = () => {
                                                 alt="MoMo"
                                                 className="w-12 h-12 object-contain"
                                             />
-                                            <span className="font-medium">MOMO</span>
+                                            <span className="font-medium">MOMO Sandbox</span>
                                         </div>
                                     </Radio>
                                 </div>
@@ -136,7 +136,7 @@ const PaymentMethodForm: React.FC = () => {
                                                 className="w-12 h-12 object-contain"
                                             />
                                             <div>
-                                                <div className="font-medium">VNPAY</div>
+                                                <div className="font-medium">VNPAY Sandbox</div>
                                                 <div className="text-xs text-gray-500">Đang bảo trì</div>
                                             </div>
                                         </div>
