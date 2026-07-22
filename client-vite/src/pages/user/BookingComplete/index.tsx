@@ -32,25 +32,45 @@ const BookingComplete: React.FC = () => {
     useEffect(() => {
         if (!bookingId || success !== null) return;
 
+        let cancelled = false;
         const checkBookingStatus = async () => {
             setCheckingBooking(true);
             try {
                 const booking = await bookingService.getBookingById(bookingId);
-                setBookingStatus({
-                    status: booking.status,
-                    paymentStatus: booking.paymentStatus,
-                    totalPrice: booking.totalPrice,
-                    paymentOption: booking.snapshot?.paymentOption
-                });
+                if (!cancelled) {
+                    setBookingStatus({
+                        status: booking.status,
+                        paymentStatus: booking.paymentStatus,
+                        totalPrice: booking.totalPrice,
+                        paymentOption: booking.snapshot?.paymentOption
+                    });
+                }
             } catch (error) {
-                console.error('Error checking booking status:', error);
+                if (!cancelled) {
+                    console.error('Error checking booking status:', error);
+                }
             } finally {
-                setCheckingBooking(false);
+                if (!cancelled) {
+                    setCheckingBooking(false);
+                }
             }
         };
 
         checkBookingStatus();
+        return () => { cancelled = true; };
     }, [bookingId, success]);
+
+    // Show loading while checking booking status
+    if (checkingBooking) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-start justify-center py-8">
+                <div className="text-center">
+                    <Spin size="large" />
+                    <p className="mt-4 text-gray-600">Đang kiểm tra thông tin đặt phòng...</p>
+                </div>
+            </div>
+        );
+    }
 
     // Determine what to show based on params and booking status
     const getDisplayState = () => {
