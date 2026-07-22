@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Form, Spin, Modal } from 'antd';
 import dayjs from 'dayjs';
@@ -23,6 +23,9 @@ import PaymentMethodForm from '@/pages/user/Booking/components/PaymentMethodForm
 import BookingSummary from '@/pages/user/Booking/components/BookingSummary';
 import CelebrationItemsForm from '@/pages/user/Booking/components/CelebrationItemsForm';
 
+// Timeout for payment gateway redirects (in ms)
+const PAYMENT_GATEWAY_TIMEOUT = 5000;
+
 const Booking: React.FC = () => {
     const [form] = Form.useForm();
     const navigate = useNavigate();
@@ -39,6 +42,10 @@ const Booking: React.FC = () => {
     const [selectedCelebrateItems, setSelectedCelebrateItems] = useState<Map<string, number>>(new Map());
     const [loyaltyInfo, setLoyaltyInfo] = useState<LoyaltyInfo | null>(null);
     const [paymentOption, setPaymentOption] = useState<PaymentOption>(PaymentOption.FULL);
+
+    // State for handling pending booking from interrupted payment
+    const [pendingBooking, setPendingBooking] = useState<any>(null);
+    const [checkingPendingBooking, setCheckingPendingBooking] = useState(false);
 
     // Price change verification state
     const [priceChangeModal, setPriceChangeModal] = useState(false);
@@ -80,15 +87,51 @@ const Booking: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [roomId, checkIn, checkOut]);
 
+    // Check for pending booking from interrupted payment flow
+    // When user comes back from payment gateway without completing payment
+    const checkForPendingBooking = useCallback(async () => {
+        if (!currentUser) return null;
+
+        try {
+            // Get user's recent bookings and find one with pending status for the same room/dates
+            const bookingsResponse = await bookingService.getUserBookings({ status: 'pending' });
+            const pendingBookings = bookingsResponse?.bookings || bookingsResponse?.data?.bookings || [];
+            
+            // Find a booking that matches current room and dates
+            for (const booking of pendingBookings) {
+                if (booking.roomId === roomId) {
+                    const bookingCheckIn = dayjs(booking.checkIn).format('YYYY-MM-DD');
+                    const bookingCheckOut = dayjs(booking.checkOut).format('YYYY-MM-DD');
+                    const currentCheckIn = dayjs(checkIn).format('YYYY-MM-DD');
+                    const currentCheckOut = dayjs(checkOut).format('YYYY-MM-DD');
+
+                    if (bookingCheckIn === currentCheckIn && bookingCheckOut === currentCheckOut) {
+                        // Check if this is a recent booking (within last hour)
+                        const bookingTime = new Date(booking.createdAt).getTime();
+                        const now = Date.now();
+                        if (now - bookingTime < 3600000) { // 1 hour
+                            return booking;
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            console.log('Could not check for pending bookings:', error);
+        }
+        return null;
+    }, [currentUser, roomId, checkIn, checkOut]);
+
     const loadData = async () => {
         if (!roomId || !checkIn || !checkOut) return;
 
         setLoading(true);
         try {
             // Load user data
+            let userLoaded = false;
             try {
                 const userData = await userService.getUserInfo();
                 setCurrentUser(userData);
+                userLoaded = true;
                 
                 // Pre-fill form with user data
                 form.setFieldsValue({
@@ -103,11 +146,9 @@ const Booking: React.FC = () => {
                     const loyalty = await userService.getLoyaltyInfo();
                     setLoyaltyInfo(loyalty);
                 } catch {
-                    // User might not have loyalty info yet
                     console.log('Could not load loyalty info');
                 }
             } catch {
-                // User not logged in, that's okay
                 console.log('User not logged in');
             }
 
@@ -137,6 +178,20 @@ const Booking: React.FC = () => {
                 paymentGateway: 'vnpay',
                 paymentOption: PaymentOption.FULL
             });
+
+            // Check for pending booking from interrupted payment only for logged-in users
+            if (userLoaded) {
+                setCheckingPendingBooking(true);
+                const pending = await checkForPendingBooking();
+                if (pending) {
+                    setPendingBooking(pending);
+                    setMessage({
+                        type: 'warning',
+                        text: 'Bạn có một đơn đặt phòng chưa thanh toán cho phòng này. Vui lòng thanh toán hoặc hủy đơn cũ trước khi đặt mới.'
+                    });
+                }
+                setCheckingPendingBooking(false);
+            }
         } catch (error) {
             console.error('Error loading booking data:', error);
             setMessage({
@@ -148,7 +203,65 @@ const Booking: React.FC = () => {
         }
     };
 
+    // Retry payment for existing pending booking
+    const handleRetryPayment = async (bookingId: string, paymentGateway: string) => {
+        setSubmitting(true);
+        try {
+            let paymentResponse;
+            
+            if (paymentGateway === 'vnpay') {
+                paymentResponse = await createVNPayPaymentUrl({
+                    bookingId,
+                    locale: 'vn'
+                });
+                window.location.href = paymentResponse.data.paymentUrl;
+            } else if (paymentGateway === 'momo') {
+                paymentResponse = await createMoMoPaymentUrl({
+                    bookingId,
+                });
+                window.location.href = paymentResponse.data.payUrl;
+            }
+        } catch (paymentError: any) {
+            console.error('Error retrying payment:', paymentError);
+            setMessage({
+                type: 'error',
+                text: 'Không thể tạo link thanh toán. Vui lòng thử lại.'
+            });
+            setSubmitting(false);
+        }
+    };
+
+    // Handle user declining pending booking - proceed with new booking
+    const handleProceedWithNewBooking = () => {
+        setPendingBooking(null);
+    };
+
     const handleSubmit = async (values: any, acceptPriceChange = false) => {
+        if (!roomId || !checkIn || !checkOut) return;
+
+        // Check if there's a pending booking - if so, offer to retry payment instead
+        if (pendingBooking) {
+            Modal.confirm({
+                title: 'Đơn đặt phòng đã tồn tại',
+                content: 'Bạn đã có một đơn đặt phòng chưa thanh toán cho phòng này. Bạn có muốn thanh toán đơn cũ thay vì tạo đơn mới không?',
+                okText: 'Thanh toán đơn cũ',
+                cancelText: 'Tạo đơn mới',
+                onOk: () => {
+                    handleRetryPayment(pendingBooking.id, values.paymentGateway || 'vnpay');
+                },
+                onCancel: () => {
+                    handleProceedWithNewBooking();
+                    // Actually submit the new booking
+                    submitNewBooking(values, acceptPriceChange);
+                }
+            });
+            return;
+        }
+
+        submitNewBooking(values, acceptPriceChange);
+    };
+
+    const submitNewBooking = async (values: any, acceptPriceChange = false) => {
         if (!roomId || !checkIn || !checkOut) return;
 
         setSubmitting(true);
@@ -212,12 +325,23 @@ const Booking: React.FC = () => {
                 try {
                     const paymentGateway = values.paymentGateway || 'vnpay';
                     
+                    // Set a timeout to detect if user doesn't complete payment
+                    // If user presses back in payment gateway, they'll return to this page
+                    // with the booking already created
+                    const paymentTimeout = setTimeout(() => {
+                        // User has been away for too long (likely didn't complete payment)
+                        // Reset processing state so they can see the booking status
+                        console.log('Payment gateway timeout - user may have cancelled');
+                    }, PAYMENT_GATEWAY_TIMEOUT);
+
                     if (paymentGateway === 'vnpay') {
                         const paymentResponse = await createVNPayPaymentUrl({
                             bookingId: booking.id,
                             locale: 'vn'
                         });
 
+                        // Clear timeout since we're redirecting
+                        clearTimeout(paymentTimeout);
                         // Redirect to VNPay
                         window.location.href = paymentResponse.data.paymentUrl;
                     } else if (paymentGateway === 'momo') {
@@ -225,9 +349,12 @@ const Booking: React.FC = () => {
                             bookingId: booking.id,
                         });
 
+                        // Clear timeout since we're redirecting
+                        clearTimeout(paymentTimeout);
                         // Redirect to MoMo
                         window.location.href = paymentResponse.data.payUrl;
                     } else {
+                        clearTimeout(paymentTimeout);
                         setMessage({
                             type: 'error',
                             text: 'Cổng thanh toán này chưa được hỗ trợ.'
@@ -309,7 +436,7 @@ const Booking: React.FC = () => {
         setPendingFormValues(null);
     };
 
-    if (loading) {
+    if (loading || checkingPendingBooking) {
         return (
             <div className="flex justify-center items-center min-h-screen">
                 <Spin size="large" />

@@ -75,16 +75,18 @@ export async function vnpayReturn(req: Request, res: Response, next: NextFunctio
         if (!verifyResult.isValid) {
             // Invalid signature - redirect to frontend with error
             const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+            const txnRef = query.vnp_TxnRef || '';
             res.redirect(
-                `${frontendUrl}/booking/complete?success=false&message=${encodeURIComponent(verifyResult.message)}`
+                `${frontendUrl}/booking/complete?success=false&message=${encodeURIComponent(verifyResult.message)}${txnRef ? `&bookingId=${txnRef}` : ''}`
             );
             return;
         }
 
         if (!verifyResult.data) {
             const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+            const txnRef = query.vnp_TxnRef || '';
             res.redirect(
-                `${frontendUrl}/booking/complete?success=false&message=${encodeURIComponent('Dữ liệu thanh toán không hợp lệ')}`
+                `${frontendUrl}/booking/complete?success=false&message=${encodeURIComponent('Dữ liệu thanh toán không hợp lệ')}${txnRef ? `&bookingId=${txnRef}` : ''}`
             );
             return;
         }
@@ -96,7 +98,7 @@ export async function vnpayReturn(req: Request, res: Response, next: NextFunctio
         if (!booking) {
             const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
             res.redirect(
-                `${frontendUrl}/booking/complete?success=false&message=${encodeURIComponent('Không tìm thấy đơn đặt phòng')}`
+                `${frontendUrl}/booking/complete?success=false&message=${encodeURIComponent('Không tìm thấy đơn đặt phòng')}&bookingId=${txnRef}`
             );
             return;
         }
@@ -145,15 +147,16 @@ export async function vnpayReturn(req: Request, res: Response, next: NextFunctio
             
             res.redirect(redirectUrl);
         } else {
-            // Redirect to web frontend
+            // Redirect to web frontend - include bookingId for status check
             const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-            res.redirect(`${frontendUrl}/booking/complete`);
+            res.redirect(`${frontendUrl}/booking/complete?bookingId=${txnRef}`);
         }
     } catch (error) {
         console.error('VNPay return error:', error);
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+        const txnRef = req.query.vnp_TxnRef || '';
         res.redirect(
-            `${frontendUrl}/booking/complete?success=false&message=${encodeURIComponent('Có lỗi xảy ra trong quá trình xử lý thanh toán')}`
+            `${frontendUrl}/booking/complete?success=false&message=${encodeURIComponent('Có lỗi xảy ra trong quá trình xử lý thanh toán')}${txnRef ? `&bookingId=${txnRef}` : ''}`
         );
     }
 };

@@ -177,8 +177,9 @@ export async function handleMomoReturn(req: Request, res: Response): Promise<voi
 
         if (!isValid) {
             // Invalid signature - redirect to frontend with error
+            const orderId = (queryData as any).orderId || '';
             res.redirect(
-                `${frontendUrl}/booking/complete?success=false&message=${encodeURIComponent('Chữ ký không hợp lệ')}`
+                `${frontendUrl}/booking/complete?success=false&message=${encodeURIComponent('Chữ ký không hợp lệ')}${orderId ? `&bookingId=${orderId}` : ''}`
             );
             return;
         }
@@ -206,7 +207,7 @@ export async function handleMomoReturn(req: Request, res: Response): Promise<voi
 
         if (!booking) {
             res.redirect(
-                `${frontendUrl}/booking/complete?success=false&message=${encodeURIComponent('Không tìm thấy đơn đặt phòng')}`
+                `${frontendUrl}/booking/complete?success=false&message=${encodeURIComponent('Không tìm thấy đơn đặt phòng')}${bookingId ? `&bookingId=${bookingId}` : ''}`
             );
             return;
         }
@@ -255,8 +256,8 @@ export async function handleMomoReturn(req: Request, res: Response): Promise<voi
             
             res.redirect(redirectUrl);
         } else {
-            // Redirect to web frontend
-            res.redirect(`${frontendUrl}/booking/complete`);
+            // Redirect to web frontend - include bookingId for status check
+            res.redirect(`${frontendUrl}/booking/complete?bookingId=${bookingId}`);
         }
     } catch (error) {
         console.error('MoMo return error:', error);
