@@ -122,3 +122,144 @@ function futureDate(days: number): Date {
 function futureHours(hours: number): Date {
     return new Date(Date.now() + hours * 60 * 60 * 1000);
 }
+
+// ========================================
+// Edge Cases - calculateNights
+// ========================================
+
+test('calculateNights returns 1 for same-day booking', () => {
+    const checkIn = new Date('2026-05-10T00:00:00.000Z');
+    const checkOut = new Date('2026-05-10T23:59:59.000Z');
+
+    assert.equal(calculateNights(checkIn, checkOut), 1);
+});
+
+test('calculateNights handles 30-day booking', () => {
+    const checkIn = new Date('2026-05-01T14:00:00.000Z');
+    const checkOut = new Date('2026-05-31T10:00:00.000Z');
+
+    assert.equal(calculateNights(checkIn, checkOut), 30);
+});
+
+// ========================================
+// Edge Cases - normalizeDate
+// ========================================
+
+test('normalizeDate handles midnight UTC', () => {
+    const normalized = normalizeDate(new Date('2026-05-10T00:00:00.000Z'));
+
+    assert.equal(normalized.toISOString(), '2026-05-10T00:00:00.000Z');
+});
+
+test('normalizeDate handles end of day local time', () => {
+    const normalized = normalizeDate(new Date('2026-05-10T23:59:59.999Z'));
+
+    assert.equal(normalized.toISOString(), '2026-05-10T00:00:00.000Z');
+});
+
+// ========================================
+// Edge Cases - getBookingDates
+// ========================================
+
+test('getBookingDates returns empty array for same-day check-in/out', () => {
+    const checkIn = new Date('2026-05-10T14:00:00.000Z');
+    const checkOut = new Date('2026-05-10T12:00:00.000Z');
+
+    const dates = getBookingDates(checkIn, checkOut);
+
+    assert.deepEqual(dates, []);
+});
+
+test('getBookingDates handles 7-night stay', () => {
+    const dates = getBookingDates(
+        new Date('2026-05-01T14:00:00.000Z'),
+        new Date('2026-05-08T11:00:00.000Z')
+    );
+
+    assert.equal(dates.length, 7);
+    assert.equal(dates[0].toISOString(), '2026-05-01T00:00:00.000Z');
+    assert.equal(dates[6].toISOString(), '2026-05-07T00:00:00.000Z');
+});
+
+// ========================================
+// Edge Cases - calculateCancellationFee
+// ========================================
+
+test('calculateCancellationFee blocks already checked-out bookings', () => {
+    const result = calculateCancellationFee({
+        status: BookingStatus.CHECKED_OUT,
+        checkIn: futureDate(10),
+        totalPrice: 1000,
+    });
+
+    assert.equal(result.canCancel, false);
+    assert.equal(result.restoreInventory, false);
+    assert.equal(result.reason, 'Cannot cancel completed booking');
+});
+
+test('calculateCancellationFee blocks past check-in date', () => {
+    const result = calculateCancellationFee({
+        status: BookingStatus.CONFIRMED,
+        checkIn: pastDate(1),
+        totalPrice: 1000,
+    });
+
+    assert.equal(result.canCancel, false);
+    assert.equal(result.restoreInventory, false);
+});
+
+test('calculateCancellationFee applies 20% fee between 3-7 days', () => {
+    const result = calculateCancellationFee({
+        status: BookingStatus.CONFIRMED,
+        checkIn: futureDate(5),
+        totalPrice: 1000,
+    });
+
+    assert.equal(result.canCancel, true);
+    assert.equal(result.feePercentage, 20);
+    assert.equal(result.fee, 200);
+    assert.equal(result.refundAmount, 800);
+    assert.equal(result.restoreInventory, true);
+});
+
+test('calculateCancellationFee applies 50% fee between 24h-3 days', () => {
+    const result = calculateCancellationFee({
+        status: BookingStatus.CONFIRMED,
+        checkIn: futureDate(2),
+        totalPrice: 1000,
+    });
+
+    assert.equal(result.canCancel, true);
+    assert.equal(result.feePercentage, 50);
+    assert.equal(result.fee, 500);
+    assert.equal(result.refundAmount, 500);
+    assert.equal(result.restoreInventory, true);
+});
+
+test('calculateCancellationFee handles pending status', () => {
+    const result = calculateCancellationFee({
+        status: BookingStatus.PENDING,
+        checkIn: futureDate(10),
+        totalPrice: 1000,
+    });
+
+    assert.equal(result.canCancel, true);
+    assert.equal(result.feePercentage, 0);
+    assert.equal(result.restoreInventory, true);
+});
+
+test('calculateCancellationFee handles zero price booking', () => {
+    const result = calculateCancellationFee({
+        status: BookingStatus.CONFIRMED,
+        checkIn: futureDate(10),
+        totalPrice: 0,
+    });
+
+    assert.equal(result.canCancel, true);
+    assert.equal(result.fee, 0);
+    assert.equal(result.refundAmount, 0);
+});
+
+function pastDate(days: number): Date {
+    return new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+}

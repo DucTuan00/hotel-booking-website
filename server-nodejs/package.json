@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "node --import tsx --test src/utils/apiError.test.ts src/utils/bookingHelpers.test.ts src/utils/mapId.test.ts",
+    "test": "node --import tsx --test src/utils/apiError.test.ts src/utils/bookingHelpers.test.ts src/utils/mapId.test.ts src/services/loyalty/loyaltyService.test.ts",
     "start": "tsx src/server.ts",
     "dev": "nodemon --watch src --ext ts --exec tsx src/server.ts",
     "build": "tsc",
