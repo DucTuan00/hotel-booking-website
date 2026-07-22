@@ -90,24 +90,26 @@ const Booking: React.FC = () => {
     // Check for pending booking from interrupted payment flow
     // When user comes back from payment gateway without completing payment
     const checkForPendingBooking = useCallback(async () => {
-        if (!currentUser) return null;
+        if (!currentUser || !roomId || !checkIn || !checkOut) return null;
 
         try {
             // Get user's recent bookings and find one with pending status for the same room/dates
             const bookingsResponse = await bookingService.getUserBookings({ status: 'pending' });
-            const pendingBookings = bookingsResponse?.bookings || bookingsResponse?.data?.bookings || [];
+            const pendingBookings = bookingsResponse?.bookings || [];
             
+            // Normalize dates for comparison
+            const normalizedCheckIn = dayjs(checkIn).format('YYYY-MM-DD');
+            const normalizedCheckOut = dayjs(checkOut).format('YYYY-MM-DD');
+
             // Find a booking that matches current room and dates
             for (const booking of pendingBookings) {
                 if (booking.roomId === roomId) {
                     const bookingCheckIn = dayjs(booking.checkIn).format('YYYY-MM-DD');
                     const bookingCheckOut = dayjs(booking.checkOut).format('YYYY-MM-DD');
-                    const currentCheckIn = dayjs(checkIn).format('YYYY-MM-DD');
-                    const currentCheckOut = dayjs(checkOut).format('YYYY-MM-DD');
 
-                    if (bookingCheckIn === currentCheckIn && bookingCheckOut === currentCheckOut) {
+                    if (bookingCheckIn === normalizedCheckIn && bookingCheckOut === normalizedCheckOut) {
                         // Check if this is a recent booking (within last hour)
-                        const bookingTime = new Date(booking.createdAt).getTime();
+                        const bookingTime = booking.createdAt ? new Date(booking.createdAt).getTime() : 0;
                         const now = Date.now();
                         if (now - bookingTime < 3600000) { // 1 hour
                             return booking;
