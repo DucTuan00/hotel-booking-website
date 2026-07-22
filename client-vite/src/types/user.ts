@@ -70,6 +70,10 @@ export interface UpdatePasswordInput {
     newPassword: string;
 }
 
+export interface AdminResetPasswordInput {
+    newPassword: string;
+}
+
 export interface GetAllUsersInput {
     search?: string;
     role?: UserRole;

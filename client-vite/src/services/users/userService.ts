@@ -6,7 +6,8 @@ import {
     UpdatePasswordInput, 
     GetAllUsersInput, 
     GetAllUsersResponse,
-    LoyaltyInfo
+    LoyaltyInfo,
+    AdminResetPasswordInput
 } from '@/types/user';
 
 const getUserInfo = async (): Promise<User> => {
@@ -112,6 +113,16 @@ const getLoyaltyInfo = async (): Promise<LoyaltyInfo> => {
     }
 };
 
+const resetUserPassword = async (userId: string, data: AdminResetPasswordInput): Promise<{ message: string }> => {
+    try {
+        const response = await api.post(`/user/${userId}/reset-password`, data);
+        return response.data;
+    } catch (error) {
+        console.error('Error resetting user password:', error);
+        throw error;
+    }
+};
+
 export default {
     getUserInfo,
     getAllUsers,
@@ -123,4 +134,5 @@ export default {
     deleteUser,
     toggleUserActive,
     getLoyaltyInfo,
+    resetUserPassword,
 };

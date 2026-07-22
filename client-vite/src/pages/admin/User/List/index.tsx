@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button, Space, Tag, Switch } from 'antd';
-import { EditOutlined } from '@ant-design/icons';
+import { EditOutlined, KeyOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import AdminTable from '@/components/AdminTable';
 import SearchTableAdmin, { SearchFilters } from '@/components/SearchTableAdmin';
 import UserForm, { UserFormValues } from '@/pages/admin/User/Form';
+import ResetPasswordModal from '@/pages/admin/User/ResetPasswordModal';
 import userService from '@/services/users/userService';
 import Notification from '@/components/Notification';
 import { UserRole, LoyaltyTier, User } from '@/types/user';
@@ -36,6 +37,8 @@ const UserList: React.FC = () => {
     const [totalUsers, setTotalUsers] = useState<number>(0);
     const [message, setMessage] = useState<Message | null>(null);
     const [currentSearchParams, setCurrentSearchParams] = useState<any>({});
+    const [resetPasswordModalVisible, setResetPasswordModalVisible] = useState<boolean>(false);
+    const [selectedUserForReset, setSelectedUserForReset] = useState<User | null>(null);
 
     const fetchUsers = useCallback(async () => {
         setLoading(true);
@@ -151,6 +154,21 @@ const UserList: React.FC = () => {
         }
     };
 
+    const handleResetPassword = (user: User) => {
+        setSelectedUserForReset(user);
+        setResetPasswordModalVisible(true);
+    };
+
+    const handleResetPasswordSuccess = () => {
+        setResetPasswordModalVisible(false);
+        setSelectedUserForReset(null);
+        setMessage({ type: 'success', text: 'Đặt lại mật khẩu thành công!' });
+    };
+
+    const handleResetPasswordError = (errorMsg: string) => {
+        setMessage({ type: 'error', text: errorMsg });
+    };
+
     const columns: ColumnsType<User> = [
         {
             title: 'Tên người dùng',
@@ -216,7 +234,7 @@ const UserList: React.FC = () => {
         {
             title: 'Hành động',
             key: 'actions',
-            width: 100,
+            width: 150,
             render: (_, record) => (
                 <Space>
                     <Button 
@@ -226,6 +244,15 @@ const UserList: React.FC = () => {
                         size="small"
                     >
                         Sửa
+                    </Button>
+                    <Button 
+                        type="link" 
+                        icon={<KeyOutlined />} 
+                        onClick={() => handleResetPassword(record)}
+                        size="small"
+                        danger
+                    >
+                        Đặt lại MK
                     </Button>
                 </Space>
             ),
@@ -286,6 +313,18 @@ const UserList: React.FC = () => {
                     loading={loading}
                 />
             </AdminTable>
+
+            <ResetPasswordModal
+                visible={resetPasswordModalVisible}
+                userId={selectedUserForReset?.id || ''}
+                userName={selectedUserForReset?.name || ''}
+                onCancel={() => {
+                    setResetPasswordModalVisible(false);
+                    setSelectedUserForReset(null);
+                }}
+                onSuccess={handleResetPasswordSuccess}
+                onError={handleResetPasswordError}
+            />
         </>
     );
 };

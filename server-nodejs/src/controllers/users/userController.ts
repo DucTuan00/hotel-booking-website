@@ -139,3 +139,17 @@ export async function toggleUserActive(req: Request, res: Response, next: NextFu
         next(new ApiError(error.message, 400));
     }
 };
+
+export async function resetUserPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+        const id = req.params.id;
+        const { newPassword } = req.body;
+        if (!newPassword) {
+            throw new ApiError('New password is required', 400);
+        }
+        const result = await userService.resetUserPassword({ id, newPassword });
+        res.json(result);
+    } catch (error: any) {
+        next(new ApiError(error.message, 400));
+    }
+};

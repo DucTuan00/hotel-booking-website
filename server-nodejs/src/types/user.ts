@@ -62,6 +62,11 @@ export interface InputUpdatePassword {
     newPassword: string;
 }
 
+export interface InputAdminResetPassword {
+    id: string;
+    newPassword: string;
+}
+
 export interface UserIdInput {
     id: string;
 }

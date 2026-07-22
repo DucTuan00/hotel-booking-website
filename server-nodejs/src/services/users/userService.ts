@@ -7,7 +7,8 @@ import {
     GetAllUsersInput,
     InputCreateUser,
     InputUpdateUser,
-    InputUpdatePassword
+    InputUpdatePassword,
+    InputAdminResetPassword
 } from '@/types/user';
 
 export async function getUserById(arg: UserIdInput) {
@@ -194,5 +195,24 @@ export async function toggleUserActive(arg: UserIdInput) {
     return {
         message: `User ${user.active ? 'activated' : 'deactivated'} successfully`,
         active: user.active
+    };
+};
+
+export async function resetUserPassword(data: InputAdminResetPassword) {
+    const { id, newPassword } = data;
+    if (!id) {
+        throw new Error('Do not have id');
+    }
+    const user = await User.findById(id);
+    if (!user) {
+        throw new Error('User not found');
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    return {
+        message: 'Password reset successfully'
     };
 };
